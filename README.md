@@ -3,6 +3,17 @@
 This library provides simple features for handling user's input and display for terminal applications.  
 It uses [Termion](https://crates.io/crates/termion) as main tool for handling the screen and inputs. You don't have to worry about initalizing anything because the lib will handle this for you.
 
+## Platforms
+
+Works for Linux and possibly Mac (need confirmation).  
+
+Windows support will be available as soon as termion will support it [See here for more info](https://gitlab.redox-os.org/redox-os/termion/-/merge_requests/151)
+For now, you can change the cargo.toml termion dependency by this :
+```toml
+termion = { git = "https://gitlab.redox-os.org/Jezza/termion", branch = "windows-support", package = "termion"}
+```
+Note: window's input initialization requires the user to first press enter. ConsoleEngine will ask the user to press Enter while inializing.
+
 # example usage 
 ```rust
 use console_engine::pixel;
