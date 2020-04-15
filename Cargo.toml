@@ -1,0 +1,14 @@
+[package]
+name = "console_engine"
+description = "A simple console framework that provides display and keyboard features"
+version = "0.1.0"
+authors = ["Vincent Foulon <sup.vfoulon@gmail.com>"]
+repository = "https://github.com/VincentFoulon80/console_engine"
+readme = "README.md"
+license = "MIT"
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+termion = { git = "https://gitlab.redox-os.org/Jezza/termion", branch = "windows-support", package = "termion"}
