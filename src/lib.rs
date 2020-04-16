@@ -16,6 +16,7 @@ pub struct ConsoleEngine {
     input: termion::input::Keys<termion::AsyncReader>,
     output: termion::raw::RawTerminal<Stdout>,
     time_limit: u128,
+    /// The current frame count, publicly accessible
     pub frame_count: usize,
     width: u32,
     height: u32,
