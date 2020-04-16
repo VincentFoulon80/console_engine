@@ -39,7 +39,7 @@ fn main() {
 
     // initializes a screen filling the terminal with a target of 3 frame per second
     let mut engine = console_engine::ConsoleEngine::init_fill(10);
-    // we check if the screen has a minimal size
+    // we check if the screen fits a minimal size
     assert!(engine.scr_w() >= MAX_VALUES as u32, format!("Your terminal must have at least {} characters of width", MAX_VALUES));
     assert!(engine.scr_h() >= 10, "Your terminal must have at least 10 characters of height");
     

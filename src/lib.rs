@@ -25,7 +25,6 @@ pub struct ConsoleEngine {
     keys_pressed: Vec<Key>,
     keys_held: Vec<Key>,
     keys_released: Vec<Key>,
-    // device: DeviceState
 }
 /// # Basic Usage :
 /// 
@@ -73,7 +72,6 @@ impl ConsoleEngine {
             keys_pressed: vec!(),
             keys_held: vec!(),
             keys_released: vec!(),
-            // device: DeviceState::new()
         };
         my.begin();
         return my;
@@ -146,14 +144,17 @@ impl ConsoleEngine {
     /// ```
     pub fn print(&mut self, x: u32, y: u32, string: String)
     {
-        if x < self.width && y < self.height {
-            let pos = self.coord_to_index(x, y);
-            let mut count = 0usize;
-            let char_vec: Vec<char> = string.chars().collect();
-            for i in pos..std::cmp::min(pos+char_vec.len(), self.screen.capacity()) {
-                self.screen[i] = pixel::pxl(char_vec[count]);
-                count += 1;
-            }
+        assert!(x < self.width && y < self.height, "Attempted to print out of bounds (coords: [{}, {}], bounds: [{}, {}]", x,y,self.width-1,self.height-1);
+
+        // get screen index, initializes a counter 
+        // and get chars of the provided String
+        let pos = self.coord_to_index(x, y);
+        let mut count = 0usize;
+        let char_vec: Vec<char> = string.chars().collect();
+        // place each characters one by one. Stops before overflowing
+        for i in pos..std::cmp::min(pos+char_vec.len(), self.screen.capacity()) {
+            self.screen[i] = pixel::pxl(char_vec[count]);
+            count += 1;
         }
     }
 
@@ -167,14 +168,17 @@ impl ConsoleEngine {
     /// ```
     pub fn print_fbg<C1: color::Color + Clone, C2: color::Color + Clone>(&mut self, x: u32, y: u32, string: String, fg: C1, bg: C2)
     {
-        if x < self.width && y < self.height {
-            let pos = self.coord_to_index(x, y);
-            let mut count = 0usize;
-            let char_vec: Vec<char> = string.chars().collect();
-            for i in pos..std::cmp::min(pos+char_vec.len(), self.screen.capacity()) {
-                self.screen[i] = pixel::pxl_fbg(char_vec[count], fg.clone(), bg.clone());
-                count += 1;
-            }
+        assert!(x < self.width && y < self.height, "Attempted to print_fbg out of bounds (coords: [{}, {}], bounds: [{}, {}]", x,y,self.width-1,self.height-1);
+        
+        // get screen index, initializes a counter 
+        // and get chars of the provided String
+        let pos = self.coord_to_index(x, y);
+        let mut count = 0usize;
+        let char_vec: Vec<char> = string.chars().collect();
+        // place each characters one by one. Stops before overflowing
+        for i in pos..std::cmp::min(pos+char_vec.len(), self.screen.capacity()) {
+            self.screen[i] = pixel::pxl_fbg(char_vec[count], fg.clone(), bg.clone());
+            count += 1;
         }
     }
 
@@ -206,49 +210,60 @@ impl ConsoleEngine {
             }
             return;
         }
+        // any lines
         let delta_abs_x = delta_x.abs();
         let delta_abs_y = delta_y.abs();
         let mut pos_x = 2 * delta_abs_y - delta_abs_x;
         let	mut pos_y = 2 * delta_abs_x - delta_abs_y;
         let mut x: i32; 
         let mut y: i32; 
+        // checks if line is more horizontal or vertical
         if delta_abs_y <= delta_abs_x {
+            // more horizontal
             let x_end: i32;
+            // determines direction of iteration
             if delta_x >= 0
 			    { x = start_x as i32; y = start_y as i32; x_end = end_x as i32; }
 			else
                 { x = end_x as i32; y = end_y as i32; x_end = start_x as i32; }
 
+            // place first pixel + loop through each x values
             self.set_pxl_ref(x as u32, y as u32, &character);
             for x in x..x_end {
-				
+				// check if we need to move y
 				if pos_x<0 {
 					pos_x = pos_x + 2 * delta_abs_y;
                 } else {
+                    // determines which direction the y needs to move
 					if (delta_x<0 && delta_y<0) || (delta_x>0 && delta_y>0) {y = y + 1;} else {y = y - 1;}
 					pos_x = pos_x + 2 * (delta_abs_y - delta_abs_x);
                 }
                 self.set_pxl_ref(x as u32, y as u32, &character);
 			}
         } else { 
+            // more vertical
             let y_end: i32;
+            // determines direction of iteration
             if delta_y >= 0
 			    { x = start_x as i32; y = start_y as i32; y_end = end_y as i32; }
 			else
                 { x = end_x as i32; y = end_y as i32; y_end = start_y as i32; }
 
+            // place first pixel + loop through each y values
             self.set_pxl_ref(x as u32, y as u32, &character);
             for y in y..y_end {
+                // check if we need to move x
 				if pos_y<0 {
 					pos_y = pos_y + 2 * delta_abs_x;
                 } else {
+                    // determines which direction the x needs to move
 					if (delta_x<0 && delta_y<0) || (delta_x>0 && delta_y>0) {x = x + 1;} else {x = x - 1};
 					pos_y = pos_y + 2 * (delta_abs_x - delta_abs_y);
                 }
                 self.set_pxl_ref(x as u32, y as u32, &character);
 			}
         }
-        
+        // place last pixel
         self.set_pxl_ref(end_x, end_y, &character);
     }
 
@@ -258,12 +273,10 @@ impl ConsoleEngine {
     /// The only differences between the two is that this version takes the Pixel as a reference
     fn set_pxl_ref(&mut self, x: u32, y: u32, character: &Pixel)
     {
-        if x < self.width && y < self.height {
-            let index = self.coord_to_index(x, y);
-            self.screen[index] = character.clone();
-        } else {
-            panic!("Attempted to set pxl out of bounds (coords: [{}, {}], bounds: [{}, {}]", x,y,self.width-1,self.height-1);
-        }
+        assert!(x < self.width && y < self.height, "Attempted to set_pxl_ref out of bounds (coords: [{}, {}], bounds: [{}, {}]", x,y,self.width-1,self.height-1);
+        
+        let index = self.coord_to_index(x, y);
+        self.screen[index] = character.clone();
     }
 
     /// sets the provided character in the specified coordinates
@@ -276,12 +289,10 @@ impl ConsoleEngine {
     /// ```
     pub fn set_pxl(&mut self, x: u32, y: u32, character: Pixel)
     {
-        if x < self.width && y < self.height {
-            let index = self.coord_to_index(x, y);
-            self.screen[index] = character;
-        } else {
-            panic!("Attempted to set pxl out of bounds (coords: [{}, {}], bounds: [{}, {}]", x,y,self.width-1,self.height-1);
-        }
+        assert!(x < self.width && y < self.height, "Attempted to set_pxl out of bounds (coords: [{}, {}], bounds: [{}, {}]", x,y,self.width-1,self.height-1);
+        
+        let index = self.coord_to_index(x, y);
+        self.screen[index] = character;
     }
 
     /// Get the character stored at provided coordinates
@@ -294,8 +305,9 @@ impl ConsoleEngine {
     /// ```
     pub fn get_pxl(&self, x: u32, y: u32) -> Pixel 
     {
-        assert!(x < self.width && y < self.height, "provided coordinates are out of screen's bounds");
-        return self.screen[self.coord_to_index(x, y)].clone();
+        assert!(x < self.width && y < self.height, "Attempted to get_pxl out of bounds (coords: [{}, {}], bounds: [{}, {}]", x,y,self.width-1,self.height-1);
+
+        self.screen[self.coord_to_index(x, y)].clone()
     }
     
     /// Draw the screen in the terminal  
@@ -309,7 +321,9 @@ impl ConsoleEngine {
     pub fn draw(&self)
     {
         let mut out = self.output.lock();
+        // reset cursor position
         write!(out, "{}", termion::cursor::Goto(1,1)).unwrap();
+        // iterates through the screen memory and prints it on the output buffer
         for y in 0..self.height {
             for x in 0..self.width {
                 write!(out, "{}", self.screen[self.coord_to_index(x, y)]).unwrap();
@@ -318,6 +332,7 @@ impl ConsoleEngine {
                 write!(out, "\r\n").unwrap();
             }
         }
+        // flush the buffer into user's terminal
         out.flush().unwrap();
     }
 
@@ -336,6 +351,7 @@ impl ConsoleEngine {
     pub fn wait_frame(&mut self) {
         let mut pressed: Vec<Key> = vec!();
 
+        // if there is time before next frame, sleep until next frame
         if self.time_limit > self.instant.elapsed().as_millis() {
             std::thread::sleep(std::time::Duration::from_millis(((self.time_limit - self.instant.elapsed().as_millis()) % self.time_limit) as u64));
         }
@@ -343,6 +359,7 @@ impl ConsoleEngine {
         
         self.frame_count += 1;
 
+        // captures user's input
         let mut c = self.input.next();
         let mut count = 0;
         while c.is_some() && count < 10 { // cannot support for more than 10 key presses at the same time
@@ -350,8 +367,7 @@ impl ConsoleEngine {
             c = self.input.next();
             count += 1
         }
-
-        //pressed = utils::union(&pressed, &self.device.get_keys());
+        // updates pressed / held / released states
         let held = utils::intersect(&utils::union(&self.keys_pressed,&self.keys_held), &pressed);
         self.keys_released = utils::outersect_left(&self.keys_held, &held);
         self.keys_pressed = utils::outersect_left(&pressed, &held);
