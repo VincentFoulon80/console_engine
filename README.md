@@ -43,3 +43,11 @@ fn main() {
     }
 }
 ```
+
+# Documentation
+
+Take a look at the [generated documentation](https://docs.rs/console_engine/).
+
+# Examples
+
+See `examples/`
