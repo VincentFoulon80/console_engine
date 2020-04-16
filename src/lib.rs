@@ -16,6 +16,7 @@ pub struct ConsoleEngine {
     input: termion::input::Keys<termion::AsyncReader>,
     output: termion::raw::RawTerminal<Stdout>,
     time_limit: u128,
+    pub frame_count: usize,
     width: u32,
     height: u32,
     screen: Vec<Pixel>,
@@ -58,10 +59,12 @@ pub struct ConsoleEngine {
 impl ConsoleEngine {
     /// Initialize a screen of the provided width and height, and load the target FPS
     pub fn init(width: u32, height: u32, target_fps: u32) ->  ConsoleEngine {
+        assert!(target_fps > 0, "Target FPS needs to be greater than zero.");
         let mut my = ConsoleEngine {
             output: stdout().into_raw_mode().unwrap(),
             input: termion::async_stdin().keys(),
             time_limit: (1000/target_fps) as u128,
+            frame_count: 0,
             width: width,
             height: height,
             screen: vec![pixel::pxl(' '); (width*height) as usize],
@@ -77,11 +80,13 @@ impl ConsoleEngine {
     
     /// Initialize a screen filling the entire terminal with the target FPS
     pub fn init_fill(target_fps: u32) -> ConsoleEngine {
+        assert!(target_fps > 0, "Target FPS needs to be greater than zero.");
         let size = termion::terminal_size().unwrap();
         let mut my = ConsoleEngine {
             output: stdout().into_raw_mode().unwrap(),
             input: termion::async_stdin().keys(),
             time_limit: (1000/target_fps) as u128,
+            frame_count: 0,
             width: size.0 as u32,
             height: size.1 as u32,
             screen: vec![pixel::pxl(' '); (size.0*size.1) as usize],
@@ -159,7 +164,7 @@ impl ConsoleEngine {
     /// // print "Hello, world" in blue on white background
     /// engine.print(0,0, String::from("Hello, world!"), color::Blue, color::White);
     /// ```
-    pub fn print_fbg<C: color::Color + Clone>(&mut self, x: u32, y: u32, string: String, fg: C, bg: C)
+    pub fn print_fbg<C1: color::Color + Clone, C2: color::Color + Clone>(&mut self, x: u32, y: u32, string: String, fg: C1, bg: C2)
     {
         if x < self.width && y < self.height {
             let pos = self.coord_to_index(x, y);
@@ -226,7 +231,7 @@ impl ConsoleEngine {
 			}
         } else { 
             let y_end: i32;
-            if delta_x >= 0
+            if delta_y >= 0
 			    { x = start_x as i32; y = start_y as i32; y_end = end_y as i32; }
 			else
                 { x = end_x as i32; y = end_y as i32; y_end = start_y as i32; }
@@ -333,9 +338,10 @@ impl ConsoleEngine {
         if self.time_limit > self.instant.elapsed().as_millis() {
             std::thread::sleep(std::time::Duration::from_millis(((self.time_limit - self.instant.elapsed().as_millis()) % self.time_limit) as u64));
         }
-
         self.instant = std::time::Instant::now();
         
+        self.frame_count += 1;
+
         let mut c = self.input.next();
         let mut count = 0;
         while c.is_some() && count < 10 { // cannot support for more than 10 key presses at the same time

@@ -25,7 +25,7 @@ impl std::fmt::Display for Pixel {
 /// // ...
 /// engine.set_pxl(0,0,pixel::pxl_fbg('X', color::Blue, color::White));
 /// ```
-pub fn pxl_fbg<C: color::Color>(value: char, fg: C, bg: C) -> Pixel {
+pub fn pxl_fbg<C1: color::Color, C2: color::Color>(value: char, fg: C1, bg: C2) -> Pixel {
     Pixel {
         colors: format!("{}{}", color::Fg(fg), color::Bg(bg)),
         chr: value
