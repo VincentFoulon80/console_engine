@@ -29,21 +29,23 @@ pub struct ConsoleEngine {
 /// 
 /// ```
 /// use console_engine::pixel;
-/// use termion::color;
-/// use termion::event::Key;
+/// use console_engine::termion::color;
+/// use console_engine::termion::event::Key;
+/// 
 /// fn main() {
-///     // initializes a screen of 10x10 characters with a target of 1 frame per second
-///     let mut engine = console_engine::ConsoleEngine::init(10, 10, 1);
+///     // initializes a screen of 20x10 characters with a target of 3 frame per second
+///     // coordinates will range from [0,0] to [19,9]
+///     let mut engine = console_engine::ConsoleEngine::init(20, 10, 3);
 ///     let value = 14;
-///     // main loop
+///     // main loop, be aware that you'll have to break it because ctrl+C is captured
 ///     loop {
 ///         engine.wait_frame(); // wait for next frame + capture inputs
 ///         engine.clear_screen(); // reset the screen
 ///     
-///         engine.line(0, 0, 9, 9, pixel::pxl('#')); // draw a line of '#'
-///         engine.print(0, 4, format!("Result: {}", value)); // prints some value
+///         engine.line(0, 0, 19, 9, pixel::pxl('#')); // draw a line of '#' from [0,0] to [9,9]
+///         engine.print(0, 4, format!("Result: {}", value)); // prints some value at [0,4]
 ///     
-///         engine.set_pxl(4, 0, pixel::pxl_fg('O', color::Cyan)); // write a majestic cyan 'O'
+///         engine.set_pxl(4, 0, pixel::pxl_fg('O', color::Cyan)); // write a majestic cyan 'O' at [4,0]
 /// 
 ///         if engine.is_key_pressed(Key::Char('q')) { // if the user presses 'q' :
 ///             break; // exits app
@@ -108,7 +110,7 @@ impl ConsoleEngine {
 
     /// Gracefully stop the engine, and set back a visible cursor
     fn end(&mut self){
-        println!("{}{}{}", termion::cursor::Show, color::Fg(color::Reset), color::Bg(color::Reset));
+        println!("{}{}{}\r\n", termion::cursor::Show, color::Fg(color::Reset), color::Bg(color::Reset));
     }
 
     /// Get the screen width
@@ -187,14 +189,14 @@ impl ConsoleEngine {
         if delta_y == 0 {
             // horizontal line
             for i in start_x..end_x {
-                self.set_pxl(i, start_y, &character);
+                self.set_pxl_ref(i, start_y, &character);
             }
             return;
         }
         if delta_x == 0 {
             // horizontal line
             for j in start_y..end_y {
-                self.set_pxl(start_x, j, &character);
+                self.set_pxl_ref(start_x, j, &character);
             }
             return;
         }
@@ -211,7 +213,7 @@ impl ConsoleEngine {
 			else
                 { x = end_x as i32; y = end_y as i32; x_end = start_x as i32; }
 
-            self.set_pxl(x as u32, y as u32, &character);
+            self.set_pxl_ref(x as u32, y as u32, &character);
             for x in x..x_end {
 				
 				if pos_x<0 {
@@ -220,7 +222,7 @@ impl ConsoleEngine {
 					if (delta_x<0 && delta_y<0) || (delta_x>0 && delta_y>0) {y = y + 1;} else {y = y - 1;}
 					pos_x = pos_x + 2 * (delta_abs_y - delta_abs_x);
                 }
-                self.set_pxl(x as u32, y as u32, &character);
+                self.set_pxl_ref(x as u32, y as u32, &character);
 			}
         } else { 
             let y_end: i32;
@@ -229,7 +231,7 @@ impl ConsoleEngine {
 			else
                 { x = end_x as i32; y = end_y as i32; y_end = start_y as i32; }
 
-            self.set_pxl(x as u32, y as u32, &character);
+            self.set_pxl_ref(x as u32, y as u32, &character);
             for y in y..y_end {
 				if pos_y<0 {
 					pos_y = pos_y + 2 * delta_abs_x;
@@ -237,11 +239,25 @@ impl ConsoleEngine {
 					if (delta_x<0 && delta_y<0) || (delta_x>0 && delta_y>0) {x = x + 1;} else {x = x - 1};
 					pos_y = pos_y + 2 * (delta_abs_x - delta_abs_y);
                 }
-                self.set_pxl(x as u32, y as u32, &character);
+                self.set_pxl_ref(x as u32, y as u32, &character);
 			}
         }
         
-        self.set_pxl(end_x, end_y, &character);
+        self.set_pxl_ref(end_x, end_y, &character);
+    }
+
+    /// Referenced version of set_pxl  
+    /// see set_pxl for more information on this usage
+    /// 
+    /// The only differences between the two is that this version takes the Pixel as a reference
+    fn set_pxl_ref(&mut self, x: u32, y: u32, character: &Pixel)
+    {
+        if x < self.width && y < self.height {
+            let index = self.coord_to_index(x, y);
+            self.screen[index] = character.clone();
+        } else {
+            panic!("Attempted to set pxl out of bounds (coords: [{}, {}], bounds: [{}, {}]", x,y,self.width-1,self.height-1);
+        }
     }
 
     /// sets the provided character in the specified coordinates
@@ -252,11 +268,11 @@ impl ConsoleEngine {
     /// // ...
     /// engine.set_pxl(3,8,pixel::pixel('o'));
     /// ```
-    pub fn set_pxl(&mut self, x: u32, y: u32, character: &Pixel)
+    pub fn set_pxl(&mut self, x: u32, y: u32, character: Pixel)
     {
         if x < self.width && y < self.height {
             let index = self.coord_to_index(x, y);
-            self.screen[index] = character.clone();
+            self.screen[index] = character;
         } else {
             panic!("Attempted to set pxl out of bounds (coords: [{}, {}], bounds: [{}, {}]", x,y,self.width-1,self.height-1);
         }

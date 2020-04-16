@@ -21,7 +21,7 @@ impl std::fmt::Display for Pixel {
 /// usage: 
 /// ```
 /// use console_engine::pixel;
-/// use termion::color;
+/// use console_engine::termion::color;
 /// // ...
 /// engine.set_pxl(0,0,pixel::pxl_fbg('X', color::Blue, color::White));
 /// ```
@@ -38,7 +38,7 @@ pub fn pxl_fbg<C: color::Color>(value: char, fg: C, bg: C) -> Pixel {
 /// usage: 
 /// ```
 /// use console_engine::pixel;
-/// use termion::color;
+/// use console_engine::termion::color;
 /// // ...
 /// engine.set_pxl(0,0,pixel::pxl_fg('X', color::Cyan));
 /// ```
@@ -54,7 +54,7 @@ pub fn pxl_fg<C: color::Color>(value: char, fg: C) -> Pixel {
 /// usage: 
 /// ```
 /// use console_engine::pixel;
-/// use termion::color;
+/// use console_engine::termion::color;
 /// // ...
 /// engine.set_pxl(0,0,pixel::pxl_bg('X', color::Magenta));
 /// ```
