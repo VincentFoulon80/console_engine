@@ -50,4 +50,6 @@ Take a look at the [generated documentation](https://docs.rs/console_engine/).
 
 # Examples
 
-See `examples/`
+See `examples/` :
+- **graph** : Display a graph being generated with some values.
+- **snake** : A simple game of snake
