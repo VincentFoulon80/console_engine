@@ -30,7 +30,7 @@ fn main() {
         engine.wait_frame(); // wait for next frame + capture inputs
         engine.clear_screen(); // reset the screen
     
-        engine.line(0, 0, 19, 9, pixel::pxl('#')); // draw a line of '#' from [0,0] to [9,9]
+        engine.line(0, 0, 19, 9, pixel::pxl('#')); // draw a line of '#' from [0,0] to [19,9]
         engine.print(0, 4, format!("Result: {}", value)); // prints some value at [0,4]
     
         engine.set_pxl(4, 0, pixel::pxl_fg('O', color::Cyan)); // write a majestic cyan 'O' at [4,0]
