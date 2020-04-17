@@ -291,16 +291,132 @@ impl ConsoleEngine {
         self.set_pxl_ref(end_x, end_y, &character);
     }
 
+    /// Draws a rectangle of the provided character between two sets of coordinates  
+    /// 
+    /// usage : 
+    /// ```
+    /// use console_engine::pixel;
+    /// // ...
+    /// engine.rect(0, 0, 9, 9, pixel::pxl('#'));
+    /// ```
+    pub fn rect(&mut self, start_x: u32, start_y: u32, end_x: u32, end_y: u32, character: Pixel)
+    {
+        self.line(start_x, start_y, end_x, start_y, character.clone()); // top
+        self.line(end_x, start_y, end_x, end_y, character.clone());     // right
+        self.line(end_x, end_y, start_x, end_y, character.clone());     // bottom
+        self.line(start_x, end_y, start_x, start_y, character.clone()); // left
+    }
+
+    /// Fill a rectangle of the provided character between two sets of coordinates  
+    /// 
+    /// usage : 
+    /// ```
+    /// use console_engine::pixel;
+    /// // ...
+    /// engine.fill_rect(0, 0, 9, 9, pixel::pxl('#'));
+    /// ```
+    pub fn fill_rect(&mut self, start_x: u32, start_y: u32, end_x: u32, end_y: u32, character: Pixel)
+    {
+        for y in start_y..end_y {
+            self.line(start_x, y, end_x, y, character.clone());
+        }
+    }
+
+    /// Draws a circle of the provided character at an x and y position with a radius
+    /// see: [olcPixelGameEngine Repository](https://github.com/OneLoneCoder/olcPixelGameEngine)
+    /// 
+    /// usage : 
+    /// ```
+    /// use console_engine::pixel;
+    /// // ...
+    /// engine.circle(10, 10, 4, pixel::pxl('#'));
+    /// ```
+    pub fn circle(&mut self, x: u32, y: u32, radius: u32, character: Pixel)
+    {
+        let mut relative_pos_x = 0;
+		let mut relative_pos_y = radius;
+		let mut distance: i32 = 3 - 2 * radius as i32;
+		if radius == 0 {
+            return;
+        }
+
+		while relative_pos_y >= relative_pos_x
+		{
+			self.set_pxl_ref(x + relative_pos_x, y - relative_pos_y, &character);
+			self.set_pxl_ref(x + relative_pos_y, y - relative_pos_x, &character);
+			self.set_pxl_ref(x + relative_pos_y, y + relative_pos_x, &character);
+			self.set_pxl_ref(x + relative_pos_x, y + relative_pos_y, &character);
+			self.set_pxl_ref(x - relative_pos_x, y + relative_pos_y, &character);
+			self.set_pxl_ref(x - relative_pos_y, y + relative_pos_x, &character);
+			self.set_pxl_ref(x - relative_pos_y, y - relative_pos_x, &character);
+			self.set_pxl_ref(x - relative_pos_x, y - relative_pos_y, &character);
+			if distance < 0 {
+                distance += 4 * relative_pos_x as i32 + 6;
+                relative_pos_x += 1;
+            } else {
+                distance += 4 * (relative_pos_x as i32 - relative_pos_y as i32) + 10;
+                relative_pos_x += 1;
+                relative_pos_y -= 1;
+            } 
+		}
+    }
+
+    /// Fill a circle of the provided character at an x and y position with a radius
+    /// see: [olcPixelGameEngine Repository](https://github.com/OneLoneCoder/olcPixelGameEngine)
+    /// 
+    /// usage : 
+    /// ```
+    /// use console_engine::pixel;
+    /// // ...
+    /// engine.circle(10, 10, 4, pixel::pxl('#'));
+    /// ```
+    pub fn fill_circle(&mut self, x: u32, y: u32, radius: u32, character: Pixel)
+    {
+        // Taken from wikipedia
+		let mut relative_pos_x = 0;
+		let mut relative_pos_y = radius;
+		let mut distance: i32 = 3 - 2 * radius as i32;
+		if radius == 0 {
+            return;
+        }
+
+        // create a lambda function that draw fast horizontal lines
+		let mut drawline = |start_x: u32, end_x: u32, y: u32|
+		{
+			for i in start_x..end_x {
+				self.set_pxl_ref(i, y, &character);
+            }
+		};
+
+		while relative_pos_y >= relative_pos_x
+		{
+			// Modified to draw scan-lines instead of edges
+			drawline(x - relative_pos_x, x + relative_pos_x, y - relative_pos_y);
+			drawline(x - relative_pos_y, x + relative_pos_y, y - relative_pos_x);
+			drawline(x - relative_pos_x, x + relative_pos_x, y + relative_pos_y);
+			drawline(x - relative_pos_y, x + relative_pos_y, y + relative_pos_x);
+			if distance < 0 {
+                distance += 4 * relative_pos_x as i32 + 6;
+                relative_pos_x += 1;
+            } else {
+                distance += 4 * (relative_pos_x as i32 - relative_pos_y as i32) + 10;
+                relative_pos_x += 1;
+                relative_pos_y -= 1;
+            } 
+		}
+    }
+
     /// Referenced version of set_pxl  
     /// see set_pxl for more information on this usage
     /// 
     /// The only differences between the two is that this version takes the Pixel as a reference
+    /// and out of bounds pixels will be ignored
     fn set_pxl_ref(&mut self, x: u32, y: u32, character: &Pixel)
     {
-        assert!(x < self.width && y < self.height, "Attempted to set_pxl_ref out of bounds (coords: [{}, {}], bounds: [{}, {}]", x,y,self.width-1,self.height-1);
-        
-        let index = self.coord_to_index(x, y);
-        self.screen[index] = character.clone();
+        if x < self.width && y < self.height {
+            let index = self.coord_to_index(x, y);
+            self.screen[index] = character.clone();
+        }
     }
 
     /// sets the provided character in the specified coordinates
