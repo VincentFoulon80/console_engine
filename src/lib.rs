@@ -323,10 +323,20 @@ impl ConsoleEngine {
         let mut out = self.output.lock();
         // reset cursor position
         write!(out, "{}", termion::cursor::Goto(1,1)).unwrap();
+        let mut current_colors = String::from("");
         // iterates through the screen memory and prints it on the output buffer
         for y in 0..self.height {
             for x in 0..self.width {
-                write!(out, "{}", self.screen[self.coord_to_index(x, y)]).unwrap();
+                let pixel = &self.screen[self.coord_to_index(x, y)];
+                // check if the last color is the same as the current one.
+                // if the color is the same, only print the character
+                // the less we write on the output the faster we'll get
+                if current_colors != pixel.colors {
+                    current_colors = pixel.colors.clone();
+                    write!(out, "{}", pixel).unwrap();
+                } else {
+                    write!(out, "{}", pixel.chr).unwrap();
+                }
             }
             if y < self.height-1 {
                 write!(out, "\r\n").unwrap();
