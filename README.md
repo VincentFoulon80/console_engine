@@ -58,3 +58,4 @@ See `examples/` :
 - **graph** : Display a graph being generated with some values.
 - **snake** : A simple game of snake.
 - **lines** : Draw random lines of random colors on the screen.
+- **shapes** : Draw some shapes on the screen.
