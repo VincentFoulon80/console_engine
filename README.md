@@ -52,4 +52,5 @@ Take a look at the [generated documentation](https://docs.rs/console_engine/).
 
 See `examples/` :
 - **graph** : Display a graph being generated with some values.
-- **snake** : A simple game of snake
+- **snake** : A simple game of snake.
+- **lines** : Draw random lines of random colors on the screen.
