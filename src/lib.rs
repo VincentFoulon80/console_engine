@@ -196,6 +196,8 @@ impl ConsoleEngine {
     /// this code is heavily inspired by the drawLine function of olc::PixelGameEngine  
     /// see: [olcPixelGameEngine Repository](https://github.com/OneLoneCoder/olcPixelGameEngine)
     /// 
+    /// Note : Your line can start or end out of bounds. These pixels won't be drawn 
+    /// 
     /// usage : 
     /// ```
     /// use console_engine::pixel;
@@ -207,15 +209,27 @@ impl ConsoleEngine {
         let delta_x = end_x as i64 - start_x as i64;
         let delta_y = end_y as i64 - start_y as i64;
         if delta_y == 0 {
+            let mut start = start_x;
+            let mut end = end_x+1;
+            if end_x < start_x {
+                end = start_x+1;
+                start = end_x;
+            };
             // horizontal line
-            for i in start_x..end_x {
+            for i in start..end {
                 self.set_pxl_ref(i, start_y, &character);
             }
             return;
         }
         if delta_x == 0 {
+            let mut start = start_y;
+            let mut end = end_y+1;
+            if end_y < start_y {
+                end = start_y+1;
+                start = end_y;
+            };
             // horizontal line
-            for j in start_y..end_y {
+            for j in start..end {
                 self.set_pxl_ref(start_x, j, &character);
             }
             return;
