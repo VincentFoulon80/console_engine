@@ -1,5 +1,7 @@
 # Console Engine
 
+[Changelog](https://github.com/VincentFoulon80/console_engine/releases)
+
 This library provides simple features for handling user's input and display for terminal applications.  
 It uses [Termion](https://crates.io/crates/termion) as main tool for handling the screen and inputs. You don't have to worry about initalizing anything because the lib will handle this for you.
 
