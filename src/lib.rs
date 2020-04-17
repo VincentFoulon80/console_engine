@@ -60,6 +60,8 @@ impl ConsoleEngine {
     /// Initialize a screen of the provided width and height, and load the target FPS
     pub fn init(width: u32, height: u32, target_fps: u32) ->  ConsoleEngine {
         assert!(target_fps > 0, "Target FPS needs to be greater than zero.");
+        let size = termion::terminal_size().unwrap();
+        assert!(size.0 as u32 >= width && size.1 as u32 >= height, "Your terminal must have at least a width and height of {}x{} characters. Currently has {}x{}", width, height, size.0, size.1);
         let mut my = ConsoleEngine {
             output: stdout().into_raw_mode().unwrap(),
             input: termion::async_stdin().keys(),
@@ -97,6 +99,14 @@ impl ConsoleEngine {
         };
         my.begin();
         return my;
+    }
+
+    /// Initialize a screen filling the entire terminal with the target FPS  
+    /// Also check the terminal width and height and assert if the terminal has at least the asked size
+    pub fn init_fill_require(width: u32, height: u32, target_fps: u32) -> ConsoleEngine {
+        let size = termion::terminal_size().unwrap();
+        assert!(size.0 as u32 >= width && size.1 as u32 >= height, "Your terminal must have at least a width and height of {}x{} characters. Currently has {}x{}", width, height, size.0, size.1);
+        return ConsoleEngine::init_fill(target_fps);
     }
 
     #[cfg(windows)]

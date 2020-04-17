@@ -191,11 +191,8 @@ impl Snake {
 }
 
 fn main() {
-    // initializes a screen filling the terminal with a target of 4 frame per second
-    let mut engine = console_engine::ConsoleEngine::init_fill(4);
-    // we check if the screen fits a minimal size
-    assert!(engine.scr_w() >= 10, "Your terminal must have at least 10 characters of width");
-    assert!(engine.scr_h() >= 10, "Your terminal must have at least 10 characters of height");
+    // initializes a screen filling the terminal of at least 10x10 of size with a target of 4 frame per second
+    let mut engine = console_engine::ConsoleEngine::init_fill_require(10,10,4);
 
     // initialize game here, providing term size as boundaries
     let mut snake = Snake::init(engine.scr_w(), engine.scr_h());

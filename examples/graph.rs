@@ -37,11 +37,8 @@ fn draw_graph(engine: &mut console_engine::ConsoleEngine, values: [u8; MAX_VALUE
 
 fn main() {
 
-    // initializes a screen filling the terminal with a target of 3 frame per second
-    let mut engine = console_engine::ConsoleEngine::init_fill(10);
-    // we check if the screen fits a minimal size
-    assert!(engine.scr_w() >= MAX_VALUES as u32, format!("Your terminal must have at least {} characters of width", MAX_VALUES));
-    assert!(engine.scr_h() >= 10, "Your terminal must have at least 10 characters of height");
+    // initializes a screen filling the terminal of at least 10xMAX_VALUES of size with a target of 3 frame per second
+    let mut engine = console_engine::ConsoleEngine::init_fill_require(10,MAX_VALUES as u32,10);
     
     // initalize some variables
     let mut values: [u8; MAX_VALUES] = [0; MAX_VALUES];
