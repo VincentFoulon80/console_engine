@@ -14,7 +14,6 @@ fn random_color() ->(u8, u8, u8) {
 fn main() {
     // initializes a screen filling the terminal with a target of 120 frame per second
     let mut engine = console_engine::ConsoleEngine::init_fill(120);
-    let value = 14;
     // We initalize a stopwatch for our FPS counter
     let mut stopwatch = std::time::Instant::now();
     let mut last_fps = 0;
