@@ -37,8 +37,8 @@ fn draw_graph(engine: &mut console_engine::ConsoleEngine, values: [u8; MAX_VALUE
 
 fn main() {
 
-    // initializes a screen filling the terminal of at least 10xMAX_VALUES of size with a target of 3 frame per second
-    let mut engine = console_engine::ConsoleEngine::init_fill_require(10,MAX_VALUES as u32,10);
+    // initializes a screen filling the terminal of at least MAX_VALUESx10 of size with a target of 10 frame per second
+    let mut engine = console_engine::ConsoleEngine::init_fill_require(MAX_VALUES as u32,10,10);
     
     // initalize some variables
     let mut values: [u8; MAX_VALUES] = [0; MAX_VALUES];

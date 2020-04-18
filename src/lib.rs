@@ -21,6 +21,7 @@ pub struct ConsoleEngine {
     width: u32,
     height: u32,
     screen: Vec<Pixel>,
+    screen_last_frame: Vec<Pixel>,
     instant: std::time::Instant,
     keys_pressed: Vec<Key>,
     keys_held: Vec<Key>,
@@ -70,6 +71,7 @@ impl ConsoleEngine {
             width: width,
             height: height,
             screen: vec![pixel::pxl(' '); (width*height) as usize],
+            screen_last_frame: vec![],
             instant: std::time::Instant::now(),
             keys_pressed: vec!(),
             keys_held: vec!(),
@@ -91,6 +93,7 @@ impl ConsoleEngine {
             width: size.0 as u32,
             height: size.1 as u32,
             screen: vec![pixel::pxl(' '); (size.0*size.1) as usize],
+            screen_last_frame: vec![],
             instant: std::time::Instant::now(),
             keys_pressed: vec!(),
             keys_held: vec!(),
@@ -458,24 +461,41 @@ impl ConsoleEngine {
     /// engine.print(0,0,String::from("Hello, world!")); // <- prints "Hello, world!" in 'screen' memory
     /// engine.draw(); // display 'screen' memory to the user's terminal
     /// ```
-    pub fn draw(&self)
+    pub fn draw(&mut self)
     {
         let mut out = self.output.lock();
         // reset cursor position
         write!(out, "{}", termion::cursor::Goto(1,1)).unwrap();
         let mut current_colors = String::from("");
+        let mut moving = false;
         // iterates through the screen memory and prints it on the output buffer
         for y in 0..self.height {
             for x in 0..self.width {
-                let pixel = &self.screen[self.coord_to_index(x, y)];
-                // check if the last color is the same as the current one.
-                // if the color is the same, only print the character
-                // the less we write on the output the faster we'll get
-                if current_colors != pixel.colors {
-                    current_colors = pixel.colors.clone();
-                    write!(out, "{}", pixel).unwrap();
+                let index = self.coord_to_index(x, y);
+                let pixel = &self.screen[index];
+                // we check if the screen has been modified at this coordinate
+                // if so, we write like normally, else we set a 'moving' flag
+                if self.screen_last_frame.is_empty() || *pixel != self.screen_last_frame[index] {
+                    if moving {
+                        // if the moving flag is set, we need to write a goto instruction first
+                        // this optimization minimize useless write on the screen
+                        // actually writing to the screen is very slow so it's a good compromise
+                        write!(out, "{}", termion::cursor::Goto(1+x as u16,1+y as u16)).unwrap();
+                        moving = false;
+                    }
+                    // we check if the last color is the same as the current one.
+                    // if the color is the same, only print the character
+                    // the less we write on the output the faster we'll get
+                    // and additional characters for colors we already have set is
+                    // time consuming
+                    if current_colors != pixel.colors {
+                        current_colors = pixel.colors.clone();
+                        write!(out, "{}", pixel).unwrap();
+                    } else {
+                        write!(out, "{}", pixel.chr).unwrap();
+                    }
                 } else {
-                    write!(out, "{}", pixel.chr).unwrap();
+                    moving = true
                 }
             }
             if y < self.height-1 {
@@ -484,6 +504,7 @@ impl ConsoleEngine {
         }
         // flush the buffer into user's terminal
         out.flush().unwrap();
+        self.screen_last_frame = self.screen.clone();
     }
 
     /// Pause the execution until the next frame need to be rendered  

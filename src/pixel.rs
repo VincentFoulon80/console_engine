@@ -15,6 +15,11 @@ impl std::fmt::Display for Pixel {
         Ok(())
     }
 }
+impl PartialEq for Pixel {
+    fn eq(&self, pxl: &Pixel) -> bool { 
+        return self.chr == pxl.chr && self.colors == pxl.colors;
+    }
+}
 
 /// Generate a pixel using a character, a foreground and background color
 /// 
