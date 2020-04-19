@@ -162,13 +162,13 @@ impl Snake {
     pub fn draw(&self, engine: &mut ConsoleEngine) {
         if self.playing {
             // draw apple
-            engine.set_pxl(self.apple_x, self.apple_y, pixel::pxl_fg('O', color::Red));
+            engine.set_pxl(self.apple_x as i32, self.apple_y as i32, pixel::pxl_fg('O', color::Red));
             // draw snake's body
             for segment in self.body.iter() {
-                engine.set_pxl(segment.0, segment.1, pixel::pxl_fg('#', color::Green));
+                engine.set_pxl(segment.0 as i32, segment.1 as i32, pixel::pxl_fg('#', color::Green));
             }
             // don't forget snake's head !
-            engine.set_pxl(self.pos_x, self.pos_y, pixel::pxl_fg('☻', color::LightGreen))
+            engine.set_pxl(self.pos_x as i32, self.pos_y as i32, pixel::pxl_fg('☻', color::LightGreen))
         } else {
             // blink a message, inviting the player to press space
             // and display controls on the other side

@@ -30,7 +30,7 @@ fn main() {
         let pxl_c = random_color();
 
         // draw a line using the three variables above
-        engine.line(pos_1.0, pos_1.1, pos_2.0, pos_2.1, pixel::pxl_fg('#', color::Rgb(pxl_c.0, pxl_c.1, pxl_c.2)));
+        engine.line(pos_1.0 as i32, pos_1.1 as i32, pos_2.0 as i32, pos_2.1 as i32, pixel::pxl_fg('#', color::Rgb(pxl_c.0, pxl_c.1, pxl_c.2)));
 
         // we keep a small space to display FPS at the top-left corner
         engine.print(0,0,String::from("         "));

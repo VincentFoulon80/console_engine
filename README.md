@@ -58,4 +58,5 @@ See `examples/` :
 - **graph** : Display a graph being generated with some values.
 - **snake** : A simple game of snake.
 - **lines** : Draw random lines of random colors on the screen.
-- **shapes** : Draw some shapes on the screen.
+- **lines-fps** : same example as lines, but with a FPS counter.
+- **shapes** : Shape's functions testing tool

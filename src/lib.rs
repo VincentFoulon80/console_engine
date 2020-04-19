@@ -155,9 +155,9 @@ impl ConsoleEngine {
     /// engine.print(0,0, String::from("Hello, world!"));
     /// engine.print(0, 4, format!("Score: {}", score));
     /// ```
-    pub fn print(&mut self, x: u32, y: u32, string: String)
+    pub fn print(&mut self, x: i32, y: i32, string: String)
     {
-        assert!(x < self.width && y < self.height, "Attempted to print out of bounds (coords: [{}, {}], bounds: [{}, {}]", x,y,self.width-1,self.height-1);
+        assert!(x >= 0 && y >= 0 && x < self.width as i32 && y < self.height as i32, "Attempted to print out of bounds (coords: [{}, {}], bounds: [{}, {}]", x,y,self.width-1,self.height-1);
 
         // get screen index, initializes a counter 
         // and get chars of the provided String
@@ -179,9 +179,9 @@ impl ConsoleEngine {
     /// // print "Hello, world" in blue on white background
     /// engine.print(0,0, String::from("Hello, world!"), color::Blue, color::White);
     /// ```
-    pub fn print_fbg<C1: color::Color + Clone, C2: color::Color + Clone>(&mut self, x: u32, y: u32, string: String, fg: C1, bg: C2)
+    pub fn print_fbg<C1: color::Color + Clone, C2: color::Color + Clone>(&mut self, x: i32, y: i32, string: String, fg: C1, bg: C2)
     {
-        assert!(x < self.width && y < self.height, "Attempted to print_fbg out of bounds (coords: [{}, {}], bounds: [{}, {}]", x,y,self.width-1,self.height-1);
+        assert!(x >= 0 && y >= 0 && x < self.width as i32 && y < self.height as i32, "Attempted to print out of bounds (coords: [{}, {}], bounds: [{}, {}]", x,y,self.width-1,self.height-1);
         
         // get screen index, initializes a counter 
         // and get chars of the provided String
@@ -196,8 +196,7 @@ impl ConsoleEngine {
     }
 
     /// draws a line of the provided character between two sets of coordinates  
-    /// this code is heavily inspired by the drawLine function of olc::PixelGameEngine  
-    /// see: [olcPixelGameEngine Repository](https://github.com/OneLoneCoder/olcPixelGameEngine)
+    /// see: [Bresenham's line algorithm](https://en.wikipedia.org/wiki/Bresenham%27s_line_algorithm)
     /// 
     /// Note : Your line can start or end out of bounds. These pixels won't be drawn 
     /// 
@@ -207,10 +206,11 @@ impl ConsoleEngine {
     /// // ...
     /// engine.line(0, 0, 9, 9, pixel::pxl('#'));
     /// ```
-    pub fn line(&mut self, start_x: u32, start_y: u32, end_x: u32, end_y: u32, character: Pixel)
+    pub fn line(&mut self, start_x: i32, start_y: i32, end_x: i32, end_y: i32, character: Pixel)
     {
-        let delta_x = end_x as i64 - start_x as i64;
-        let delta_y = end_y as i64 - start_y as i64;
+        let delta_x = end_x - start_x;
+        let delta_y = end_y - start_y;
+        // optimized algorithms for pure horizontal or vertical lines
         if delta_y == 0 {
             let mut start = start_x;
             let mut end = end_x+1;
@@ -237,61 +237,63 @@ impl ConsoleEngine {
             }
             return;
         }
-        // any lines
-        let delta_abs_x = delta_x.abs();
-        let delta_abs_y = delta_y.abs();
-        let mut pos_x = 2 * delta_abs_y - delta_abs_x;
-        let	mut pos_y = 2 * delta_abs_x - delta_abs_y;
-        let mut x: i32; 
-        let mut y: i32; 
-        // checks if line is more horizontal or vertical
-        if delta_abs_y <= delta_abs_x {
-            // more horizontal
-            let x_end: i32;
-            // determines direction of iteration
-            if delta_x >= 0
-			    { x = start_x as i32; y = start_y as i32; x_end = end_x as i32; }
-			else
-                { x = end_x as i32; y = end_y as i32; x_end = start_x as i32; }
 
-            // place first pixel + loop through each x values
-            self.set_pxl_ref(x as u32, y as u32, &character);
-            for x in x..x_end {
-				// check if we need to move y
-				if pos_x<0 {
-					pos_x = pos_x + 2 * delta_abs_y;
-                } else {
-                    // determines which direction the y needs to move
-					if (delta_x<0 && delta_y<0) || (delta_x>0 && delta_y>0) {y = y + 1;} else {y = y - 1;}
-					pos_x = pos_x + 2 * (delta_abs_y - delta_abs_x);
-                }
-                self.set_pxl_ref(x as u32, y as u32, &character);
-			}
-        } else { 
-            // more vertical
-            let y_end: i32;
-            // determines direction of iteration
-            if delta_y >= 0
-			    { x = start_x as i32; y = start_y as i32; y_end = end_y as i32; }
-			else
-                { x = end_x as i32; y = end_y as i32; y_end = start_y as i32; }
+        // Bresenham's line algorithm
+        let line_low = |engine: &mut ConsoleEngine, x0: i32,y0: i32, x1: i32,y1: i32| {
+            let dx: i32 = x1 - x0;
+            let mut dy: i32 = y1 - y0;
+            let mut yi = 1;
+            if dy < 0 {
+                yi = -1;
+                dy = -dy;
+            }
+            let mut d = 2*dy - dx;
+            let mut y = y0;
 
-            // place first pixel + loop through each y values
-            self.set_pxl_ref(x as u32, y as u32, &character);
-            for y in y..y_end {
-                // check if we need to move x
-				if pos_y<0 {
-					pos_y = pos_y + 2 * delta_abs_x;
-                } else {
-                    // determines which direction the x needs to move
-					if (delta_x<0 && delta_y<0) || (delta_x>0 && delta_y>0) {x = x + 1;} else {x = x - 1};
-					pos_y = pos_y + 2 * (delta_abs_x - delta_abs_y);
+            for x in x0..x1+1 {
+                engine.set_pxl_ref(x, y, &character);
+                if d > 0 {
+                    y = y + yi;
+                    d = d - 2*dx;
                 }
-                self.set_pxl_ref(x as u32, y as u32, &character);
-			}
+                d = d + 2*dy;
+            } 
+        };
+
+        let line_high = |engine: &mut ConsoleEngine, x0: i32,y0: i32, x1: i32,y1: i32| {
+            let mut dx = x1 - x0;
+            let dy = y1 - y0;
+            let mut xi = 1;
+            if dx < 0 {
+                xi = -1;
+                dx = -dx;
+            }
+            let mut d = 2*dx - dy;
+            let mut x = x0;
+        
+            for y in y0..y1+1 {
+                engine.set_pxl_ref(x, y, &character);
+                if d > 0 {
+                    x = x + xi;
+                    d = d - 2*dy;
+                }
+                d = d + 2*dx;
+            }   
+        };
+
+        if (end_y - start_y).abs() < (end_x - start_x).abs() {
+            if start_x > end_x {
+                line_low(self, end_x, end_y, start_x, start_y);
+            } else {
+                line_low(self, start_x, start_y, end_x, end_y);
+            }
+        } else {
+            if start_y > end_y {
+                line_high(self, end_x, end_y, start_x, start_y);
+            } else {
+                line_high(self, start_x, start_y, end_x, end_y);
+            }
         }
-        // place last pixel
-        self.set_pxl_ref(end_x, end_y, &character);
     }
 
     /// Draws a rectangle of the provided character between two sets of coordinates  
@@ -302,7 +304,7 @@ impl ConsoleEngine {
     /// // ...
     /// engine.rect(0, 0, 9, 9, pixel::pxl('#'));
     /// ```
-    pub fn rect(&mut self, start_x: u32, start_y: u32, end_x: u32, end_y: u32, character: Pixel)
+    pub fn rect(&mut self, start_x: i32, start_y: i32, end_x: i32, end_y: i32, character: Pixel)
     {
         self.line(start_x, start_y, end_x, start_y, character.clone()); // top
         self.line(end_x, start_y, end_x, end_y, character.clone());     // right
@@ -318,9 +320,11 @@ impl ConsoleEngine {
     /// // ...
     /// engine.fill_rect(0, 0, 9, 9, pixel::pxl('#'));
     /// ```
-    pub fn fill_rect(&mut self, start_x: u32, start_y: u32, end_x: u32, end_y: u32, character: Pixel)
+    pub fn fill_rect(&mut self, start_x: i32, start_y: i32, end_x: i32, end_y: i32, character: Pixel)
     {
-        for y in start_y..end_y {
+        let y0 = if start_y < end_y { start_y } else { end_y };
+        let y1 = if start_y < end_y { end_y+1 } else { start_y+1 };
+        for y in y0..y1 {
             self.line(start_x, y, end_x, y, character.clone());
         }
     }
@@ -334,10 +338,10 @@ impl ConsoleEngine {
     /// // ...
     /// engine.circle(10, 10, 4, pixel::pxl('#'));
     /// ```
-    pub fn circle(&mut self, x: u32, y: u32, radius: u32, character: Pixel)
+    pub fn circle(&mut self, x: i32, y: i32, radius: u32, character: Pixel)
     {
-        let mut relative_pos_x = 0;
-		let mut relative_pos_y = radius;
+        let mut relative_pos_x = 0 as i32;
+		let mut relative_pos_y = radius as i32;
 		let mut distance: i32 = 3 - 2 * radius as i32;
 		if radius == 0 {
             return;
@@ -373,20 +377,20 @@ impl ConsoleEngine {
     /// // ...
     /// engine.circle(10, 10, 4, pixel::pxl('#'));
     /// ```
-    pub fn fill_circle(&mut self, x: u32, y: u32, radius: u32, character: Pixel)
+    pub fn fill_circle(&mut self, x: i32, y: i32, radius: u32, character: Pixel)
     {
         // Taken from wikipedia
-		let mut relative_pos_x = 0;
-		let mut relative_pos_y = radius;
+		let mut relative_pos_x = 0 as i32;
+		let mut relative_pos_y = radius as i32;
 		let mut distance: i32 = 3 - 2 * radius as i32;
 		if radius == 0 {
             return;
         }
 
         // create a lambda function that draw fast horizontal lines
-		let mut drawline = |start_x: u32, end_x: u32, y: u32|
+		let mut drawline = |start_x: i32, end_x: i32, y: i32|
 		{
-			for i in start_x..end_x {
+			for i in start_x..end_x+1 {
 				self.set_pxl_ref(i, y, &character);
             }
 		};
@@ -399,30 +403,130 @@ impl ConsoleEngine {
 			drawline(x - relative_pos_x, x + relative_pos_x, y + relative_pos_y);
 			drawline(x - relative_pos_y, x + relative_pos_y, y + relative_pos_x);
 			if distance < 0 {
-                distance += 4 * relative_pos_x as i32 + 6;
+                distance += 4 * relative_pos_x + 6;
                 relative_pos_x += 1;
             } else {
-                distance += 4 * (relative_pos_x as i32 - relative_pos_y as i32) + 10;
+                distance += 4 * (relative_pos_x - relative_pos_y) + 10;
                 relative_pos_x += 1;
                 relative_pos_y -= 1;
             } 
 		}
     }
 
+    /// Draws a triangle of the provided character using three sets of coordinates
+    /// 
+    /// usage : 
+    /// ```
+    /// use console_engine::pixel;
+    /// // ...
+    /// engine.triangle(8,8, 4,6, 9,2, pixel::pxl('#'));
+    /// ```
+    pub fn triangle(&mut self, x1: i32, y1: i32, x2: i32, y2: i32, x3: i32, y3: i32, character: Pixel)
+    {
+        self.line(x1, y1, x2, y2, character.clone());
+        self.line(x2, y2, x3, y3, character.clone());
+        self.line(x3, y3, x1, y1, character.clone());
+    }
+
+    /// Fill a triangle of the provided character using three sets of coordinates
+    /// see: [rustyPixelGameEngine Repository](https://github.com/mattbettcher/rustyPixelGameEngine)
+    /// 
+    /// usage : 
+    /// ```
+    /// use console_engine::pixel;
+    /// // ...
+    /// engine.fill_triangle(8,8, 4,6, 9,2, pixel::pxl('#'));
+    /// ```
+    pub fn fill_triangle(&mut self, x1: i32, y1: i32, x2: i32, y2: i32, x3: i32, y3: i32, character: Pixel)
+    {
+        self.triangle(x1 as i32, y1 as i32, x2 as i32, y2 as i32, x3 as i32, y3 as i32, character.clone());
+        // we use tuples for this for now
+        let v0 = (x1 as i32, y1 as i32);
+        let mut v1 = (x2 as i32, y2 as i32);
+        let mut v2 = (x3 as i32, y3 as i32);
+
+        // algorithm only fills counter clockwise triangles, so swap as needed
+        // For a triangle A B C, you can find the winding by computing the cross product (B - A) x (C - A). For 2d tri's, with z=0, it will only have a z component.
+        // To give all the same winding, swap vertices C and B if this z component is negative.
+        let cross = (v1.1 - v0.1) * (v2.0 - v1.0) - (v1.0 - v0.0) * (v2.1 - v1.1); 
+        if cross > 0 { std::mem::swap(&mut v1, &mut v2) }
+        
+        // Compute triangle bounding box and clip to screen bounds
+        let min_x = std::cmp::max(std::cmp::min(std::cmp::min(v0.0, v1.0), v2.0), 0);
+        let max_x = std::cmp::min(std::cmp::max(std::cmp::max(v0.0, v1.0), v2.0), self.scr_w() as i32 - 1);
+        let min_y = std::cmp::max(std::cmp::min(std::cmp::min(v0.1, v1.1), v2.1), 0);
+        let max_y = std::cmp::min(std::cmp::max(std::cmp::max(v0.1, v1.1), v2.1), self.scr_h() as i32 - 1);
+
+        // Triangle setup
+        let a01 = v0.1 - v1.1;
+        let b01 = v1.0 - v0.0;
+        let a12 = v1.1 - v2.1;
+        let b12 = v2.0 - v1.0;
+        let a20 = v2.1 - v0.1;
+        let b20 = v0.0 - v2.0;
+
+        // Determine edges
+        let is_top_left = |v0: (i32, i32), v1: (i32, i32)| -> bool {
+            v0.1 > v1.1 
+        };
+
+        // We follow fill rules and add a bias
+        let bias0 = if is_top_left(v1, v2) { 0 } else { -1 };
+        let bias1 = if is_top_left(v2, v0) { 0 } else { -1 };
+        let bias2 = if is_top_left(v0, v1) { 0 } else { -1 };
+
+        // Determine barycentric coordinates
+        let orient2d = |a: (i32,i32), b: (i32,i32), c: (i32,i32)| -> i32 {
+            (b.0-a.0)*(c.1-a.1) - (b.1-a.1)*(c.0-a.0)
+        };
+
+        let mut p = (min_x, min_y);
+        let mut w0_row = orient2d(v1, v2, p) + bias0;
+        let mut w1_row = orient2d(v2, v0, p) + bias1;
+        let mut w2_row = orient2d(v0, v1, p) + bias2;
+
+        // Rasterize
+        for y in min_y..max_y {
+            p.1 = y;
+            // Barycentric coordinates at start of row
+            let mut w0 = w0_row;
+            let mut w1 = w1_row;
+            let mut w2 = w2_row;
+
+                for x in min_x..max_x {
+                    p.0 = x;
+                    // If p is on or inside all edges, render pixel.
+                    if (w0 | w1 | w2) >= 0 {
+                        self.set_pxl_ref(p.0, p.1, &character);
+                    }
+
+                    // One step to the right
+                    w0 += a12;
+                    w1 += a20;
+                    w2 += a01;
+                }
+            // One row step
+            w0_row += b12;
+            w1_row += b20;
+            w2_row += b01;
+        }
+    }
+
+
     /// Referenced version of set_pxl  
     /// see set_pxl for more information on this usage
     /// 
     /// The only differences between the two is that this version takes the Pixel as a reference
-    /// and out of bounds pixels will be ignored
-    fn set_pxl_ref(&mut self, x: u32, y: u32, character: &Pixel)
+    fn set_pxl_ref(&mut self, x: i32, y: i32, character: &Pixel)
     {
-        if x < self.width && y < self.height {
+        if x >= 0 && y >= 0 && x < self.width as i32 && y < self.height as i32 {
             let index = self.coord_to_index(x, y);
             self.screen[index] = character.clone();
         }
     }
 
     /// sets the provided character in the specified coordinates
+    /// out of bounds pixels will be ignored
     /// 
     /// usage: 
     /// ```
@@ -430,27 +534,28 @@ impl ConsoleEngine {
     /// // ...
     /// engine.set_pxl(3,8,pixel::pixel('o'));
     /// ```
-    pub fn set_pxl(&mut self, x: u32, y: u32, character: Pixel)
+    pub fn set_pxl(&mut self, x: i32, y: i32, character: Pixel)
     {
-        assert!(x < self.width && y < self.height, "Attempted to set_pxl out of bounds (coords: [{}, {}], bounds: [{}, {}]", x,y,self.width-1,self.height-1);
-        
-        let index = self.coord_to_index(x, y);
-        self.screen[index] = character;
+        if x >= 0 && y >= 0 && x < self.width as i32 && y < self.height as i32 {
+            let index = self.coord_to_index(x, y);
+            self.screen[index] = character;
+        }
     }
 
     /// Get the character stored at provided coordinates
     /// 
     /// usage:
     /// ```
-    /// if engine.get_pxl(3,8).chr == 'o' {
+    /// if engine.get_pxl(3,8).unwrap().chr == 'o' {
     ///     engine.print(0,0,"Found a 'o'");
     /// }
     /// ```
-    pub fn get_pxl(&self, x: u32, y: u32) -> Pixel 
+    pub fn get_pxl(&self, x: i32, y: i32) -> Result<Pixel, String> 
     {
-        assert!(x < self.width && y < self.height, "Attempted to get_pxl out of bounds (coords: [{}, {}], bounds: [{}, {}]", x,y,self.width-1,self.height-1);
-
-        self.screen[self.coord_to_index(x, y)].clone()
+        if x >= 0 && y >= 0 && x < self.width as i32 && y < self.height as i32 {
+            return Ok(self.screen[self.coord_to_index(x, y)].clone());
+        }
+        Err(format!("Attempted to get_pxl out of bounds (coords: [{}, {}], bounds: [{}, {}]", x,y,self.width-1,self.height-1))
     }
     
     /// Draw the screen in the terminal  
@@ -471,7 +576,7 @@ impl ConsoleEngine {
         // iterates through the screen memory and prints it on the output buffer
         for y in 0..self.height {
             for x in 0..self.width {
-                let index = self.coord_to_index(x, y);
+                let index = self.coord_to_index(x as i32, y as i32);
                 let pixel = &self.screen[index];
                 // we check if the screen has been modified at this coordinate
                 // if so, we write like normally, else we set a 'moving' flag
@@ -609,9 +714,9 @@ impl ConsoleEngine {
     /// 
     /// example : on a 10x10 screen
     /// `coord_to_index(2,1)` will return index 12
-    fn coord_to_index(&self, x: u32, y: u32) -> usize
+    fn coord_to_index(&self, x: i32, y: i32) -> usize
     {
-        return ((y*self.width) + x) as usize;
+        return ((y*self.width as i32) + x) as usize;
     }
 }
 
