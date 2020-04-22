@@ -5,16 +5,16 @@ pub mod pixel;
 
 use pixel::Pixel;
 use termion::color;
-use termion::event::Key;
+use termion::event::{Event, Key};
 use std::io::{stdout, Stdout};
 use termion::raw::IntoRawMode;
 use std::io::Write;
-use crate::termion::input::TermRead;
+use termion::input::{TermRead, MouseTerminal};
 
 /// # Console Engine Framework
 pub struct ConsoleEngine {
-    input: termion::input::Keys<termion::AsyncReader>,
-    output: termion::raw::RawTerminal<Stdout>,
+    input: termion::input::Events<termion::AsyncReader>,
+    output: MouseTerminal<termion::raw::RawTerminal<Stdout>>,
     time_limit: u128,
     /// The current frame count, publicly accessible
     pub frame_count: usize,
@@ -23,9 +23,9 @@ pub struct ConsoleEngine {
     screen: Vec<Pixel>,
     screen_last_frame: Vec<Pixel>,
     instant: std::time::Instant,
-    keys_pressed: Vec<Key>,
-    keys_held: Vec<Key>,
-    keys_released: Vec<Key>,
+    keys_pressed: Vec<Event>,
+    keys_held: Vec<Event>,
+    keys_released: Vec<Event>,
 }
 /// # Basic Usage :
 /// 
@@ -64,8 +64,8 @@ impl ConsoleEngine {
         let size = termion::terminal_size().unwrap();
         assert!(size.0 as u32 >= width && size.1 as u32 >= height, "Your terminal must have at least a width and height of {}x{} characters. Currently has {}x{}", width, height, size.0, size.1);
         let mut my = ConsoleEngine {
-            output: stdout().into_raw_mode().unwrap(),
-            input: termion::async_stdin().keys(),
+            output: MouseTerminal::from(stdout().into_raw_mode().unwrap()),
+            input: termion::async_stdin().events(),
             time_limit: (1000/target_fps) as u128,
             frame_count: 0,
             width: width,
@@ -83,25 +83,8 @@ impl ConsoleEngine {
     
     /// Initialize a screen filling the entire terminal with the target FPS
     pub fn init_fill(target_fps: u32) -> ConsoleEngine {
-        assert!(target_fps > 0, "Target FPS needs to be greater than zero.");
         let size = termion::terminal_size().unwrap();
-        let mut my = ConsoleEngine {
-            output: stdout().into_raw_mode().unwrap(),
-            input: termion::async_stdin().keys(),
-            time_limit: (1000/target_fps) as u128,
-            frame_count: 0,
-            width: size.0 as u32,
-            height: size.1 as u32,
-            screen: vec![pixel::pxl(' '); (size.0*size.1) as usize],
-            screen_last_frame: vec![],
-            instant: std::time::Instant::now(),
-            keys_pressed: vec!(),
-            keys_held: vec!(),
-            keys_released: vec!(),
-            // device: DeviceState::new()
-        };
-        my.begin();
-        return my;
+        return ConsoleEngine::init(size.0 as u32, size.1 as u32, target_fps);
     }
 
     /// Initialize a screen filling the entire terminal with the target FPS  
@@ -148,7 +131,7 @@ impl ConsoleEngine {
     }
 
     /// prints a string at the specified coordinates.  
-    /// The string will automatically overlaps if it reach the right border
+    /// The string will be cropped if it reach the right border
     /// 
     /// usage:
     /// ```
@@ -157,17 +140,28 @@ impl ConsoleEngine {
     /// ```
     pub fn print(&mut self, x: i32, y: i32, string: String)
     {
-        assert!(x >= 0 && y >= 0 && x < self.width as i32 && y < self.height as i32, "Attempted to print out of bounds (coords: [{}, {}], bounds: [{}, {}]", x,y,self.width-1,self.height-1);
-
-        // get screen index, initializes a counter 
-        // and get chars of the provided String
-        let pos = self.coord_to_index(x, y);
-        let mut count = 0usize;
-        let char_vec: Vec<char> = string.chars().collect();
-        // place each characters one by one. Stops before overflowing
-        for i in pos..std::cmp::min(pos+char_vec.len(), self.screen.capacity()) {
-            self.screen[i] = pixel::pxl(char_vec[count]);
-            count += 1;
+        if y >= 0 && x < self.width as i32 && y < self.height as i32 {
+            // get screen index, initializes a counter 
+            // and get chars of the provided String
+            let pos = self.coord_to_index(std::cmp::max(0,x), y);
+            let mut delta_x = 0usize;
+            if x < 0 {
+                delta_x = x.abs() as usize;
+            }
+            let mut count = delta_x;
+            let char_vec: Vec<char> = string.chars().collect();
+            let origin_row = pos/self.scr_w() as usize;
+            // place each characters one by one. Stops before overflowing
+            for i in pos..std::cmp::min(pos+char_vec.len()-delta_x, self.screen.capacity()) {
+                // if the row changes, break. 
+                // removing this statement will cause a wrapping of the text
+                if origin_row != i/self.scr_w() as usize {
+                    break;
+                }
+                // print the character on screen
+                self.screen[i] = pixel::pxl(char_vec[count]);
+                count += 1;
+            }
         }
     }
 
@@ -181,17 +175,28 @@ impl ConsoleEngine {
     /// ```
     pub fn print_fbg<C1: color::Color + Clone, C2: color::Color + Clone>(&mut self, x: i32, y: i32, string: String, fg: C1, bg: C2)
     {
-        assert!(x >= 0 && y >= 0 && x < self.width as i32 && y < self.height as i32, "Attempted to print out of bounds (coords: [{}, {}], bounds: [{}, {}]", x,y,self.width-1,self.height-1);
-        
-        // get screen index, initializes a counter 
-        // and get chars of the provided String
-        let pos = self.coord_to_index(x, y);
-        let mut count = 0usize;
-        let char_vec: Vec<char> = string.chars().collect();
-        // place each characters one by one. Stops before overflowing
-        for i in pos..std::cmp::min(pos+char_vec.len(), self.screen.capacity()) {
-            self.screen[i] = pixel::pxl_fbg(char_vec[count], fg.clone(), bg.clone());
-            count += 1;
+        if y >= 0 && x < self.width as i32 && y < self.height as i32 {
+            // get screen index, initializes a counter 
+            // and get chars of the provided String
+            let pos = self.coord_to_index(std::cmp::max(0,x), y);
+            let mut delta_x = 0usize;
+            if x < 0 {
+                delta_x = x.abs() as usize;
+            }
+            let mut count = delta_x;
+            let char_vec: Vec<char> = string.chars().collect();
+            let origin_row = pos/self.scr_w() as usize;
+            // place each characters one by one. Stops before overflowing
+            for i in pos..std::cmp::min(pos+char_vec.len()-delta_x, self.screen.capacity()) {
+                // if the row changes, break. 
+                // removing this statement will cause a wrapping of the text
+                if origin_row != i/self.scr_w() as usize {
+                    break;
+                }
+                // print the character on screen
+                self.screen[i] = pixel::pxl_fbg(char_vec[count], fg.clone(), bg.clone());
+                count += 1;
+            }
         }
     }
 
@@ -625,7 +630,7 @@ impl ConsoleEngine {
     /// }
     /// ```
     pub fn wait_frame(&mut self) {
-        let mut pressed: Vec<Key> = vec!();
+        let mut pressed: Vec<Event> = vec!();
 
         // if there is time before next frame, sleep until next frame
         if self.time_limit > self.instant.elapsed().as_millis() {
@@ -665,7 +670,7 @@ impl ConsoleEngine {
     /// ```
     pub fn is_key_pressed(&self, key: Key) -> bool
     {
-        self.keys_pressed.contains(&key)
+        self.keys_pressed.contains(&Event::Key(key))
     }
 
     /// checks whenever a key is held down
@@ -682,7 +687,7 @@ impl ConsoleEngine {
     /// ```
     pub fn is_key_held(&self, key: Key) -> bool
     {
-        self.keys_held.contains(&key)
+        self.keys_held.contains(&Event::Key(key))
     }
 
     /// checks whenever a key has been released (first frame released)
@@ -700,14 +705,103 @@ impl ConsoleEngine {
     /// ```
     pub fn is_key_released(&self, key: Key) -> bool
     {
-        self.keys_released.contains(&key)
+        self.keys_released.contains(&Event::Key(key))
+    }
+
+    /// Give the mouse's terminal coordinates if the provided button has been pressed
+    /// 
+    /// usage :
+    /// ```
+    /// // prints a 'P' where the mouse's left button has been pressed
+    /// let mouse_pos = engine.get_mouse_press(termion::event::MouseButton::Left);
+    /// if mouse_pos.is_some() {
+    ///    let mouse_pos = mouse_pos.unwrap();
+    ///    engine.set_pxl(mouse_pos.0 as i32, mouse_pos.1 as i32, pixel::pxl('P'));
+    /// }
+    /// ```
+    pub fn get_mouse_press(&self, button: termion::event::MouseButton) -> Option<(u32,u32)> 
+    {
+        for evt in self.keys_pressed.iter() {
+            match evt {
+                Event::Mouse(me) => {
+                    match me {
+                        termion::event::MouseEvent::Press(mouse, x, y) => {
+                            if *mouse == button {
+                                return Some((x.clone() as u32 -1, y.clone() as u32 -1));
+                            }
+                        },
+                        _ => {}
+                    }
+                }
+                _ => {}
+            };
+        }
+        return None;
+    }
+
+    /// Give the mouse's terminal coordinates if a button is held on the mouse
+    /// 
+    /// usage :
+    /// ```
+    /// // prints a 'H' where the mouse is currently held
+    /// let mouse_pos = engine.get_mouse_held();
+    /// if mouse_pos.is_some() {
+    ///     let mouse_pos = mouse_pos.unwrap();
+    ///     engine.set_pxl(mouse_pos.0 as i32, mouse_pos.1 as i32, pixel::pxl('H'));
+    /// }
+    /// ```
+    pub fn get_mouse_held(&self) -> Option<(u32,u32)> 
+    {
+        for evt in self.keys_pressed.iter() {
+            match evt {
+                Event::Mouse(me) => {
+                    match me {
+                        termion::event::MouseEvent::Hold(x, y) => {
+                            return Some((x.clone() as u32 -1, y.clone() as u32 -1));
+                        },
+                        _ => {}
+                    }
+                }
+                _ => {}
+            };
+        }
+        return None;
+    }
+
+    /// Give the mouse's terminal coordinates if a button has been released on the mouse
+    /// 
+    /// usage :
+    /// ```
+    /// // prints a 'R' where the mouse has been released
+    /// let mouse_pos = engine.get_mouse_held();
+    /// if mouse_pos.is_some() {
+    ///     let mouse_pos = mouse_pos.unwrap();
+    ///     engine.set_pxl(mouse_pos.0 as i32, mouse_pos.1 as i32, pixel::pxl('H'));
+    /// }
+    /// ```
+    pub fn get_mouse_released(&self) -> Option<(u32,u32)> 
+    {
+        for evt in self.keys_pressed.iter() {
+            match evt {
+                Event::Mouse(me) => {
+                    match me {
+                        termion::event::MouseEvent::Release(x, y) => {
+                            return Some((x.clone() as u32 -1, y.clone() as u32 -1));
+                        },
+                        _ => {}
+                    }
+                }
+                _ => {}
+            };
+        }
+        return None;
     }
 
     /// prints key status on screen. For debug purposes only.
     #[allow(dead_code)]
     pub fn debug_keys(&self)
     {
-        println!("pressed: {:?}\nheld: {:?}\nreleased: {:?}", self.keys_pressed, self.keys_held, self.keys_released);
+        println!("pressed: {:?}\r\nheld: {:?}\r\nreleased: {:?}", self.keys_pressed, self.keys_held, self.keys_released);
     }
 
     /// Converts x and y coordinates to screen index

@@ -60,3 +60,5 @@ See `examples/` :
 - **lines** : Draw random lines of random colors on the screen.
 - **lines-fps** : same example as lines, but with a FPS counter.
 - **shapes** : Shape's functions testing tool
+- **mouse** : Simple mouse clicking test
+- **drag-and-drop** : Move a rectangle with your mouse
