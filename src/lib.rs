@@ -573,9 +573,13 @@ impl ConsoleEngine {
     /// ```
     pub fn draw(&mut self)
     {
-        let mut out = self.output.lock();
+        // we prepare an "output_screen" String variable to store in one-shot the screen we'll write.
+        // This is an optimization because we write all we need once instead of writing small bit of screen by small bit of screen.
+        // Actually, this does not change much for Linux terminals (like 5 fps gained from this)
+        // But for windows terminal we can see huge improvements (example lines-fps goes from 35-40 fps to 65-70)
         // reset cursor position
-        write!(out, "{}", termion::cursor::Goto(1,1)).unwrap();
+        let mut output_screen = String::from("");
+        output_screen.push_str(&format!("{}", termion::cursor::Goto(1,1)));
         let mut current_colors = String::from("");
         let mut moving = false;
         // iterates through the screen memory and prints it on the output buffer
@@ -590,7 +594,7 @@ impl ConsoleEngine {
                         // if the moving flag is set, we need to write a goto instruction first
                         // this optimization minimize useless write on the screen
                         // actually writing to the screen is very slow so it's a good compromise
-                        write!(out, "{}", termion::cursor::Goto(1+x as u16,1+y as u16)).unwrap();
+                        output_screen.push_str(&format!("{}", termion::cursor::Goto(1+x as u16,1+y as u16)));
                         moving = false;
                     }
                     // we check if the last color is the same as the current one.
@@ -600,19 +604,21 @@ impl ConsoleEngine {
                     // time consuming
                     if current_colors != pixel.colors {
                         current_colors = pixel.colors.clone();
-                        write!(out, "{}", pixel).unwrap();
+                        output_screen.push_str(&format!("{}", pixel));
                     } else {
-                        write!(out, "{}", pixel.chr).unwrap();
+                        output_screen.push(pixel.chr);
                     }
                 } else {
                     moving = true
                 }
             }
             if y < self.height-1 {
-                write!(out, "\r\n").unwrap();
+                output_screen.push_str("\r\n");
             }
         }
         // flush the buffer into user's terminal
+        let mut out = self.output.lock();
+        write!(out, "{}", output_screen).unwrap();
         out.flush().unwrap();
         self.screen_last_frame = self.screen.clone();
     }
@@ -637,7 +643,7 @@ impl ConsoleEngine {
             std::thread::sleep(std::time::Duration::from_millis(((self.time_limit - self.instant.elapsed().as_millis()) % self.time_limit) as u64));
         }
         self.instant = std::time::Instant::now();
-        
+
         self.frame_count += 1;
 
         // captures user's input

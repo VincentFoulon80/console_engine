@@ -1,5 +1,4 @@
 use console_engine::pixel;
-use console_engine::termion::color;
 use console_engine::termion::event::Key;
 
 fn main() {
