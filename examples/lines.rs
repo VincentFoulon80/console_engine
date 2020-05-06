@@ -17,6 +17,7 @@ fn main() {
     // main loop, be aware that you'll have to break it because ctrl+C is captured
     loop {
         engine.wait_frame(); // wait for next frame + capture inputs
+        engine.check_resize(); // resize the terminal if its size has changed
         // exit check
         if engine.is_key_pressed(Key::Char('q')) {
             break;

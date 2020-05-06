@@ -48,6 +48,7 @@ fn main() {
     // main loop, be aware that you'll have to break it because ctrl+C is captured
     loop {
         engine.wait_frame(); // wait for next frame + capture inputs
+        engine.check_resize(); // resize the terminal if its size has changed
         engine.clear_screen(); // reset the screen
 
         // progressively add dummy values to the graph at each frame,

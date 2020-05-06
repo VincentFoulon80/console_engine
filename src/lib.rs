@@ -576,7 +576,7 @@ impl ConsoleEngine {
         // we prepare an "output_screen" String variable to store in one-shot the screen we'll write.
         // This is an optimization because we write all we need once instead of writing small bit of screen by small bit of screen.
         // Actually, this does not change much for Linux terminals (like 5 fps gained from this)
-        // But for windows terminal we can see huge improvements (example lines-fps goes from 35-40 fps to 65-70)
+        // But for windows terminal we can see huge improvements (example lines-fps goes from 35-40 fps to 65-70 for a 100x50 term)
         // reset cursor position
         let mut output_screen = String::from("");
         output_screen.push_str(&format!("{}", termion::cursor::Goto(1,1)));
@@ -643,7 +643,6 @@ impl ConsoleEngine {
             std::thread::sleep(std::time::Duration::from_millis(((self.time_limit - self.instant.elapsed().as_millis()) % self.time_limit) as u64));
         }
         self.instant = std::time::Instant::now();
-
         self.frame_count += 1;
 
         // captures user's input
@@ -659,7 +658,46 @@ impl ConsoleEngine {
         self.keys_released = utils::outersect_left(&self.keys_held, &held);
         self.keys_pressed = utils::outersect_left(&pressed, &held);
         self.keys_held = utils::union(&held, &self.keys_pressed);
+    }
 
+    /// Check and resize the terminal if needed.
+    /// Note that the resize will occur but there is no check yet if the terminal 
+    /// is smaller than the required size provided in the init() function.
+    /// 
+    /// usage:
+    /// ```
+    /// // initializes a screen filling the terminal
+    /// let mut engine = console_engine::ConsoleEngine::init_fill(30);
+    /// loop {
+    ///     engine.wait_frame(); // wait for next frame
+    ///     engine.check_resize(); // resize the terminal if its size has changed
+    ///     // do your stuff
+    /// }
+    /// ```
+    pub fn check_resize(&mut self)
+    {
+        if termion::terminal_size().unwrap() != (self.width as u16, self.height as u16) {
+            // resize terminal
+            let size = termion::terminal_size().unwrap();
+            let new_width = size.0 as u32;
+            let new_height = size.1 as u32;
+            // create new screens Vec
+            let mut new_screen = vec![pixel::pxl(' '); (size.0*size.1) as usize];
+            let mut new_screen_last_frame = vec![pixel::pxl(' '); (size.0*size.1) as usize];
+            // transfer old screens into new screens
+            for j in 0..std::cmp::min(self.height, new_height) {
+                for i in 0..std::cmp::min(self.width, new_width) {
+                    if (i as u32) < self.width && (j as u32) < self.height {
+                        new_screen[((j*new_width)+i) as usize] = self.screen[((j*self.width)+i) as usize].clone();
+                        new_screen_last_frame[((j*new_width)+i) as usize] = self.screen_last_frame[((j*self.width)+i) as usize].clone();
+                    }
+                }
+            }
+            self.screen = new_screen;
+            self.screen_last_frame = vec![];
+            self.width = new_width;
+            self.height = new_height;
+        }
     }
 
     /// checks whenever a key is pressed (first frame held only)
@@ -801,13 +839,6 @@ impl ConsoleEngine {
             };
         }
         return None;
-    }
-
-    /// prints key status on screen. For debug purposes only.
-    #[allow(dead_code)]
-    pub fn debug_keys(&self)
-    {
-        println!("pressed: {:?}\r\nheld: {:?}\r\nreleased: {:?}", self.keys_pressed, self.keys_held, self.keys_released);
     }
 
     /// Converts x and y coordinates to screen index
