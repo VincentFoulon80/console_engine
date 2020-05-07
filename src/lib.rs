@@ -380,7 +380,7 @@ impl ConsoleEngine {
     /// ```
     /// use console_engine::pixel;
     /// // ...
-    /// engine.circle(10, 10, 4, pixel::pxl('#'));
+    /// engine.fill_circle(10, 10, 4, pixel::pxl('#'));
     /// ```
     pub fn fill_circle(&mut self, x: i32, y: i32, radius: u32, character: Pixel)
     {
@@ -817,10 +817,10 @@ impl ConsoleEngine {
     /// usage :
     /// ```
     /// // prints a 'R' where the mouse has been released
-    /// let mouse_pos = engine.get_mouse_held();
+    /// let mouse_pos = engine.get_mouse_released();
     /// if mouse_pos.is_some() {
     ///     let mouse_pos = mouse_pos.unwrap();
-    ///     engine.set_pxl(mouse_pos.0 as i32, mouse_pos.1 as i32, pixel::pxl('H'));
+    ///     engine.set_pxl(mouse_pos.0 as i32, mouse_pos.1 as i32, pixel::pxl('R'));
     /// }
     /// ```
     pub fn get_mouse_released(&self) -> Option<(u32,u32)> 

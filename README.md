@@ -25,7 +25,7 @@ use console_engine::termion::color;
 use console_engine::termion::event::Key;
 
 fn main() {
-    // initializes a screen of 20x10 characters with a target of 3 frame per second
+    // initializes a screen of 20x10 characters with a target of 3 frames per second
     // coordinates will range from [0,0] to [19,9]
     let mut engine = console_engine::ConsoleEngine::init(20, 10, 3);
     let value = 14;
