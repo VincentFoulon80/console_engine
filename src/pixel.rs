@@ -7,12 +7,12 @@ pub struct Pixel {
     pub colors: String,
     pub chr: char
 }
-impl std::fmt::Display for Pixel {
-    fn fmt(&self, fmt: &mut std::fmt::Formatter<'_>) -> std::fmt::Result 
+impl ToString for Pixel {
+    fn to_string(&self) -> String
     {
-        fmt.write_str(self.colors.as_str()).unwrap();
-        fmt.write_str(self.chr.to_string().as_str()).unwrap();
-        Ok(())
+        let mut output = String::from(self.colors.as_str());
+        output.push(self.chr);
+        output
     }
 }
 impl PartialEq for Pixel {

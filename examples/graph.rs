@@ -18,8 +18,8 @@ const VALUES: [u8; MAX_VALUES] = [
 
 /// Function that takes a list of values and uses a ConsoleEngine instance to draw it on the screen
 fn draw_graph(engine: &mut console_engine::ConsoleEngine, values: [u8; MAX_VALUES]) {
-    let ceiling = engine.scr_h() as i32-3;
-    let step  = engine.scr_w() as f32/MAX_VALUES as f32;
+    let ceiling = engine.get_height() as i32-3;
+    let step  = engine.get_width() as f32/MAX_VALUES as f32;
     let mut last_position = 0;
     // for each values in the dataset
     for i in 0..MAX_VALUES-1 {
@@ -44,7 +44,7 @@ fn main() {
     let mut values: [u8; MAX_VALUES] = [0; MAX_VALUES];
     let mut value_position = 0usize;
     let mut sum = 0u32;
-    let step  = engine.scr_w() as f32/MAX_VALUES as f32;
+    let step  = engine.get_width() as f32/MAX_VALUES as f32;
     // main loop, be aware that you'll have to break it because ctrl+C is captured
     loop {
         engine.wait_frame(); // wait for next frame + capture inputs
@@ -67,12 +67,12 @@ fn main() {
         
         // Display a header with an average and sum calculation
         engine.print(0, 0, format!("Average : {}", (sum/value_position as u32) as f32));
-        engine.set_pxl((engine.scr_w() as i32/2)-1, 0, pixel::pxl('#'));
-        engine.print((engine.scr_w() as i32/2)+1, 0, format!("Sum : {}", sum));
-        engine.line(0, 1, engine.scr_w() as i32-1, 1, pixel::pxl('#'));
+        engine.set_pxl((engine.get_width() as i32/2)-1, 0, pixel::pxl('#'));
+        engine.print((engine.get_width() as i32/2)+1, 0, format!("Sum : {}", sum));
+        engine.line(0, 1, engine.get_width() as i32-1, 1, pixel::pxl('#'));
         // Draw a line at the position of the last value written
         if value_position < MAX_VALUES {
-            engine.line((value_position as f32*step) as i32, 2, (value_position as f32*step) as i32, engine.scr_h() as i32-1, pixel::pxl_bg(' ', color::Blue));
+            engine.line((value_position as f32*step) as i32, 2, (value_position as f32*step) as i32, engine.get_height() as i32-1, pixel::pxl_bg(' ', color::Blue));
         }
         // draw the graph
         draw_graph(&mut engine, values);

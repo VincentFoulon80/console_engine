@@ -26,8 +26,8 @@ fn main() {
         // Note that we don't clear the screen here so that old lines drawed are not cleared
 
         // generate two random positions and a color
-        let pos_1 = random_pos(engine.scr_w(), engine.scr_h());
-        let pos_2 = random_pos(engine.scr_w(), engine.scr_h());
+        let pos_1 = random_pos(engine.get_width(), engine.get_height());
+        let pos_2 = random_pos(engine.get_width(), engine.get_height());
         let pxl_c = random_color();
         
         // draw a line using the three variables above

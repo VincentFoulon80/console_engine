@@ -1,5 +1,6 @@
 use console_engine::pixel;
 use console_engine::termion::event::Key;
+use console_engine::termion::event::MouseButton;
 
 fn main() {
     // initializes a screen filling the terminal with a target of 30 frames per second
@@ -14,7 +15,7 @@ fn main() {
         }
 
         // prints a 'P' where the mouse's left button has been pressed
-        let mouse_pos = engine.get_mouse_press(termion::event::MouseButton::Left);
+        let mouse_pos = engine.get_mouse_press(MouseButton::Left);
         if mouse_pos.is_some() {
             let mouse_pos = mouse_pos.unwrap();
             engine.set_pxl(mouse_pos.0 as i32, mouse_pos.1 as i32, pixel::pxl('P'));

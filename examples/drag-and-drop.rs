@@ -1,5 +1,6 @@
 use console_engine::pixel;
 use console_engine::termion::event::Key;
+use console_engine::termion::event::MouseButton;
 
 fn main() {
     // initializes a screen filling the terminal with a target of 30 frames per second
@@ -23,7 +24,7 @@ fn main() {
         engine.clear_screen();
 
         // check if the mouse's left button has been pressed
-        let mouse_pos = engine.get_mouse_press(termion::event::MouseButton::Left);
+        let mouse_pos = engine.get_mouse_press(MouseButton::Left);
         if mouse_pos.is_some() {
             // if the mouse position is within the boundaries of the rectangle,
             // enables dragging mode and register relative position of the mouse

@@ -85,12 +85,12 @@ fn main() {
             }
         }
         if engine.is_key_held(Key::Char('6')) {
-            if coords[selection].0 < engine.scr_w() as i32-1 {
+            if coords[selection].0 < engine.get_width() as i32-1 {
                 coords[selection].0 += 1;
             }
         }
         if engine.is_key_held(Key::Char('2')) {
-            if coords[selection].1 < engine.scr_h() as i32-1 && (selection == 0 || shape != Shapes::Circle) {
+            if coords[selection].1 < engine.get_height() as i32-1 && (selection == 0 || shape != Shapes::Circle) {
                 coords[selection].1 += 1;
             }
         }

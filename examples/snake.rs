@@ -195,7 +195,7 @@ fn main() {
     let mut engine = console_engine::ConsoleEngine::init_fill_require(10,10,4);
 
     // initialize game here, providing term size as boundaries
-    let mut snake = Snake::init(engine.scr_w(), engine.scr_h());
+    let mut snake = Snake::init(engine.get_width(), engine.get_height());
     
     // main loop, be aware that you'll have to break it because ctrl+C is captured
     loop {
