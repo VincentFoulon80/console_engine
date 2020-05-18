@@ -2,10 +2,20 @@
 
 [Changelog](https://github.com/VincentFoulon80/console_engine/releases)
 
-**Note: Code review needed ! see [this issue](https://github.com/VincentFoulon80/console_engine/issues/1) for more informations**
+**Note: Code reviewer needed ! see [this issue](https://github.com/VincentFoulon80/console_engine/issues/1) for more informations**
 
 This library provides simple features for handling user's input and display for terminal applications.  
+Besides the user input and display, this library also provides some tools to build standalone "screens" that can be used as simply as printing it.
+
 It uses [Termion](https://crates.io/crates/termion) as main tool for handling the screen and inputs. You don't have to worry about initalizing anything because the lib will handle this for you.
+
+## Features
+
+- Build custom terminal display using shapes or text
+- Terminal handling with a target frame per seconds
+- Keyboard and mouse support
+- Terminal resizing support
+- You are not interested by keyboard/mouse handling, even terminal handling ? You can still build "screens" to just draw using `println!()`
 
 ## Platforms
 
