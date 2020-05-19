@@ -1,3 +1,5 @@
+//! Standalone screens
+
 use super::pixel;
 use super::pixel::Pixel;
 use super::termion::color;
@@ -81,6 +83,16 @@ impl Screen {
     /// screen.print(0,0, String::from("Hello, world!"));
     /// screen.print(0, 4, format!("Score: {}", score));
     /// ```
+    /// 
+    /// examples :
+    /// - [drag-and-drop](https://github.com/VincentFoulon80/console_engine/blob/master/examples/drag-and-drop.rs)
+    /// - [graph](https://github.com/VincentFoulon80/console_engine/blob/master/examples/graph.rs)
+    /// - [lines-fps](https://github.com/VincentFoulon80/console_engine/blob/master/examples/lines-fps.rs)
+    /// - [screen-embed](https://github.com/VincentFoulon80/console_engine/blob/master/examples/screen-embed.rs)
+    /// - [screen-simple](https://github.com/VincentFoulon80/console_engine/blob/master/examples/screen-simple.rs)
+    /// - [screen-swap](https://github.com/VincentFoulon80/console_engine/blob/master/examples/screen-swap.rs)
+    /// - [shapes](https://github.com/VincentFoulon80/console_engine/blob/master/examples/shapes.rs)
+    /// - [snake](https://github.com/VincentFoulon80/console_engine/blob/master/examples/snake.rs)
     pub fn print(&mut self, x: i32, y: i32, string: String)
     {
         if y >= 0 && x < self.width as i32 && y < self.height as i32 {
@@ -111,11 +123,16 @@ impl Screen {
     /// prints a string at the specified coordinates with the specified foreground and background color  
     /// The string will automatically overlaps if it reach the right border
     /// 
-    /// usage
+    /// usage:
     /// ```
     /// // print "Hello, world" in blue on white background
     /// screen.print(0,0, String::from("Hello, world!"), color::Blue, color::White);
     /// ```
+    /// 
+    /// examples :
+    /// - [graph](https://github.com/VincentFoulon80/console_engine/blob/master/examples/graph.rs)
+    /// - [screen-swap](https://github.com/VincentFoulon80/console_engine/blob/master/examples/screen-swap.rs)
+    /// - [snake](https://github.com/VincentFoulon80/console_engine/blob/master/examples/snake.rs)
     pub fn print_fbg<C1: color::Color + Clone, C2: color::Color + Clone>(&mut self, x: i32, y: i32, string: String, fg: C1, bg: C2)
     {
         if y >= 0 && x < self.width as i32 && y < self.height as i32 {
@@ -148,7 +165,7 @@ impl Screen {
     /// 
     /// *see example* `screen-embed`
     /// 
-    /// usage :
+    /// usage:
     /// ```
     /// use console_engine::pixel;
     /// use console_engine::screen::Screen;
@@ -161,6 +178,9 @@ impl Screen {
     /// // prints the square in the main window at a specific location
     /// screen.print_screen(5,2, &my_square);
     /// ```
+    /// 
+    /// examples :
+    /// - [screen-embed](https://github.com/VincentFoulon80/console_engine/blob/master/examples/screen-embed.rs)
     pub fn print_screen(&mut self, x : i32, y: i32, source: &Screen)
     {
         for j in 0..source.get_height() as i32 {
@@ -175,12 +195,17 @@ impl Screen {
     /// 
     /// Note : Your line can start or end out of bounds. These pixels won't be drawn 
     /// 
-    /// usage : 
+    /// usage: 
     /// ```
     /// use console_engine::pixel;
     /// // ...
     /// screen.line(0, 0, 9, 9, pixel::pxl('#'));
     /// ```
+    /// 
+    /// examples :
+    /// - [graph](https://github.com/VincentFoulon80/console_engine/blob/master/examples/graph.rs)
+    /// - [lines](https://github.com/VincentFoulon80/console_engine/blob/master/examples/lines.rs)
+    /// - [lines-fps](https://github.com/VincentFoulon80/console_engine/blob/master/examples/lines-fps.rs)
     pub fn line(&mut self, start_x: i32, start_y: i32, end_x: i32, end_y: i32, character: Pixel)
     {
         let delta_x = end_x - start_x;
@@ -273,12 +298,19 @@ impl Screen {
 
     /// Draws a rectangle of the provided character between two sets of coordinates  
     /// 
-    /// usage : 
+    /// usage: 
     /// ```
     /// use console_engine::pixel;
     /// // ...
     /// screen.rect(0, 0, 9, 9, pixel::pxl('#'));
     /// ```
+    /// 
+    /// examples :
+    /// - [drag-and-drop](https://github.com/VincentFoulon80/console_engine/blob/master/examples/drag-and-drop.rs)
+    /// - [screen-embed](https://github.com/VincentFoulon80/console_engine/blob/master/examples/screen-embed.rs)
+    /// - [screen-simple](https://github.com/VincentFoulon80/console_engine/blob/master/examples/screen-simple.rs)
+    /// - [screen-swap](https://github.com/VincentFoulon80/console_engine/blob/master/examples/screen-swap.rs)
+    /// - [shapes](https://github.com/VincentFoulon80/console_engine/blob/master/examples/shapes.rs)
     pub fn rect(&mut self, start_x: i32, start_y: i32, end_x: i32, end_y: i32, character: Pixel)
     {
         self.line(start_x, start_y, end_x, start_y, character.clone()); // top
@@ -289,12 +321,15 @@ impl Screen {
 
     /// Fill a rectangle of the provided character between two sets of coordinates  
     /// 
-    /// usage : 
+    /// usage: 
     /// ```
     /// use console_engine::pixel;
     /// // ...
     /// screen.fill_rect(0, 0, 9, 9, pixel::pxl('#'));
     /// ```
+    /// 
+    /// examples :
+    /// - [shapes](https://github.com/VincentFoulon80/console_engine/blob/master/examples/shapes.rs)
     pub fn fill_rect(&mut self, start_x: i32, start_y: i32, end_x: i32, end_y: i32, character: Pixel)
     {
         let y0 = if start_y < end_y { start_y } else { end_y };
@@ -307,12 +342,15 @@ impl Screen {
     /// Draws a circle of the provided character at an x and y position with a radius
     /// see: [olcPixelGameEngine Repository](https://github.com/OneLoneCoder/olcPixelGameEngine)
     /// 
-    /// usage : 
+    /// usage: 
     /// ```
     /// use console_engine::pixel;
     /// // ...
     /// screen.circle(10, 10, 4, pixel::pxl('#'));
     /// ```
+    /// 
+    /// examples :
+    /// - [shapes](https://github.com/VincentFoulon80/console_engine/blob/master/examples/shapes.rs)
     pub fn circle(&mut self, x: i32, y: i32, radius: u32, character: Pixel)
     {
         let mut relative_pos_x = 0 as i32;
@@ -346,12 +384,17 @@ impl Screen {
     /// Fill a circle of the provided character at an x and y position with a radius
     /// see: [olcPixelGameEngine Repository](https://github.com/OneLoneCoder/olcPixelGameEngine)
     /// 
-    /// usage : 
+    /// usage: 
     /// ```
     /// use console_engine::pixel;
     /// // ...
     /// screen.fill_circle(10, 10, 4, pixel::pxl('#'));
     /// ```
+    /// 
+    /// examples :
+    /// - [screen-simple](https://github.com/VincentFoulon80/console_engine/blob/master/examples/screen-simple.rs)
+    /// - [screen-swap](https://github.com/VincentFoulon80/console_engine/blob/master/examples/screen-swap.rs)
+    /// - [shapes](https://github.com/VincentFoulon80/console_engine/blob/master/examples/shapes.rs)
     pub fn fill_circle(&mut self, x: i32, y: i32, radius: u32, character: Pixel)
     {
         // Taken from wikipedia
@@ -390,12 +433,15 @@ impl Screen {
 
     /// Draws a triangle of the provided character using three sets of coordinates
     /// 
-    /// usage : 
+    /// usage: 
     /// ```
     /// use console_engine::pixel;
     /// // ...
     /// screen.triangle(8,8, 4,6, 9,2, pixel::pxl('#'));
     /// ```
+    /// 
+    /// examples :
+    /// - [shapes](https://github.com/VincentFoulon80/console_engine/blob/master/examples/shapes.rs)
     pub fn triangle(&mut self, x1: i32, y1: i32, x2: i32, y2: i32, x3: i32, y3: i32, character: Pixel)
     {
         self.line(x1, y1, x2, y2, character.clone());
@@ -406,12 +452,16 @@ impl Screen {
     /// Fill a triangle of the provided character using three sets of coordinates
     /// see: [rustyPixelGameEngine Repository](https://github.com/mattbettcher/rustyPixelGameEngine)
     /// 
-    /// usage : 
+    /// usage: 
     /// ```
     /// use console_engine::pixel;
     /// // ...
     /// screen.fill_triangle(8,8, 4,6, 9,2, pixel::pxl('#'));
     /// ```
+    /// 
+    /// examples :
+    /// - [shapes](https://github.com/VincentFoulon80/console_engine/blob/master/examples/shapes.rs)
+    /// - [screen-swap](https://github.com/VincentFoulon80/console_engine/blob/master/examples/screen-swap.rs)
     pub fn fill_triangle(&mut self, x1: i32, y1: i32, x2: i32, y2: i32, x3: i32, y3: i32, character: Pixel)
     {
         self.triangle(x1 as i32, y1 as i32, x2 as i32, y2 as i32, x3 as i32, y3 as i32, character.clone());
@@ -509,6 +559,12 @@ impl Screen {
     /// // ...
     /// screen.set_pxl(3,8,pixel::pixel('o'));
     /// ```
+    /// 
+    /// examples :
+    /// - [graph](https://github.com/VincentFoulon80/console_engine/blob/master/examples/graph.rs)
+    /// - [mouse](https://github.com/VincentFoulon80/console_engine/blob/master/examples/mouse.rs)
+    /// - [shapes](https://github.com/VincentFoulon80/console_engine/blob/master/examples/shapes.rs)
+    /// - [snake](https://github.com/VincentFoulon80/console_engine/blob/master/examples/snake.rs)
     pub fn set_pxl(&mut self, x: i32, y: i32, character: Pixel)
     {
         if x >= 0 && y >= 0 && x < self.width as i32 && y < self.height as i32 {
@@ -525,6 +581,9 @@ impl Screen {
     ///     screen.print(0,0,"Found a 'o'");
     /// }
     /// ```
+    /// 
+    /// examples :
+    /// - *no examples*
     pub fn get_pxl(&self, x: i32, y: i32) -> Result<Pixel, String> 
     {
         if x >= 0 && y >= 0 && x < self.width as i32 && y < self.height as i32 {
@@ -540,6 +599,9 @@ impl Screen {
     /// ```
     /// screen.resize()
     /// ```
+    /// 
+    /// examples :
+    /// - *no examples*
     pub fn resize(&mut self, new_width: u32, new_height: u32)
     {
         // create new screens Vec
@@ -571,7 +633,7 @@ impl Screen {
     /// 
     /// When you have finished you can close the screen to regain access to his drawing functions.
     /// 
-    /// usage :
+    /// usage:
     /// ```
     /// use console_engine::pixel;
     /// 

@@ -1,3 +1,5 @@
+//! Character and color management
+
 use termion::color;
 
 /// # Pixel structure
