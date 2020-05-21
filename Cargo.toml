@@ -1,6 +1,6 @@
 [package]
 name = "console_engine"
-description = "A simple console framework that provides display and keyboard features"
+description = "A simple console framework that provides display and input features"
 version = "0.6.2"
 authors = ["Vincent Foulon <sup.vfoulon@gmail.com>"]
 repository = "https://github.com/VincentFoulon80/console_engine"
