@@ -313,7 +313,7 @@ fn main() {
                 piece_x -= 1;
             }
         }
-        if engine.is_key_held(Key::Char('6')) || engine.is_key_held(Key::Left) {
+        if engine.is_key_held(Key::Char('6')) || engine.is_key_held(Key::Right) {
             if piece_x < game_w && piece_fits(&game_scr, &piece, &piece_r, piece_x+1, piece_y) {
                 piece_x += 1;
             }
