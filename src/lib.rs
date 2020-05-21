@@ -183,6 +183,7 @@ impl ConsoleEngine {
     /// - [screen-swap](https://github.com/VincentFoulon80/console_engine/blob/master/examples/screen-swap.rs)
     /// - [shapes](https://github.com/VincentFoulon80/console_engine/blob/master/examples/shapes.rs)
     /// - [snake](https://github.com/VincentFoulon80/console_engine/blob/master/examples/snake.rs)
+    /// - [tetris](https://github.com/VincentFoulon80/console_engine/blob/master/examples/tetris.rs)
     pub fn print(&mut self, x: i32, y: i32, string: String)
     {
         self.screen.print(x,y,string)
@@ -201,6 +202,7 @@ impl ConsoleEngine {
     /// - [graph](https://github.com/VincentFoulon80/console_engine/blob/master/examples/graph.rs)
     /// - [screen-swap](https://github.com/VincentFoulon80/console_engine/blob/master/examples/screen-swap.rs)
     /// - [snake](https://github.com/VincentFoulon80/console_engine/blob/master/examples/snake.rs)
+    /// - [tetris](https://github.com/VincentFoulon80/console_engine/blob/master/examples/tetris.rs)
     pub fn print_fbg<C1: color::Color + Clone, C2: color::Color + Clone>(&mut self, x: i32, y: i32, string: String, fg: C1, bg: C2)
     {
         self.screen.print_fbg(x, y, string, fg, bg)
@@ -227,9 +229,22 @@ impl ConsoleEngine {
     /// 
     /// examples :
     /// - [screen-embed](https://github.com/VincentFoulon80/console_engine/blob/master/examples/screen-embed.rs)
+    /// - [tetris](https://github.com/VincentFoulon80/console_engine/blob/master/examples/tetris.rs)
     pub fn print_screen(&mut self, x : i32, y: i32, source: &Screen)
     {
         self.screen.print_screen(x, y, source)
+    }
+
+    /// Prints another screen on specified coordinates, ignoring a specific character while printing
+    /// Ignoring a character will behave like transparency
+    /// 
+    /// see [print_screen](#method.print_screen) for usage
+    /// 
+    /// examples :
+    /// - [tetris](https://github.com/VincentFoulon80/console_engine/blob/master/examples/tetris.rs)
+    pub fn print_screen_alpha(&mut self, x: i32, y: i32, source: &Screen, alpha_character: char)
+    {
+        self.screen.print_screen_alpha(x, y, source, alpha_character)
     }
 
     /// draws a line of the provided character between two sets of coordinates  
@@ -268,6 +283,7 @@ impl ConsoleEngine {
     /// - [screen-simple](https://github.com/VincentFoulon80/console_engine/blob/master/examples/screen-simple.rs)
     /// - [screen-swap](https://github.com/VincentFoulon80/console_engine/blob/master/examples/screen-swap.rs)
     /// - [shapes](https://github.com/VincentFoulon80/console_engine/blob/master/examples/shapes.rs)
+    /// - [tetris](https://github.com/VincentFoulon80/console_engine/blob/master/examples/tetris.rs)
     pub fn rect(&mut self, start_x: i32, start_y: i32, end_x: i32, end_y: i32, character: Pixel)
     {
         self.screen.rect(start_x, start_y, end_x, end_y, character)
@@ -284,6 +300,7 @@ impl ConsoleEngine {
     /// 
     /// examples :
     /// - [shapes](https://github.com/VincentFoulon80/console_engine/blob/master/examples/shapes.rs)
+    /// - [tetris](https://github.com/VincentFoulon80/console_engine/blob/master/examples/tetris.rs)
     pub fn fill_rect(&mut self, start_x: i32, start_y: i32, end_x: i32, end_y: i32, character: Pixel)
     {
         self.screen.fill_rect(start_x, start_y, end_x, end_y, character)
@@ -374,6 +391,7 @@ impl ConsoleEngine {
     /// - [mouse](https://github.com/VincentFoulon80/console_engine/blob/master/examples/mouse.rs)
     /// - [shapes](https://github.com/VincentFoulon80/console_engine/blob/master/examples/shapes.rs)
     /// - [snake](https://github.com/VincentFoulon80/console_engine/blob/master/examples/snake.rs)
+    /// - [tetris](https://github.com/VincentFoulon80/console_engine/blob/master/examples/tetris.rs)
     pub fn set_pxl(&mut self, x: i32, y: i32, character: Pixel)
     {
         self.screen.set_pxl(x, y, character)
@@ -389,7 +407,7 @@ impl ConsoleEngine {
     /// ```
     /// 
     /// examples :
-    /// - *no examples*
+    /// - [tetris](https://github.com/VincentFoulon80/console_engine/blob/master/examples/tetris.rs)
     pub fn get_pxl(&self, x: i32, y: i32) -> Result<Pixel, String> 
     {
         self.screen.get_pxl(x,y)
@@ -481,6 +499,7 @@ impl ConsoleEngine {
     /// - [screen-swap](https://github.com/VincentFoulon80/console_engine/blob/master/examples/screen-swap.rs)
     /// - [shapes](https://github.com/VincentFoulon80/console_engine/blob/master/examples/shapes.rs)
     /// - [snake](https://github.com/VincentFoulon80/console_engine/blob/master/examples/snake.rs)
+    /// - [tetris](https://github.com/VincentFoulon80/console_engine/blob/master/examples/tetris.rs)
     pub fn draw(&mut self)
     {
         // we prepare an "output_screen" String variable to store in one-shot the screen we'll write.
@@ -557,6 +576,7 @@ impl ConsoleEngine {
     /// - [screen-swap](https://github.com/VincentFoulon80/console_engine/blob/master/examples/screen-swap.rs)
     /// - [shapes](https://github.com/VincentFoulon80/console_engine/blob/master/examples/shapes.rs)
     /// - [snake](https://github.com/VincentFoulon80/console_engine/blob/master/examples/snake.rs)
+    /// - [tetris](https://github.com/VincentFoulon80/console_engine/blob/master/examples/tetris.rs)
     pub fn wait_frame(&mut self) {
         let mut pressed: Vec<Event> = vec!();
 
@@ -638,6 +658,7 @@ impl ConsoleEngine {
     /// - [screen-swap](https://github.com/VincentFoulon80/console_engine/blob/master/examples/screen-swap.rs)
     /// - [shapes](https://github.com/VincentFoulon80/console_engine/blob/master/examples/shapes.rs)
     /// - [snake](https://github.com/VincentFoulon80/console_engine/blob/master/examples/snake.rs)
+    /// - [tetris](https://github.com/VincentFoulon80/console_engine/blob/master/examples/tetris.rs)
     pub fn is_key_pressed(&self, key: Key) -> bool
     {
         self.keys_pressed.contains(&Event::Key(key))
@@ -658,6 +679,7 @@ impl ConsoleEngine {
     /// 
     /// examples :
     /// - [shapes](https://github.com/VincentFoulon80/console_engine/blob/master/examples/shapes.rs)
+    /// - [tetris](https://github.com/VincentFoulon80/console_engine/blob/master/examples/tetris.rs)
     pub fn is_key_held(&self, key: Key) -> bool
     {
         self.keys_held.contains(&Event::Key(key))

@@ -41,6 +41,7 @@ pub struct Screen {
 /// ```
 impl Screen {
 
+    /// Creates a new Screen object with the provided width and height.
     pub fn new(width: u32, height: u32) -> Screen
     {
         Screen {
@@ -49,6 +50,8 @@ impl Screen {
             screen: vec![pixel::pxl(' '); (width*height) as usize]
         }
     }
+
+    /// Creates a new Screen object with the provided Vec<Pixel> structure fitting the width and height parameters.
     pub fn from_vec(vec: Vec<Pixel>, width: u32, height: u32) -> Screen
     {
         Screen {
@@ -56,6 +59,18 @@ impl Screen {
             height: height,
             screen: vec
         }
+    }
+
+    /// Creates a new Screen object with the provided String and colors fitting the width and height parameters.
+    /// The String length must correspond to width*height
+    pub fn from_string<C1: color::Color + Clone, C2: color::Color + Clone>(string: String, fg: C1, bg: C2, width: u32, height: u32) -> Screen
+    {
+        assert!(string.chars().count() == (width*height) as usize, format!("The String must have the length corresponding to width*height (={}) but the given String has a length of {}.", width*height, string.chars().count()));
+        let mut vec: Vec<Pixel> = vec![];
+        for chr in string.chars() {
+            vec.push(pixel::pxl_fbg(chr, fg.clone(), bg.clone()));
+        }
+        Screen::from_vec(vec, width, height)
     }
 
     /// Get the screen width
@@ -93,6 +108,7 @@ impl Screen {
     /// - [screen-swap](https://github.com/VincentFoulon80/console_engine/blob/master/examples/screen-swap.rs)
     /// - [shapes](https://github.com/VincentFoulon80/console_engine/blob/master/examples/shapes.rs)
     /// - [snake](https://github.com/VincentFoulon80/console_engine/blob/master/examples/snake.rs)
+    /// - [tetris](https://github.com/VincentFoulon80/console_engine/blob/master/examples/tetris.rs)
     pub fn print(&mut self, x: i32, y: i32, string: String)
     {
         if y >= 0 && x < self.width as i32 && y < self.height as i32 {
@@ -133,6 +149,7 @@ impl Screen {
     /// - [graph](https://github.com/VincentFoulon80/console_engine/blob/master/examples/graph.rs)
     /// - [screen-swap](https://github.com/VincentFoulon80/console_engine/blob/master/examples/screen-swap.rs)
     /// - [snake](https://github.com/VincentFoulon80/console_engine/blob/master/examples/snake.rs)
+    /// - [tetris](https://github.com/VincentFoulon80/console_engine/blob/master/examples/tetris.rs)
     pub fn print_fbg<C1: color::Color + Clone, C2: color::Color + Clone>(&mut self, x: i32, y: i32, string: String, fg: C1, bg: C2)
     {
         if y >= 0 && x < self.width as i32 && y < self.height as i32 {
@@ -163,8 +180,6 @@ impl Screen {
     /// Prints another screen on specified coordinates.
     /// Useful when you want to manage several "subscreen"
     /// 
-    /// *see example* `screen-embed`
-    /// 
     /// usage:
     /// ```
     /// use console_engine::pixel;
@@ -181,11 +196,30 @@ impl Screen {
     /// 
     /// examples :
     /// - [screen-embed](https://github.com/VincentFoulon80/console_engine/blob/master/examples/screen-embed.rs)
+    /// - [tetris](https://github.com/VincentFoulon80/console_engine/blob/master/examples/tetris.rs)
     pub fn print_screen(&mut self, x : i32, y: i32, source: &Screen)
     {
         for j in 0..source.get_height() as i32 {
             for i in 0..source.get_width() as i32 {
                 self.set_pxl_ref(x+i, y+j, &source.get_pxl(i, j).unwrap());
+            }
+        }
+    }
+
+    /// Prints another screen on specified coordinates, ignoring a specific character while printing
+    /// Ignoring a character will behave like transparency
+    /// 
+    /// see [print_screen](#method.print_screen) for usage
+    /// 
+    /// examples :
+    /// - [tetris](https://github.com/VincentFoulon80/console_engine/blob/master/examples/tetris.rs)
+    pub fn print_screen_alpha(&mut self, x: i32, y: i32, source: &Screen, alpha_character: char)
+    {
+        for j in 0..source.get_height() as i32 {
+            for i in 0..source.get_width() as i32 {
+                if source.get_pxl(i, j).unwrap().chr != alpha_character {
+                    self.set_pxl_ref(x+i, y+j, &source.get_pxl(i, j).unwrap());
+                }
             }
         }
     }
@@ -311,6 +345,7 @@ impl Screen {
     /// - [screen-simple](https://github.com/VincentFoulon80/console_engine/blob/master/examples/screen-simple.rs)
     /// - [screen-swap](https://github.com/VincentFoulon80/console_engine/blob/master/examples/screen-swap.rs)
     /// - [shapes](https://github.com/VincentFoulon80/console_engine/blob/master/examples/shapes.rs)
+    /// - [tetris](https://github.com/VincentFoulon80/console_engine/blob/master/examples/tetris.rs)
     pub fn rect(&mut self, start_x: i32, start_y: i32, end_x: i32, end_y: i32, character: Pixel)
     {
         self.line(start_x, start_y, end_x, start_y, character.clone()); // top
@@ -330,6 +365,7 @@ impl Screen {
     /// 
     /// examples :
     /// - [shapes](https://github.com/VincentFoulon80/console_engine/blob/master/examples/shapes.rs)
+    /// - [tetris](https://github.com/VincentFoulon80/console_engine/blob/master/examples/tetris.rs)
     pub fn fill_rect(&mut self, start_x: i32, start_y: i32, end_x: i32, end_y: i32, character: Pixel)
     {
         let y0 = if start_y < end_y { start_y } else { end_y };
@@ -565,6 +601,7 @@ impl Screen {
     /// - [mouse](https://github.com/VincentFoulon80/console_engine/blob/master/examples/mouse.rs)
     /// - [shapes](https://github.com/VincentFoulon80/console_engine/blob/master/examples/shapes.rs)
     /// - [snake](https://github.com/VincentFoulon80/console_engine/blob/master/examples/snake.rs)
+    /// - [tetris](https://github.com/VincentFoulon80/console_engine/blob/master/examples/tetris.rs)
     pub fn set_pxl(&mut self, x: i32, y: i32, character: Pixel)
     {
         if x >= 0 && y >= 0 && x < self.width as i32 && y < self.height as i32 {
@@ -583,7 +620,7 @@ impl Screen {
     /// ```
     /// 
     /// examples :
-    /// - *no examples*
+    /// - [tetris](https://github.com/VincentFoulon80/console_engine/blob/master/examples/tetris.rs)
     pub fn get_pxl(&self, x: i32, y: i32) -> Result<Pixel, String> 
     {
         if x >= 0 && y >= 0 && x < self.width as i32 && y < self.height as i32 {

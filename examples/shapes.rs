@@ -79,28 +79,28 @@ fn main() {
 
         // handling coordinate displacement with a particular case for selection 1 of circle
         // because it's the range selection
-        if engine.is_key_held(Key::Char('8')) {
+        if engine.is_key_held(Key::Char('8')) || engine.is_key_pressed(Key::Up) {
             if coords[selection].1 > 0 && (selection == 0 || shape != Shapes::Circle) {
                 coords[selection].1 -= 1;
             }
         }
-        if engine.is_key_held(Key::Char('6')) {
+        if engine.is_key_held(Key::Char('6')) || engine.is_key_pressed(Key::Right) {
             if coords[selection].0 < engine.get_width() as i32-1 {
                 coords[selection].0 += 1;
             }
         }
-        if engine.is_key_held(Key::Char('2')) {
+        if engine.is_key_held(Key::Char('2')) || engine.is_key_pressed(Key::Down) {
             if coords[selection].1 < engine.get_height() as i32-1 && (selection == 0 || shape != Shapes::Circle) {
                 coords[selection].1 += 1;
             }
         }
-        if engine.is_key_held(Key::Char('4')) {
+        if engine.is_key_held(Key::Char('4')) || engine.is_key_pressed(Key::Left) {
             if coords[selection].0 > 0 {
                 coords[selection].0 -= 1;
             }
         }
         // switch between configured coordinates
-        if engine.is_key_pressed(Key::Char('5')){
+        if engine.is_key_pressed(Key::Char('5')) || engine.is_key_pressed(Key::Char(' ')){
             selection = (selection+1) % coords.len();
         }
         // switch between shapes

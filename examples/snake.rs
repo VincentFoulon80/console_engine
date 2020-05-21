@@ -86,16 +86,16 @@ impl Snake {
 
         if self.playing {
             // Change snake's direction based on a keypad layout
-            if engine.is_key_pressed(Key::Char('8')) {
+            if engine.is_key_pressed(Key::Char('8')) || engine.is_key_pressed(Key::Up) {
                 self.direction = Direction::North;
             }
-            if engine.is_key_pressed(Key::Char('6')) {
+            if engine.is_key_pressed(Key::Char('6')) || engine.is_key_pressed(Key::Right) {
                 self.direction = Direction::East;
             }
-            if engine.is_key_pressed(Key::Char('2')) {
+            if engine.is_key_pressed(Key::Char('2')) || engine.is_key_pressed(Key::Down) {
                 self.direction = Direction::South;
             }
-            if engine.is_key_pressed(Key::Char('4')) {
+            if engine.is_key_pressed(Key::Char('4')) || engine.is_key_pressed(Key::Left) {
                 self.direction = Direction::West;
             }
         } else {
