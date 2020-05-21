@@ -74,4 +74,5 @@ See [examples](https://github.com/VincentFoulon80/console_engine/tree/master/exa
 - **drag-and-drop** : Move a rectangle with your mouse
 - **screen-simple** : Example usage of Screen struct instead of ConsoleEngine
 - **screen-embed** : Example usage of Screen's `print_screen` function to embed one screen into another
+- **screen-swap** : Swap between several Screen structures
 - **tetris** : A game of Tetris
