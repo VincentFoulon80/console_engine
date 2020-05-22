@@ -3,12 +3,16 @@ use console_engine::termion::color;
 use console_engine::termion::event::Key;
 
 // generate a random pair of u32
-fn random_pos(max_x: u32, max_y: u32) -> (u32,u32) {
+fn random_pos(max_x: u32, max_y: u32) -> (u32, u32) {
     (rand::random::<u32>() % max_x, rand::random::<u32>() % max_y)
 }
 // generate a random tuple of three numbers for R, G and B
-fn random_color() ->(u8, u8, u8) {
-    (rand::random::<u8>(), rand::random::<u8>(), rand::random::<u8>())
+fn random_color() -> (u8, u8, u8) {
+    (
+        rand::random::<u8>(),
+        rand::random::<u8>(),
+        rand::random::<u8>(),
+    )
 }
 
 fn main() {
@@ -21,21 +25,28 @@ fn main() {
     loop {
         engine.wait_frame(); // wait for next frame + capture inputs
         engine.check_resize(); // resize the terminal if its size has changed
-        if engine.is_key_pressed(Key::Char('q')) { // if the user presses 'q' :
+        if engine.is_key_pressed(Key::Char('q')) {
+            // if the user presses 'q' :
             break; // exits app
         }
-    
+
         // generate two random positions and a color
         let pos_1 = random_pos(engine.get_width(), engine.get_height());
         let pos_2 = random_pos(engine.get_width(), engine.get_height());
         let pxl_c = random_color();
 
         // draw a line using the three variables above
-        engine.line(pos_1.0 as i32, pos_1.1 as i32, pos_2.0 as i32, pos_2.1 as i32, pixel::pxl_fg('#', color::Rgb(pxl_c.0, pxl_c.1, pxl_c.2)));
+        engine.line(
+            pos_1.0 as i32,
+            pos_1.1 as i32,
+            pos_2.0 as i32,
+            pos_2.1 as i32,
+            pixel::pxl_fg('#', color::Rgb(pxl_c.0, pxl_c.1, pxl_c.2)),
+        );
 
         // we keep a small space to display FPS at the top-left corner
-        engine.print(0,0,"         ");
-        engine.print(0,0,format!("FPS: {}",last_fps).as_str());
+        engine.print(0, 0, "         ");
+        engine.print(0, 0, format!("FPS: {}", last_fps).as_str());
 
         engine.draw(); // draw the screen
 

@@ -7,11 +7,10 @@ use termion::color;
 #[derive(Clone, Eq, PartialEq)]
 pub struct Pixel {
     pub colors: String,
-    pub chr: char
+    pub chr: char,
 }
 impl ToString for Pixel {
-    fn to_string(&self) -> String
-    {
+    fn to_string(&self) -> String {
         let mut output = String::from(self.colors.as_str());
         output.push(self.chr);
         output
@@ -19,8 +18,8 @@ impl ToString for Pixel {
 }
 
 /// Generate a pixel using a character, a foreground and background color
-/// 
-/// usage: 
+///
+/// usage:
 /// ```
 /// use console_engine::pixel;
 /// use console_engine::termion::color;
@@ -30,14 +29,14 @@ impl ToString for Pixel {
 pub fn pxl_fbg<C1: color::Color, C2: color::Color>(value: char, fg: C1, bg: C2) -> Pixel {
     Pixel {
         colors: format!("{}{}", color::Fg(fg), color::Bg(bg)),
-        chr: value
+        chr: value,
     }
 }
 
 /// Generate a pixel using a character and a foreground color.  
 /// Background color is always black.
-/// 
-/// usage: 
+///
+/// usage:
 /// ```
 /// use console_engine::pixel;
 /// use console_engine::termion::color;
@@ -47,13 +46,13 @@ pub fn pxl_fbg<C1: color::Color, C2: color::Color>(value: char, fg: C1, bg: C2) 
 pub fn pxl_fg<C: color::Color>(value: char, fg: C) -> Pixel {
     Pixel {
         colors: format!("{}{}", color::Fg(fg), color::Bg(color::Black)),
-        chr: value
+        chr: value,
     }
 }
 /// Generate a pixel using a character and a background color.  
 /// Foreground color is always White.
-/// 
-/// usage: 
+///
+/// usage:
 /// ```
 /// use console_engine::pixel;
 /// use console_engine::termion::color;
@@ -63,15 +62,15 @@ pub fn pxl_fg<C: color::Color>(value: char, fg: C) -> Pixel {
 pub fn pxl_bg<C: color::Color>(value: char, bg: C) -> Pixel {
     Pixel {
         colors: format!("{}{}", color::Fg(color::White), color::Bg(bg)),
-        chr: value
+        chr: value,
     }
 }
 
 /// Generate a pixel using a character  
 /// Foreground color is always White.  
 /// Background color is always black.
-/// 
-/// usage: 
+///
+/// usage:
 /// ```
 /// use console_engine::pixel;
 /// // ...
@@ -80,6 +79,6 @@ pub fn pxl_bg<C: color::Color>(value: char, bg: C) -> Pixel {
 pub fn pxl(value: char) -> Pixel {
     Pixel {
         colors: format!("{}{}", color::Fg(color::White), color::Bg(color::Black)),
-        chr: value
+        chr: value,
     }
 }

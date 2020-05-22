@@ -1,6 +1,5 @@
-pub fn union<T: PartialEq + Clone>(vector1: &[T], vector2: &[T]) -> Vec<T>
-{
-    let mut unioned: Vec<T> = vec!();
+pub fn union<T: PartialEq + Clone>(vector1: &[T], vector2: &[T]) -> Vec<T> {
+    let mut unioned: Vec<T> = vec![];
     for element in vector1 {
         unioned.push(element.clone());
     }
@@ -12,9 +11,8 @@ pub fn union<T: PartialEq + Clone>(vector1: &[T], vector2: &[T]) -> Vec<T>
     unioned
 }
 
-pub fn intersect<T: PartialEq + Clone>(vector1: &[T], vector2: &[T]) -> Vec<T>
-{
-    let mut intersected = vec!();
+pub fn intersect<T: PartialEq + Clone>(vector1: &[T], vector2: &[T]) -> Vec<T> {
+    let mut intersected = vec![];
     for element in vector1 {
         if vector2.contains(element) {
             intersected.push(element.clone());
@@ -39,9 +37,8 @@ pub fn intersect<T: PartialEq + Clone>(vector1: &[T], vector2: &[T]) -> Vec<T>
 //     return outersected;
 // }
 
-pub fn outersect_left<T: PartialEq + Clone>(vector1: &[T], vector2: &[T]) -> Vec<T>
-{
-    let mut outersected = vec!();
+pub fn outersect_left<T: PartialEq + Clone>(vector1: &[T], vector2: &[T]) -> Vec<T> {
+    let mut outersected = vec![];
     for element in vector1 {
         if !vector2.contains(element) {
             outersected.push(element.clone());

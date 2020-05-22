@@ -1,11 +1,10 @@
-use console_engine::ConsoleEngine;
 use console_engine::pixel;
 use console_engine::termion::color;
 use console_engine::termion::event::Key;
+use console_engine::ConsoleEngine;
 
 /// custom function for generating a random u32 bound into [0;max[
-fn random(max: u32) -> u32
-{
+fn random(max: u32) -> u32 {
     rand::random::<u32>() % max
 }
 
@@ -14,7 +13,7 @@ enum Direction {
     North,
     East,
     South,
-    West
+    West,
 }
 
 /// Snake structure :  
@@ -28,7 +27,7 @@ struct Snake {
     pos_y: u32,
     apple_x: u32,
     apple_y: u32,
-    body: Vec<(u32, u32)>
+    body: Vec<(u32, u32)>,
 }
 impl Snake {
     /// Game initialization
@@ -42,7 +41,7 @@ impl Snake {
             pos_y: 4,
             apple_x: 0,
             apple_y: 0,
-            body: vec![(3,4), (2,4)]
+            body: vec![(3, 4), (2, 4)],
         }
     }
 
@@ -56,7 +55,7 @@ impl Snake {
 
             // check if the coordinates aren't colliding with the snake's body
             // sets the position if no collision
-            if !self.body.contains(&(x,y)) {
+            if !self.body.contains(&(x, y)) {
                 self.apple_x = x;
                 self.apple_y = y;
                 return;
@@ -67,7 +66,7 @@ impl Snake {
                 // bruteforce the first available position
                 for y in 0..self.bound_h {
                     for x in 0..self.bound_w {
-                        if !self.body.contains(&(x,y)) {
+                        if !self.body.contains(&(x, y)) {
                             self.apple_x = x;
                             self.apple_y = y;
                             return;
@@ -83,7 +82,6 @@ impl Snake {
 
     //
     pub fn input(&mut self, engine: &ConsoleEngine) {
-
         if self.playing {
             // Change snake's direction based on a keypad layout
             if engine.is_key_pressed(Key::Char('8')) || engine.is_key_pressed(Key::Up) {
@@ -106,7 +104,7 @@ impl Snake {
                 self.direction = Direction::East;
                 self.pos_x = 4;
                 self.pos_y = 4;
-                self.body = vec![(3,4), (2,4)];
+                self.body = vec![(3, 4), (2, 4)];
                 self.gen_apple();
             }
         }
@@ -122,7 +120,7 @@ impl Snake {
                 Direction::North => dy = -1,
                 Direction::East => dx = 1,
                 Direction::South => dy = 1,
-                Direction::West => dx = -1
+                Direction::West => dx = -1,
             }
             // if the snake collides with top and left boundaries, game over
             // this check need to be made first to bypass an underflowing
@@ -131,7 +129,10 @@ impl Snake {
                 return;
             }
             // calculate new position, can't underflow because of the check above
-            let new_pos = ((self.pos_x as i32 + dx) as u32, (self.pos_y as i32 + dy) as u32);
+            let new_pos = (
+                (self.pos_x as i32 + dx) as u32,
+                (self.pos_y as i32 + dy) as u32,
+            );
 
             // if collide with bottom and right boundaries, game over
             if new_pos.0 >= self.bound_w || new_pos.1 >= self.bound_h {
@@ -146,12 +147,12 @@ impl Snake {
             // if collide with apple, add a new segment in snake's body
             // and generate a new apple
             if new_pos == (self.apple_x, self.apple_y) {
-                self.body.insert(0, (self.pos_x,self.pos_y));
+                self.body.insert(0, (self.pos_x, self.pos_y));
                 self.gen_apple();
             }
             // if still alive, move the body
             if self.playing {
-                self.body.insert(0, (self.pos_x,self.pos_y));
+                self.body.insert(0, (self.pos_x, self.pos_y));
                 self.pos_x = new_pos.0;
                 self.pos_y = new_pos.1;
                 self.body.pop();
@@ -162,58 +163,70 @@ impl Snake {
     pub fn draw(&self, engine: &mut ConsoleEngine) {
         if self.playing {
             // draw apple
-            engine.set_pxl(self.apple_x as i32, self.apple_y as i32, pixel::pxl_fg('O', color::Red));
+            engine.set_pxl(
+                self.apple_x as i32,
+                self.apple_y as i32,
+                pixel::pxl_fg('O', color::Red),
+            );
             // draw snake's body
             for segment in self.body.iter() {
-                engine.set_pxl(segment.0 as i32, segment.1 as i32, pixel::pxl_fg('#', color::Green));
+                engine.set_pxl(
+                    segment.0 as i32,
+                    segment.1 as i32,
+                    pixel::pxl_fg('#', color::Green),
+                );
             }
             // don't forget snake's head !
-            engine.set_pxl(self.pos_x as i32, self.pos_y as i32, pixel::pxl_fg('☻', color::LightGreen))
+            engine.set_pxl(
+                self.pos_x as i32,
+                self.pos_y as i32,
+                pixel::pxl_fg('☻', color::LightGreen),
+            )
         } else {
             // blink a message, inviting the player to press space
             // and display controls on the other side
             if engine.frame_count % 8 >= 4 {
-                engine.print_fbg(2,1,"Press", color::LightYellow, color::Black);
-                engine.print_fbg(2,2,"Space", color::LightYellow, color::Black);
-                engine.print_fbg(3,3,"To", color::LightYellow, color::Black);
-                engine.print_fbg(2,4,"Play", color::LightYellow, color::Black);
+                engine.print_fbg(2, 1, "Press", color::LightYellow, color::Black);
+                engine.print_fbg(2, 2, "Space", color::LightYellow, color::Black);
+                engine.print_fbg(3, 3, "To", color::LightYellow, color::Black);
+                engine.print_fbg(2, 4, "Play", color::LightYellow, color::Black);
             } else {
-                engine.print(4,1,   "8");
-                engine.print(4,2,   "^");
-                engine.print(1,3,"4 < > 6");
-                engine.print(4,4,   "v");
-                engine.print(4,5,   "2");
+                engine.print(4, 1, "8");
+                engine.print(4, 2, "^");
+                engine.print(1, 3, "4 < > 6");
+                engine.print(4, 4, "v");
+                engine.print(4, 5, "2");
             }
             // score is always displayed
-            engine.print(1,8,format!("Score:{}", self.body.len()-2).as_str());
+            engine.print(1, 8, format!("Score:{}", self.body.len() - 2).as_str());
         }
     }
 }
 
 fn main() {
     // initializes a screen filling the terminal of at least 10x10 of size with a target of 4 frame per second
-    let mut engine = console_engine::ConsoleEngine::init_fill_require(10,10,4);
+    let mut engine = console_engine::ConsoleEngine::init_fill_require(10, 10, 4);
 
     // initialize game here, providing term size as boundaries
     let mut snake = Snake::init(engine.get_width(), engine.get_height());
-    
+
     // main loop, be aware that you'll have to break it because ctrl+C is captured
     loop {
         engine.wait_frame(); // wait for next frame + capture inputs
-        // engine.check_resize(); here we do not want to resize the terminal because it could break the boundaries of the game
+                             // engine.check_resize(); here we do not want to resize the terminal because it could break the boundaries of the game
 
         // exit check
-        if engine.is_key_pressed(Key::Char('q')) { 
+        if engine.is_key_pressed(Key::Char('q')) {
             break;
         }
         engine.clear_screen(); // reset the screen
-        
+
         // run the game
         snake.input(&engine);
         snake.update_position();
         // draw the game in engine's screen
         snake.draw(&mut engine);
-    
+
         engine.draw(); // draw the screen
     }
 }
