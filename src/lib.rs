@@ -93,7 +93,7 @@ impl ConsoleEngine {
             width: width,
             height: height,
             screen: Screen::new(width, height),
-            screen_last_frame: Screen::from_vec(vec![], width, height),
+            screen_last_frame: Screen::new_empty(width, height),
             instant: std::time::Instant::now(),
             keys_pressed: vec![],
             keys_held: vec![],
@@ -428,7 +428,7 @@ impl ConsoleEngine {
         self.screen.resize(new_width, new_height);
         self.width = new_width;
         self.height = new_height;
-        self.screen_last_frame = Screen::from_vec(vec![], self.width, self.height);
+        self.screen_last_frame = Screen::new_empty(self.width, self.height);
     }
 
     /// Changes the screen instance used by the engine and updates internal informations
@@ -459,7 +459,7 @@ impl ConsoleEngine {
         self.width = screen.get_width();
         self.height = screen.get_height();
         self.screen = screen.clone();
-        self.screen_last_frame = Screen::from_vec(vec![], self.width, self.height);
+        self.screen_last_frame = Screen::new_empty(self.width, self.height);
     }
 
     /// Returns a clone of the current screen
@@ -512,16 +512,14 @@ impl ConsoleEngine {
         // write!(output_screen, "{}", termion::cursor::Goto(1,1)).unwrap();
         let mut current_colors = String::from("");
         let mut moving = false;
-        let screen = self.screen.open_screen();
-        let screen_last_frame = self.screen_last_frame.open_screen().screen;
+        self.screen_last_frame.check_empty(); // refresh internal "empty" value
         // iterates through the screen memory and prints it on the output buffer
-        for y in 0..self.height {
-            for x in 0..self.width {
-                let index = screen.coord_to_index(x as i32, y as i32);
-                let pixel = &screen[index];
+        for y in 0..self.height as i32 {
+            for x in 0..self.width as i32 {
+                let pixel = self.screen.get_pxl(x, y).unwrap();
                 // we check if the screen has been modified at this coordinate
                 // if so, we write like normally, else we set a 'moving' flag
-                if screen_last_frame.is_empty() || *pixel != screen_last_frame[index] {
+                if self.screen_last_frame.is_empty() || pixel != self.screen_last_frame.get_pxl(x, y).unwrap() {
                     if moving {
                         // if the moving flag is set, we need to write a goto instruction first
                         // this optimization minimize useless write on the screen
@@ -545,7 +543,7 @@ impl ConsoleEngine {
                     moving = true
                 }
             }
-            if y < self.height-1 {
+            if y < self.height as i32-1 {
                 output_screen.push_str("\r\n");
             }
         }
@@ -580,7 +578,7 @@ impl ConsoleEngine {
     /// - [snake](https://github.com/VincentFoulon80/console_engine/blob/master/examples/snake.rs)
     /// - [tetris](https://github.com/VincentFoulon80/console_engine/blob/master/examples/tetris.rs)
     pub fn wait_frame(&mut self) {
-        let mut pressed: Vec<Event> = vec!();
+        let mut pressed: Vec<Event> = vec![];
 
         // if there is time before next frame, sleep until next frame
         if self.time_limit > self.instant.elapsed() {

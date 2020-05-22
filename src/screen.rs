@@ -4,8 +4,6 @@ use super::pixel;
 use super::pixel::Pixel;
 use super::termion::color;
 
-use std::ops::Index;
-
 /// Screen structure
 /// 
 /// A standalone structure that provides every drawing function that ConsoleEngine provides.
@@ -15,7 +13,8 @@ use std::ops::Index;
 pub struct Screen {
     width: u32,
     height: u32,
-    screen: Vec<Pixel>
+    screen: Vec<Pixel>,
+    empty: bool
 }
 
 /// # Basic Usage :
@@ -44,20 +43,39 @@ impl Screen {
     /// Creates a new Screen object with the provided width and height.
     pub fn new(width: u32, height: u32) -> Screen
     {
-        Screen {
-            width: width,
-            height: height,
-            screen: vec![pixel::pxl(' '); (width*height) as usize]
-        }
+        Self::new_fill(width, height, pixel::pxl(' '))
     }
 
-    /// Creates a new Screen object with the provided Vec<Pixel> structure fitting the width and height parameters.
-    pub fn from_vec(vec: Vec<Pixel>, width: u32, height: u32) -> Screen
+    /// Creates a new empty Screen object with the provided widht and height
+    /// Makes sure to [`clear`](#method.clear) or [`fill`](#method.fill) it before drawing anything
+    pub fn new_empty(width: u32, height: u32) -> Screen
+    {
+        let mut scr = Self::new_fill(width, height, pixel::pxl('\u{0}'));
+        scr.empty = true;
+        scr
+    }
+
+    /// Creates a new Screen object with the provided width and height filled with a specific Pixel
+    pub fn new_fill(width: u32, height: u32, pixel: Pixel) -> Screen
     {
         Screen {
             width: width,
             height: height,
-            screen: vec
+            screen: vec![pixel; (width*height) as usize],
+            empty: false
+        }
+    }
+
+    /// Creates a new Screen object with the provided Vec<Pixel> structure fitting the width and height parameters.
+    /// The Vec length must correspond to width*height
+    pub fn from_vec(vec: Vec<Pixel>, width: u32, height: u32) -> Screen
+    {
+        assert!(vec.len() == (width*height) as usize, format!("The Vec structure must have the length corresponding to width*height (={}) but the given Vec has a length of {}.", width*height, vec.len()));
+        Screen {
+            width: width,
+            height: height,
+            screen: vec,
+            empty: false
         }
     }
 
@@ -87,7 +105,32 @@ impl Screen {
     /// Reset the screen to a blank state
     pub fn clear(&mut self) 
     {
-        self.screen = vec![pixel::pxl(' '); (self.width*self.height) as usize];
+        self.fill(pixel::pxl(' '));
+    }
+
+    // Fill the entire screen to the given pixel
+    pub fn fill(&mut self, pixel: Pixel)
+    {
+        self.empty = pixel.chr == '\u{0}';
+        self.screen = vec![pixel; (self.width*self.height) as usize];
+    }
+
+    // checks whenever the screen is full of "zero" characters
+    // refresh internal "empty" value
+    pub fn check_empty(&mut self) -> bool {
+        for pxl in self.screen.iter() {
+            if pxl.chr != '\u{0}' {
+                self.empty = false;
+                return false;
+            }
+        }
+        self.empty = true;
+        true
+    }
+
+    pub fn is_empty(&self) -> bool
+    {
+        self.empty
     }
 
     /// prints a string at the specified coordinates.  
@@ -638,116 +681,13 @@ impl Screen {
     /// 
     /// example : on a 10x10 screen
     /// `coord_to_index(2,1)` will return index 12
-    pub fn coord_to_index(&self, x: i32, y: i32) -> usize
+    fn coord_to_index(&self, x: i32, y: i32) -> usize
     {
         ((y*self.width as i32) + x) as usize
     }
-
-    /// Opens the screen to a publically accessible state  
-    /// This exposes the screen's Pixel vector so you can directly access it via array index
-    /// 
-    /// When you have finished you can close the screen to regain access to his drawing functions.
-    /// 
-    /// usage:
-    /// ```
-    /// use console_engine::pixel;
-    /// 
-    /// // open the screen to gain access to its data publicly
-    /// let pub_screen = screen.open_screen()
-    /// // you can now access the screen by array indexing
-    /// let pix = pub_screen[4];
-    /// // you also have access to a function that converts screen coordinates to index
-    /// let pix = pub_screen[pub_screen.coord_to_index(4,2)];
-    /// // you can also edit a pixel using the same indexing
-    /// pub_screen[pub_screen.coord_to_index(5,2)] = pix;
-    /// pub_screen[pub_screen.coord_to_index(4,2)] = pixel::pxl(' ');
-    /// // when you have finished, you can close back the screen
-    /// screen = pub_screen.close_screen();
-    /// ```
-    pub fn open_screen(&self) -> PubScreen
-    {
-        let cloned_screen = self.clone();
-        PubScreen {
-            width: cloned_screen.width,
-            height: cloned_screen.height,
-            screen: cloned_screen.screen
-        }
-    }
 }
+
 impl ToString for Screen {
-    fn to_string(&self) -> String
-    {
-        let mut output = String::new();
-        for i in 0..self.width*self.height {
-            output.push_str(self.screen[i as usize].to_string().as_str());
-            if i != self.width*self.height-1 && i % self.width == self.width-1 {
-                output.push_str("\r\n");
-            }
-        }
-        output
-    }
-}
-
-
-/// # Publicly Accessible Screen
-/// 
-/// You can access this structure by calling 
-/// ```
-/// let mut pub_screen = screen.open_screen();
-/// ```
-/// 
-/// While in this mode, you can directly access and edit the screen but you'll need to close it back to be able to use drawing functions.
-/// To get a normal screen back, you can use the following function :
-/// ```
-/// screen = pub_screen.close_screen();
-/// ```
-/// 
-/// example :
-/// ```
-/// // open the screen to gain access to its data publicly
-/// let pub_screen = screen.open_screen()
-/// // you can now access the screen by array indexing
-/// let pix = pub_screen[4];
-/// // you also have access to a function that converts screen coordinates to index
-/// let pix = pub_screen[pub_screen.coord_to_index(4,2)];
-/// // you can also edit a pixel using the same indexing
-/// pub_screen[pub_screen.coord_to_index(5,2)] = pix;
-/// pub_screen[pub_screen.coord_to_index(4,2)] = pixel::pxl(' ');
-/// // when you have finished, you can close back the screen
-/// screen = pub_screen.close_screen();
-/// ```
-/// 
-#[derive(Clone)]
-pub struct PubScreen {
-    width: u32,
-    height: u32,
-    pub screen: Vec<Pixel>
-}
-
-impl PubScreen {
-    pub fn close_screen(&self) -> Screen
-    {
-        Screen::from_vec(self.screen.clone(), self.width, self.height)
-    }
-
-    /// Converts x and y coordinates to screen index
-    /// 
-    /// example : on a 10x10 screen
-    /// `coord_to_index(2,1)` will return index 12
-    pub fn coord_to_index(&self, x: i32, y: i32) -> usize
-    {
-        return ((y*self.width as i32) + x) as usize;
-    }
-}
-impl Index<usize> for PubScreen {
-    type Output = Pixel;
-    
-    fn index(&self, index: usize) -> &Self::Output 
-    {
-        &self.screen[index]
-    }
-}
-impl ToString for PubScreen {
     fn to_string(&self) -> String
     {
         let mut output = String::new();
