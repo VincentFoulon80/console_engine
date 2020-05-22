@@ -749,9 +749,8 @@ impl ConsoleEngine {
     /// ```
     /// // prints a 'P' where the mouse's left button has been pressed
     /// let mouse_pos = engine.get_mouse_press(termion::event::MouseButton::Left);
-    /// if mouse_pos.is_some() {
-    ///    let mouse_pos = mouse_pos.unwrap();
-    ///    engine.set_pxl(mouse_pos.0 as i32, mouse_pos.1 as i32, pixel::pxl('P'));
+    /// if let Some(mouse_pos) = mouse_pos {
+    ///     engine.set_pxl(mouse_pos.0 as i32, mouse_pos.1 as i32, pixel::pxl('P'));
     /// }
     /// ```
     ///
@@ -775,8 +774,7 @@ impl ConsoleEngine {
     /// ```
     /// // prints a 'H' where the mouse is currently held
     /// let mouse_pos = engine.get_mouse_held();
-    /// if mouse_pos.is_some() {
-    ///     let mouse_pos = mouse_pos.unwrap();
+    /// if let Some(mouse_pos) = mouse_pos {
     ///     engine.set_pxl(mouse_pos.0 as i32, mouse_pos.1 as i32, pixel::pxl('H'));
     /// }
     /// ```
@@ -799,8 +797,7 @@ impl ConsoleEngine {
     /// ```
     /// // prints a 'R' where the mouse has been released
     /// let mouse_pos = engine.get_mouse_released();
-    /// if mouse_pos.is_some() {
-    ///     let mouse_pos = mouse_pos.unwrap();
+    /// if let Some(mouse_pos) = mouse_pos {
     ///     engine.set_pxl(mouse_pos.0 as i32, mouse_pos.1 as i32, pixel::pxl('R'));
     /// }
     /// ```
