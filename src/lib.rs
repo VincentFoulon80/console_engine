@@ -726,20 +726,15 @@ impl ConsoleEngine {
     {
         for evt in self.keys_pressed.iter() {
             match evt {
-                Event::Mouse(me) => {
-                    match me {
-                        termion::event::MouseEvent::Press(mouse, x, y) => {
-                            if *mouse == button {
-                                return Some((x.clone() as u32 -1, y.clone() as u32 -1));
-                            }
-                        },
-                        _ => {}
+                Event::Mouse(termion::event::MouseEvent::Press(mouse, x, y)) => {
+                    if *mouse == button {
+                        return Some((x.clone() as u32 -1, y.clone() as u32 -1));
                     }
-                }
+                },
                 _ => {}
             };
         }
-        return None;
+        None
     }
 
     /// Give the mouse's terminal coordinates if a button is held on the mouse
@@ -761,18 +756,13 @@ impl ConsoleEngine {
     {
         for evt in self.keys_pressed.iter() {
             match evt {
-                Event::Mouse(me) => {
-                    match me {
-                        termion::event::MouseEvent::Hold(x, y) => {
-                            return Some((x.clone() as u32 -1, y.clone() as u32 -1));
-                        },
-                        _ => {}
-                    }
-                }
+                Event::Mouse(termion::event::MouseEvent::Hold(x, y)) => {
+                    return Some((x.clone() as u32 -1, y.clone() as u32 -1));
+                },
                 _ => {}
             };
         }
-        return None;
+        None
     }
 
     /// Give the mouse's terminal coordinates if a button has been released on the mouse
@@ -794,18 +784,13 @@ impl ConsoleEngine {
     {
         for evt in self.keys_pressed.iter() {
             match evt {
-                Event::Mouse(me) => {
-                    match me {
-                        termion::event::MouseEvent::Release(x, y) => {
-                            return Some((x.clone() as u32 -1, y.clone() as u32 -1));
-                        },
-                        _ => {}
-                    }
-                }
+                Event::Mouse(termion::event::MouseEvent::Release(x, y)) => {
+                    return Some((x.clone() as u32 -1, y.clone() as u32 -1));
+                },
                 _ => {}
             };
         }
-        return None;
+        None
     }
 }
 
