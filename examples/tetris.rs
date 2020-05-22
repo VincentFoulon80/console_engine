@@ -302,21 +302,15 @@ fn main() {
         }
 
         // rotate the piece
-        if engine.is_key_held(Key::Char('8')) || engine.is_key_held(Key::Up) {
-            if piece_fits(&game_scr, &piece, &piece_r.turn_right(), piece_x, piece_y) {
-                piece_r = piece_r.turn_right();
-            }
+        if (engine.is_key_held(Key::Char('8')) || engine.is_key_held(Key::Up)) && piece_fits(&game_scr, &piece, &piece_r.turn_right(), piece_x, piece_y) {
+            piece_r = piece_r.turn_right();
         }
         // move the piece left or right
-        if engine.is_key_held(Key::Char('4')) || engine.is_key_held(Key::Left) {
-            if piece_x > 0 && piece_fits(&game_scr, &piece, &piece_r, piece_x-1, piece_y) {
-                piece_x -= 1;
-            }
+        if (engine.is_key_held(Key::Char('4')) || engine.is_key_held(Key::Left)) && piece_x > 0 && piece_fits(&game_scr, &piece, &piece_r, piece_x-1, piece_y) {
+            piece_x -= 1;
         }
-        if engine.is_key_held(Key::Char('6')) || engine.is_key_held(Key::Right) {
-            if piece_x < game_w && piece_fits(&game_scr, &piece, &piece_r, piece_x+1, piece_y) {
-                piece_x += 1;
-            }
+        if (engine.is_key_held(Key::Char('6')) || engine.is_key_held(Key::Right)) && piece_x < game_w && piece_fits(&game_scr, &piece, &piece_r, piece_x+1, piece_y) {
+            piece_x += 1;
         }
         // force the piece to drop
         if engine.is_key_held(Key::Char('2')) || engine.is_key_held(Key::Down) {

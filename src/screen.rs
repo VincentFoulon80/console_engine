@@ -59,8 +59,8 @@ impl Screen {
     pub fn new_fill(width: u32, height: u32, pixel: Pixel) -> Screen
     {
         Screen {
-            width: width,
-            height: height,
+            width,
+            height,
             screen: vec![pixel; (width*height) as usize],
             empty: false
         }
@@ -72,8 +72,8 @@ impl Screen {
     {
         assert!(vec.len() == (width*height) as usize, format!("The Vec structure must have the length corresponding to width*height (={}) but the given Vec has a length of {}.", width*height, vec.len()));
         Screen {
-            width: width,
-            height: height,
+            width,
+            height,
             screen: vec,
             empty: false
         }
@@ -176,10 +176,7 @@ impl Screen {
             // get screen index, initializes a counter 
             // and get chars of the provided String
             let pos = self.coord_to_index(std::cmp::max(0,x), y);
-            let mut delta_x = 0usize;
-            if x < 0 {
-                delta_x = x.abs() as usize;
-            }
+            let delta_x = if x < 0 { x.abs() as usize } else { 0usize };
             let mut count = delta_x;
             let char_vec: Vec<char> = string.chars().collect();
             let origin_row = pos/self.get_width() as usize;
@@ -248,12 +245,8 @@ impl Screen {
     /// Automatically called by line if needed
     pub fn h_line(&mut self, start_x: i32, start_y: i32, end_x: i32, character: Pixel)
     {
-        let mut start = start_x;
-        let mut end = end_x+1;
-        if start_x > end_x {
-            start = end_x;
-            end = start_x+1;
-        }
+        let start = if start_x > end_x {end_x} else {start_x};
+        let end = if start_x > end_x {start_x+1} else {end_x+1};
         for i in start..end {
             self.set_pxl_ref(i, start_y, &character);
         }
@@ -263,12 +256,8 @@ impl Screen {
     /// Automatically called by line if needed
     pub fn v_line(&mut self, start_x: i32, start_y: i32, end_y: i32, character: Pixel)
     {
-        let mut start = start_y;
-        let mut end = end_y+1;
-        if start_y > end_y {
-            start = end_y;
-            end = start_y+1;
-        }
+        let start = if start_y > end_y {end_y} else {start_y};
+        let end = if start_y > end_y {start_y+1} else {end_y+1};
         for j in start..end {
             self.set_pxl_ref(start_x, j, &character);
         }
@@ -319,10 +308,10 @@ impl Screen {
             for x in x0..x1+1 {
                 screen.set_pxl_ref(x, y, &character);
                 if d > 0 {
-                    y = y + yi;
-                    d = d - 2*dx;
+                    y += yi;
+                    d -= 2*dx;
                 }
-                d = d + 2*dy;
+                d += 2*dy;
             } 
         };
 
@@ -340,10 +329,10 @@ impl Screen {
             for y in y0..y1+1 {
                 screen.set_pxl_ref(x, y, &character);
                 if d > 0 {
-                    x = x + xi;
-                    d = d - 2*dy;
+                    x += xi;
+                    d -= 2*dy;
                 }
-                d = d + 2*dx;
+                d += 2*dx;
             }   
         };
 
@@ -353,12 +342,10 @@ impl Screen {
             } else {
                 line_low(self, start_x, start_y, end_x, end_y);
             }
+        } else if start_y > end_y {
+            line_high(self, end_x, end_y, start_x, start_y);
         } else {
-            if start_y > end_y {
-                line_high(self, end_x, end_y, start_x, start_y);
-            } else {
-                line_high(self, start_x, start_y, end_x, end_y);
-            }
+            line_high(self, start_x, start_y, end_x, end_y);
         }
     }
 
@@ -383,7 +370,7 @@ impl Screen {
         self.h_line(start_x, start_y, end_x,   character.clone()); // top
         self.v_line(end_x,   start_y, end_y,   character.clone()); // right
         self.h_line(end_x,   end_y,   start_x, character.clone()); // bottom
-        self.v_line(start_x, end_y,   start_y, character.clone()); // left
+        self.v_line(start_x, end_y,   start_y, character);         // left
     }
 
     /// Fill a rectangle of the provided character between two sets of coordinates  
@@ -514,7 +501,7 @@ impl Screen {
     {
         self.line(x1, y1, x2, y2, character.clone());
         self.line(x2, y2, x3, y3, character.clone());
-        self.line(x3, y3, x1, y1, character.clone());
+        self.line(x3, y3, x1, y1, character);
     }
 
     /// Fill a triangle of the provided character using three sets of coordinates

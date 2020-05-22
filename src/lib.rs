@@ -90,8 +90,8 @@ impl ConsoleEngine {
             input: termion::async_stdin().events(),
             time_limit: std::time::Duration::from_millis(1000/target_fps as u64),
             frame_count: 0,
-            width: width,
-            height: height,
+            width,
+            height,
             screen: Screen::new(width, height),
             screen_last_frame: Screen::new_empty(width, height),
             instant: std::time::Instant::now(),
@@ -100,13 +100,13 @@ impl ConsoleEngine {
             keys_released: vec![],
         };
         my.begin();
-        return my;
+        my
     }
     
     /// Initialize a screen filling the entire terminal with the target FPS
     pub fn init_fill(target_fps: u32) -> ConsoleEngine {
         let size = termion::terminal_size().unwrap();
-        return ConsoleEngine::init(size.0 as u32, size.1 as u32, target_fps);
+        ConsoleEngine::init(size.0 as u32, size.1 as u32, target_fps)
     }
 
     /// Initialize a screen filling the entire terminal with the target FPS  
@@ -114,7 +114,7 @@ impl ConsoleEngine {
     pub fn init_fill_require(width: u32, height: u32, target_fps: u32) -> ConsoleEngine {
         let size = termion::terminal_size().unwrap();
         assert!(size.0 as u32 >= width && size.1 as u32 >= height, "Your terminal must have at least a width and height of {}x{} characters. Currently has {}x{}", width, height, size.0, size.1);
-        return ConsoleEngine::init_fill(target_fps);
+        ConsoleEngine::init_fill(target_fps)
     }
 
     #[cfg(windows)]
@@ -723,13 +723,10 @@ impl ConsoleEngine {
     pub fn get_mouse_press(&self, button: termion::event::MouseButton) -> Option<(u32,u32)> 
     {
         for evt in self.keys_pressed.iter() {
-            match evt {
-                Event::Mouse(termion::event::MouseEvent::Press(mouse, x, y)) => {
-                    if *mouse == button {
-                        return Some((x.clone() as u32 -1, y.clone() as u32 -1));
-                    }
-                },
-                _ => {}
+            if let Event::Mouse(termion::event::MouseEvent::Press(mouse, x, y)) = evt {
+                if *mouse == button {
+                    return Some((*x as u32 -1, *y as u32 -1));
+                }
             };
         }
         None
@@ -753,11 +750,8 @@ impl ConsoleEngine {
     pub fn get_mouse_held(&self) -> Option<(u32,u32)> 
     {
         for evt in self.keys_pressed.iter() {
-            match evt {
-                Event::Mouse(termion::event::MouseEvent::Hold(x, y)) => {
-                    return Some((x.clone() as u32 -1, y.clone() as u32 -1));
-                },
-                _ => {}
+            if let Event::Mouse(termion::event::MouseEvent::Hold(x, y)) = evt {
+                return Some((*x as u32 -1, *y as u32 -1));
             };
         }
         None
@@ -781,11 +775,8 @@ impl ConsoleEngine {
     pub fn get_mouse_released(&self) -> Option<(u32,u32)> 
     {
         for evt in self.keys_pressed.iter() {
-            match evt {
-                Event::Mouse(termion::event::MouseEvent::Release(x, y)) => {
-                    return Some((x.clone() as u32 -1, y.clone() as u32 -1));
-                },
-                _ => {}
+            if let Event::Mouse(termion::event::MouseEvent::Release(x, y)) = evt {
+                return Some((*x as u32 -1, *y as u32 -1));
             };
         }
         None

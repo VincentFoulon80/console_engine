@@ -25,10 +25,9 @@ fn main() {
 
         // check if the mouse's left button has been pressed
         let mouse_pos = engine.get_mouse_press(MouseButton::Left);
-        if mouse_pos.is_some() {
+        if let Some(mouse_pos) = mouse_pos {
             // if the mouse position is within the boundaries of the rectangle,
             // enables dragging mode and register relative position of the mouse
-            let mouse_pos = mouse_pos.unwrap();
             if mouse_pos.0 as i32 >= rect_x && mouse_pos.0 as i32 <= rect_x+rect_w
             && mouse_pos.1 as i32 >= rect_y && mouse_pos.1 as i32 <= rect_y+rect_h {
                 dragging = true;
@@ -39,9 +38,8 @@ fn main() {
         
         // check if a mouse button is currently held
         let mouse_pos = engine.get_mouse_held();
-        if mouse_pos.is_some() {
+        if let Some(mouse_pos) = mouse_pos {
             // if dragging mode is enabled, move the rectangle according to mouse's position
-            let mouse_pos = mouse_pos.unwrap();
             if dragging {
                 rect_x = mouse_pos.0 as i32 - relative_x;
                 rect_y = mouse_pos.1 as i32 - relative_y;
