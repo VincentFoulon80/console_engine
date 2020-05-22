@@ -2,8 +2,6 @@
 
 [Changelog](https://github.com/VincentFoulon80/console_engine/releases)
 
-**Note: Code reviewer needed ! see [this issue](https://github.com/VincentFoulon80/console_engine/issues/1) for more informations**
-
 This library provides simple features for handling user's input and display for terminal applications.  
 Besides the user input and display, this library also provides some tools to build standalone "screens" that can be used as simply as printing it.
 
