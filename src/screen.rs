@@ -84,10 +84,9 @@ impl Screen {
     pub fn from_string<C1: color::Color + Clone, C2: color::Color + Clone>(string: String, fg: C1, bg: C2, width: u32, height: u32) -> Screen
     {
         assert!(string.chars().count() == (width*height) as usize, format!("The String must have the length corresponding to width*height (={}) but the given String has a length of {}.", width*height, string.chars().count()));
-        let mut vec: Vec<Pixel> = vec![];
-        for chr in string.chars() {
-            vec.push(pixel::pxl_fbg(chr, fg.clone(), bg.clone()));
-        }
+        let vec: Vec<Pixel> = string.chars()
+            .map(|chr| pixel::pxl_fbg(chr, fg.clone(), bg.clone()))
+            .collect();
         Screen::from_vec(vec, width, height)
     }
 

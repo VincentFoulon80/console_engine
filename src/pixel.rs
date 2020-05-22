@@ -4,7 +4,7 @@ use termion::color;
 
 /// # Pixel structure
 /// contains color data and character data
-#[derive(Clone)]
+#[derive(Clone, Eq, PartialEq)]
 pub struct Pixel {
     pub colors: String,
     pub chr: char
@@ -15,11 +15,6 @@ impl ToString for Pixel {
         let mut output = String::from(self.colors.as_str());
         output.push(self.chr);
         output
-    }
-}
-impl PartialEq for Pixel {
-    fn eq(&self, pxl: &Pixel) -> bool { 
-        return self.chr == pxl.chr && self.colors == pxl.colors;
     }
 }
 
