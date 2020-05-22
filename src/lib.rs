@@ -590,12 +590,11 @@ impl ConsoleEngine {
         self.frame_count += 1;
 
         // captures user's input
-        let mut c = self.input.next();
-        let mut count = 0;
-        while c.is_some() && count < 10 { // cannot support for more than 10 key presses at the same time
-            pressed.push(c.unwrap().unwrap()); 
-            c = self.input.next();
-            count += 1
+        let captured_inputs: Vec<Result<Event, std::io::Error>> = self.input.by_ref().take(10).collect();
+        for input in captured_inputs.iter() {
+            if input.is_ok() {
+                pressed.push(input.as_ref().unwrap().clone());
+            }
         }
         // updates pressed / held / released states
         let held = utils::intersect(&utils::union(&self.keys_pressed,&self.keys_held), &pressed);
