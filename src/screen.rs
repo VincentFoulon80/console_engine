@@ -157,7 +157,7 @@ impl Screen {
     }
 
     /// prints a string at the specified coordinates with the specified foreground and background color  
-    /// The string will automatically overlaps if it reach the right border
+    /// The string will be cropped if it reach the right border
     /// 
     /// usage:
     /// ```
@@ -244,6 +244,36 @@ impl Screen {
         }
     }
 
+    /// Optimized horizontal line drawing
+    /// Automatically called by line if needed
+    pub fn h_line(&mut self, start_x: i32, start_y: i32, end_x: i32, character: Pixel)
+    {
+        let mut start = start_x;
+        let mut end = end_x+1;
+        if start_x > end_x {
+            start = end_x;
+            end = start_x+1;
+        }
+        for i in start..end {
+            self.set_pxl_ref(i, start_y, &character);
+        }
+    }
+
+    /// Optimized vertical line drawing
+    /// Automatically called by line if needed
+    pub fn v_line(&mut self, start_x: i32, start_y: i32, end_y: i32, character: Pixel)
+    {
+        let mut start = start_y;
+        let mut end = end_y+1;
+        if start_y > end_y {
+            start = end_y;
+            end = start_y+1;
+        }
+        for j in start..end {
+            self.set_pxl_ref(start_x, j, &character);
+        }
+    }
+
     /// draws a line of the provided character between two sets of coordinates  
     /// see: [Bresenham's line algorithm](https://en.wikipedia.org/wiki/Bresenham%27s_line_algorithm)
     /// 
@@ -264,31 +294,13 @@ impl Screen {
     {
         let delta_x = end_x - start_x;
         let delta_y = end_y - start_y;
-        // optimized algorithms for pure horizontal or vertical lines
+        // use optimized functions for pure horizontal or vertical lines
         if delta_y == 0 {
-            let mut start = start_x;
-            let mut end = end_x+1;
-            if end_x < start_x {
-                end = start_x+1;
-                start = end_x;
-            };
-            // horizontal line
-            for i in start..end {
-                self.set_pxl_ref(i, start_y, &character);
-            }
+            self.h_line(start_x, start_y, end_x,character);
             return;
         }
         if delta_x == 0 {
-            let mut start = start_y;
-            let mut end = end_y+1;
-            if end_y < start_y {
-                end = start_y+1;
-                start = end_y;
-            };
-            // horizontal line
-            for j in start..end {
-                self.set_pxl_ref(start_x, j, &character);
-            }
+            self.v_line(start_x, start_y, end_y,character);
             return;
         }
 
@@ -368,10 +380,10 @@ impl Screen {
     /// - [tetris](https://github.com/VincentFoulon80/console_engine/blob/master/examples/tetris.rs)
     pub fn rect(&mut self, start_x: i32, start_y: i32, end_x: i32, end_y: i32, character: Pixel)
     {
-        self.line(start_x, start_y, end_x, start_y, character.clone()); // top
-        self.line(end_x, start_y, end_x, end_y, character.clone());     // right
-        self.line(end_x, end_y, start_x, end_y, character.clone());     // bottom
-        self.line(start_x, end_y, start_x, start_y, character.clone()); // left
+        self.h_line(start_x, start_y, end_x,   character.clone()); // top
+        self.v_line(end_x,   start_y, end_y,   character.clone()); // right
+        self.h_line(end_x,   end_y,   start_x, character.clone()); // bottom
+        self.v_line(start_x, end_y,   start_y, character.clone()); // left
     }
 
     /// Fill a rectangle of the provided character between two sets of coordinates  
@@ -391,7 +403,7 @@ impl Screen {
         let y0 = if start_y < end_y { start_y } else { end_y };
         let y1 = if start_y < end_y { end_y+1 } else { start_y+1 };
         for y in y0..y1 {
-            self.line(start_x, y, end_x, y, character.clone());
+            self.h_line(start_x, y, end_x, character.clone());
         }
     }
 
