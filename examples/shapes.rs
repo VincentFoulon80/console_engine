@@ -37,7 +37,7 @@ fn main() {
                 } else {
                     engine.rect(coords[0].0, coords[0].1, coords[1].0, coords[1].1, pixel::pxl('#'));
                 }
-                engine.print(0,1, String::from("Position: [2] [4] [6] [8] ; Change point: [5]   "));
+                engine.print(0,1, "Position: [2] [4] [6] [8] ; Change point: [5]   ");
             }
             Shapes::Circle => {
                 if fill {
@@ -45,7 +45,7 @@ fn main() {
                 } else {
                     engine.circle(coords[0].0, coords[0].1, coords[1].0 as u32, pixel::pxl('#'));
                 }
-                engine.print(0,1, String::from("Range: [4] [6] ; Range <-> Point : [5]   "));
+                engine.print(0,1, "Range: [4] [6] ; Range <-> Point : [5]   ");
             }
             Shapes::Triangle => {
                 if fill {
@@ -53,7 +53,7 @@ fn main() {
                 } else {
                     engine.triangle(coords[0].0, coords[0].1, coords[1].0, coords[1].1, coords[2].0, coords[2].1, pixel::pxl('#'));
                 }
-                engine.print(0,1, String::from("Position: [2] [4] [6] [8] ; Change point: [5]   "));
+                engine.print(0,1, "Position: [2] [4] [6] [8] ; Change point: [5]   ");
             },
             Shapes::Polygon => {
                 if fill {
@@ -63,11 +63,11 @@ fn main() {
                     engine.triangle(coords[0].0, coords[0].1, coords[1].0, coords[1].1, coords[2].0, coords[2].1, pixel::pxl('#'));
                     engine.triangle(coords[1].0, coords[1].1, coords[2].0, coords[2].1, coords[3].0, coords[3].1, pixel::pxl('#'));
                 }
-                engine.print(0,1, String::from("Position: [2] [4] [6] [8] ; Change point: [5]   "));
+                engine.print(0,1, "Position: [2] [4] [6] [8] ; Change point: [5]   ");
             },
         }
 
-        engine.print(0,0, format!("[S]hape: {:?}, [F]ill : {}   ", shape.clone(), fill));
+        engine.print(0,0, format!("[S]hape: {:?}, [F]ill : {}   ", shape.clone(), fill).as_str());
 
         // display the configured coordinates and highlight the current one
         if engine.frame_count % 4 >= 2 {

@@ -55,7 +55,7 @@ fn main() {
         // and display a message when it's finished
         if value_position >= MAX_VALUES {
             if engine.frame_count % 10 > 5 {
-                engine.print_fbg(2,3, String::from("Press 'q' to close"), color::LightYellow, color::Black);
+                engine.print_fbg(2,3, "Press 'q' to close", color::LightYellow, color::Black);
             }
         } else {
             let value = VALUES[value_position];
@@ -66,9 +66,9 @@ fn main() {
 
         
         // Display a header with an average and sum calculation
-        engine.print(0, 0, format!("Average : {}", (sum/value_position as u32) as f32));
+        engine.print(0, 0, format!("Average : {}", (sum/value_position as u32) as f32).as_str());
         engine.set_pxl((engine.get_width() as i32/2)-1, 0, pixel::pxl('#'));
-        engine.print((engine.get_width() as i32/2)+1, 0, format!("Sum : {}", sum));
+        engine.print((engine.get_width() as i32/2)+1, 0, format!("Sum : {}", sum).as_str());
         engine.line(0, 1, engine.get_width() as i32-1, 1, pixel::pxl('#'));
         // Draw a line at the position of the last value written
         if value_position < MAX_VALUES {

@@ -66,7 +66,7 @@ use termion::input::{TermRead, MouseTerminal};
 pub struct ConsoleEngine {
     input: termion::input::Events<termion::AsyncReader>,
     output: MouseTerminal<termion::raw::RawTerminal<Stdout>>,
-    time_limit: u128,
+    time_limit: std::time::Duration,
     /// The current frame count, publicly accessible
     pub frame_count: usize,
     width: u32,
@@ -88,7 +88,7 @@ impl ConsoleEngine {
         let mut my = ConsoleEngine {
             output: MouseTerminal::from(stdout().into_raw_mode().unwrap()),
             input: termion::async_stdin().events(),
-            time_limit: (1000/target_fps) as u128,
+            time_limit: std::time::Duration::from_millis(1000/target_fps as u64),
             frame_count: 0,
             width: width,
             height: height,
@@ -121,7 +121,7 @@ impl ConsoleEngine {
     /// Initializes the internal components such as input system
     fn begin(&mut self) {
         println!("Please Press Enter to initialize inputs");
-        while !self.input.next().is_some() {}
+        while self.input.next().is_none() {}
         println!("{}{}{}", termion::cursor::Hide, termion::clear::All, termion::cursor::Goto(1,1));
     }
     #[cfg(not(windows))]
@@ -184,7 +184,7 @@ impl ConsoleEngine {
     /// - [shapes](https://github.com/VincentFoulon80/console_engine/blob/master/examples/shapes.rs)
     /// - [snake](https://github.com/VincentFoulon80/console_engine/blob/master/examples/snake.rs)
     /// - [tetris](https://github.com/VincentFoulon80/console_engine/blob/master/examples/tetris.rs)
-    pub fn print(&mut self, x: i32, y: i32, string: String)
+    pub fn print(&mut self, x: i32, y: i32, string: &str)
     {
         self.screen.print(x,y,string)
     }
@@ -203,7 +203,7 @@ impl ConsoleEngine {
     /// - [screen-swap](https://github.com/VincentFoulon80/console_engine/blob/master/examples/screen-swap.rs)
     /// - [snake](https://github.com/VincentFoulon80/console_engine/blob/master/examples/snake.rs)
     /// - [tetris](https://github.com/VincentFoulon80/console_engine/blob/master/examples/tetris.rs)
-    pub fn print_fbg<C1: color::Color + Clone, C2: color::Color + Clone>(&mut self, x: i32, y: i32, string: String, fg: C1, bg: C2)
+    pub fn print_fbg<C1: color::Color + Clone, C2: color::Color + Clone>(&mut self, x: i32, y: i32, string: &str, fg: C1, bg: C2)
     {
         self.screen.print_fbg(x, y, string, fg, bg)
     }
@@ -507,8 +507,9 @@ impl ConsoleEngine {
         // Actually, this does not change much for Linux terminals (like 5 fps gained from this)
         // But for windows terminal we can see huge improvements (example lines-fps goes from 35-40 fps to 65-70 for a 100x50 term)
         // reset cursor position
-        let mut output_screen = String::from("");
+        let mut output_screen = String::new();
         output_screen.push_str(&format!("{}", termion::cursor::Goto(1,1)));
+        // write!(output_screen, "{}", termion::cursor::Goto(1,1)).unwrap();
         let mut current_colors = String::from("");
         let mut moving = false;
         let screen = self.screen.open_screen();
@@ -526,6 +527,7 @@ impl ConsoleEngine {
                         // this optimization minimize useless write on the screen
                         // actually writing to the screen is very slow so it's a good compromise
                         output_screen.push_str(&format!("{}", termion::cursor::Goto(1+x as u16,1+y as u16)));
+                        // write!(output_screen, "{}", termion::cursor::Goto(1+x as u16,1+y as u16)).unwrap();
                         moving = false;
                     }
                     // we check if the last color is the same as the current one.
@@ -581,8 +583,8 @@ impl ConsoleEngine {
         let mut pressed: Vec<Event> = vec!();
 
         // if there is time before next frame, sleep until next frame
-        if self.time_limit > self.instant.elapsed().as_millis() {
-            std::thread::sleep(std::time::Duration::from_millis(((self.time_limit - self.instant.elapsed().as_millis()) % self.time_limit) as u64));
+        if self.time_limit > self.instant.elapsed() {
+            std::thread::sleep(std::time::Duration::from_millis(((self.time_limit - self.instant.elapsed()).as_millis() % self.time_limit.as_millis()) as u64));
         }
         self.instant = std::time::Instant::now();
         self.frame_count += 1;

@@ -173,19 +173,19 @@ impl Snake {
             // blink a message, inviting the player to press space
             // and display controls on the other side
             if engine.frame_count % 8 >= 4 {
-                engine.print_fbg(2,1,String::from("Press"), color::LightYellow, color::Black);
-                engine.print_fbg(2,2,String::from("Space"), color::LightYellow, color::Black);
-                engine.print_fbg(3,3,String::from("To"), color::LightYellow, color::Black);
-                engine.print_fbg(2,4,String::from("Play"), color::LightYellow, color::Black);
+                engine.print_fbg(2,1,"Press", color::LightYellow, color::Black);
+                engine.print_fbg(2,2,"Space", color::LightYellow, color::Black);
+                engine.print_fbg(3,3,"To", color::LightYellow, color::Black);
+                engine.print_fbg(2,4,"Play", color::LightYellow, color::Black);
             } else {
-                engine.print(4,1,String::from("8"));
-                engine.print(4,2,String::from("^"));
-                engine.print(1,3,String::from("4 < > 6"));
-                engine.print(4,4,String::from("v"));
-                engine.print(4,5,String::from("2"));
+                engine.print(4,1,   "8");
+                engine.print(4,2,   "^");
+                engine.print(1,3,"4 < > 6");
+                engine.print(4,4,   "v");
+                engine.print(4,5,   "2");
             }
             // score is always displayed
-            engine.print(1,8,format!("Score:{}", self.body.len()-2));
+            engine.print(1,8,format!("Score:{}", self.body.len()-2).as_str());
         }
     }
 }

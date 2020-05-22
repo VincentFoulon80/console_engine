@@ -13,11 +13,11 @@ fn main() {
     let mut screen_empty = Screen::new(30,10);
 
     // initializes screen_help
-    screen_help.print(1,1,String::from("*help*"));
-    screen_help.print(1,2,String::from("Press any of these keys"));
-    screen_help.print(2,4,String::from("1. help (this screen)"));
-    screen_help.print(2,5,String::from("2. some shapes"));
-    screen_help.print(2,6,String::from("3. empty screen"));
+    screen_help.print(1,1,"*help*");
+    screen_help.print(1,2,"Press any of these keys");
+    screen_help.print(2,4,"1. help (this screen)");
+    screen_help.print(2,5,"2. some shapes");
+    screen_help.print(2,6,"3. empty screen");
 
     // initializes screen_shapes
     screen_shapes.rect(0,0, 29,9, pixel::pxl('+'));
@@ -25,7 +25,7 @@ fn main() {
     screen_shapes.fill_triangle(27,2, 27,7, 17,7, pixel::pxl_fg('#', color::Green));
 
     // initializes screen_empty
-    screen_empty.print_fbg(11,9, String::from("It's empty, right ?"), color::LightBlack, color::Black);
+    screen_empty.print_fbg(11,9, "It's empty, right ?", color::LightBlack, color::Black);
 
     // set the engine's screen to help on startup
     engine.set_screen(&screen_help);

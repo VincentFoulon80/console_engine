@@ -262,7 +262,7 @@ fn draw_game(engine: &mut ConsoleEngine, game_scr: &Screen, piece: &Tetromino, p
     // print next piece in its frame
     engine.print_screen_alpha(game_scr.get_width() as i32+4, 5, &next_piece.get_scr(&Orientation::Normal), '.');
     // print the score
-    engine.print(game_scr.get_width() as i32+3, 1, format!("{}", score));
+    engine.print(game_scr.get_width() as i32+3, 1, format!("{}", score).as_str());
 }
 
 
@@ -275,9 +275,9 @@ fn main() {
     let game_w = game_scr.get_width() as i32;
     engine.rect(0,0,game_w+1,game_scr.get_height() as i32, pixel::pxl('█')); // walls
     engine.rect(game_w+1,0,engine.get_width() as i32-1, 2, pixel::pxl('█')); // score's border
-    engine.print_fbg(game_w +3, 0, String::from("Score:"), color::Black, color::White);
+    engine.print_fbg(game_w +3, 0, "Score:", color::Black, color::White);
     engine.rect(game_w+3, 4, game_w+8, 9, pixel::pxl('█')); // next piece's border
-    engine.print_fbg(game_w + 4, 4, String::from("Next"), color::Black, color::White);
+    engine.print_fbg(game_w + 4, 4, "Next", color::Black, color::White);
 
     // constant values
     let start_pos_x = game_scr.get_width() as i32/2-1;
@@ -355,7 +355,7 @@ fn main() {
                     draw_game(&mut engine, &game_scr, &piece, piece_x, piece_y, &piece_r, &next_piece, score);
 
                     engine.rect(game_w+3, 11, game_w+13, 13, pixel::pxl('█'));
-                    engine.print_fbg(game_w+4, 12, String::from("GAME OVER"), color::Black, color::White);
+                    engine.print_fbg(game_w+4, 12, "GAME OVER", color::Black, color::White);
 
                     // wait 20 frames (=2 seconds) while still drawing the game
                     for _ in 0..20 {

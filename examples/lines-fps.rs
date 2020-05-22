@@ -34,8 +34,8 @@ fn main() {
         engine.line(pos_1.0 as i32, pos_1.1 as i32, pos_2.0 as i32, pos_2.1 as i32, pixel::pxl_fg('#', color::Rgb(pxl_c.0, pxl_c.1, pxl_c.2)));
 
         // we keep a small space to display FPS at the top-left corner
-        engine.print(0,0,String::from("         "));
-        engine.print(0,0,format!("FPS: {}",last_fps));
+        engine.print(0,0,"         ");
+        engine.print(0,0,format!("FPS: {}",last_fps).as_str());
 
         engine.draw(); // draw the screen
 

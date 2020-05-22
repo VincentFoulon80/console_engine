@@ -109,31 +109,9 @@ impl Screen {
     /// - [shapes](https://github.com/VincentFoulon80/console_engine/blob/master/examples/shapes.rs)
     /// - [snake](https://github.com/VincentFoulon80/console_engine/blob/master/examples/snake.rs)
     /// - [tetris](https://github.com/VincentFoulon80/console_engine/blob/master/examples/tetris.rs)
-    pub fn print(&mut self, x: i32, y: i32, string: String)
+    pub fn print(&mut self, x: i32, y: i32, string: &str)
     {
-        if y >= 0 && x < self.width as i32 && y < self.height as i32 {
-            // get screen index, initializes a counter 
-            // and get chars of the provided String
-            let pos = self.coord_to_index(std::cmp::max(0,x), y);
-            let mut delta_x = 0usize;
-            if x < 0 {
-                delta_x = x.abs() as usize;
-            }
-            let mut count = delta_x;
-            let char_vec: Vec<char> = string.chars().collect();
-            let origin_row = pos/self.get_width() as usize;
-            // place each characters one by one. Stops before overflowing
-            for i in pos..std::cmp::min(pos+char_vec.len()-delta_x, self.screen.capacity()) {
-                // if the row changes, break. 
-                // removing this statement will cause a wrapping of the text
-                if origin_row != i/self.get_width() as usize {
-                    break;
-                }
-                // print the character on screen
-                self.screen[i] = pixel::pxl(char_vec[count]);
-                count += 1;
-            }
-        }
+        self.print_fbg(x, y, string, color::White, color::Black)
     }
 
     /// prints a string at the specified coordinates with the specified foreground and background color  
@@ -150,7 +128,7 @@ impl Screen {
     /// - [screen-swap](https://github.com/VincentFoulon80/console_engine/blob/master/examples/screen-swap.rs)
     /// - [snake](https://github.com/VincentFoulon80/console_engine/blob/master/examples/snake.rs)
     /// - [tetris](https://github.com/VincentFoulon80/console_engine/blob/master/examples/tetris.rs)
-    pub fn print_fbg<C1: color::Color + Clone, C2: color::Color + Clone>(&mut self, x: i32, y: i32, string: String, fg: C1, bg: C2)
+    pub fn print_fbg<C1: color::Color + Clone, C2: color::Color + Clone>(&mut self, x: i32, y: i32, string: &str, fg: C1, bg: C2)
     {
         if y >= 0 && x < self.width as i32 && y < self.height as i32 {
             // get screen index, initializes a counter 
@@ -662,7 +640,7 @@ impl Screen {
     /// `coord_to_index(2,1)` will return index 12
     pub fn coord_to_index(&self, x: i32, y: i32) -> usize
     {
-        return ((y*self.width as i32) + x) as usize;
+        ((y*self.width as i32) + x) as usize
     }
 
     /// Opens the screen to a publically accessible state  
