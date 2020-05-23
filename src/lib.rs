@@ -737,6 +737,54 @@ impl ConsoleEngine {
         }
         None
     }
+
+    /// checks whenever the mouse's scroll has been turned down, towards the user
+    ///
+    /// usage:
+    /// ```
+    /// if engine.is_mouse_scrolled_down() {
+    ///     // do some scrolling logic
+    /// }
+    /// ```
+    pub fn is_mouse_scrolled_down(&self) -> bool {
+        self.is_mouse_scrolled_down_with_modifier(KeyModifiers::NONE)
+    }
+
+    /// checks whenever the mouse's scroll has been turned down, towards the user with a modifier (ctrl, shift, ...)
+    pub fn is_mouse_scrolled_down_with_modifier(&self, modifier: KeyModifiers) -> bool {
+        for evt in self.mouse_events.iter() {
+            if let MouseEvent::ScrollDown(_x, _y, key) = evt {
+                if *key == modifier {
+                    return true;
+                }
+            };
+        }
+        false
+    }
+
+    /// checks whenever the mouse's scroll has been turned up, away from the user
+    ///
+    /// usage:
+    /// ```
+    /// if engine.is_mouse_scrolled_up() {
+    ///     // do some scrolling logic
+    /// }
+    /// ```
+    pub fn is_mouse_scrolled_up(&self) -> bool {
+        self.is_mouse_scrolled_up_with_modifier(KeyModifiers::NONE)
+    }
+
+    /// checks whenever the mouse's scroll has been turned up, away from the user with a modifier (ctrl, shift, ...)
+    pub fn is_mouse_scrolled_up_with_modifier(&self, modifier: KeyModifiers) -> bool {
+        for evt in self.mouse_events.iter() {
+            if let MouseEvent::ScrollUp(_x, _y, key) = evt {
+                if *key == modifier {
+                    return true;
+                }
+            };
+        }
+        false
+    }
 }
 
 impl Drop for ConsoleEngine {
