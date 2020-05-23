@@ -1,9 +1,9 @@
 //! Standalone screens
 
-use super::pixel;
-use super::pixel::Pixel;
 use super::crossterm::style::Color;
 use super::crossterm::{execute, style};
+use super::pixel;
+use super::pixel::Pixel;
 use std::io::Write;
 
 /// Screen structure
@@ -142,7 +142,7 @@ impl Screen {
     /// usage:
     /// ```
     /// use console_engine::Color;
-    /// 
+    ///
     /// // print "Hello, world" in blue on white background
     /// screen.print(0,0, "Hello, world!", Color::Blue, Color::White);
     /// ```

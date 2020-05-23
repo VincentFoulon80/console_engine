@@ -10,15 +10,15 @@ pub mod pixel;
 pub mod screen;
 mod utils;
 
-use pixel::Pixel;
-use screen::Screen;
-use std::io::Write;
-use std::io::{stdout, Stdout};
 use crossterm::event::{self, Event, KeyEvent, MouseEvent};
 pub use crossterm::event::{KeyCode, KeyModifiers, MouseButton};
 pub use crossterm::style::Color;
 use crossterm::terminal::{self, ClearType};
 use crossterm::{execute, queue, style};
+use pixel::Pixel;
+use screen::Screen;
+use std::io::Write;
+use std::io::{stdout, Stdout};
 
 /// Console Engine Framework
 ///
@@ -195,7 +195,7 @@ impl ConsoleEngine {
     /// usage:
     /// ```
     /// use console_engine::Color;
-    /// 
+    ///
     /// // print "Hello, world" in blue on white background
     /// engine.print(0,0, "Hello, world!", Color::Blue, Color::White);
     /// ```
@@ -577,7 +577,7 @@ impl ConsoleEngine {
     /// usage:
     /// ```
     /// use console_engine::KeyCode;
-    /// 
+    ///
     /// loop {
     ///     engine.wait_frame(); // wait for next frame + captures input
     ///     
@@ -613,7 +613,7 @@ impl ConsoleEngine {
     /// usage:
     /// ```
     /// use console_engine::KeyCode;
-    /// 
+    ///
     /// loop {
     ///     engine.wait_frame(); // wait for next frame + captures input
     ///     
@@ -636,7 +636,7 @@ impl ConsoleEngine {
     /// usage:
     /// ```
     /// use console_engine::KeyCode;
-    /// 
+    ///
     /// if engine.is_key_held(KeyCode::Char('h')) {
     ///     engine.clear_screen();
     ///     engine.print(0,0,"Please don't hold this button.");
@@ -660,7 +660,7 @@ impl ConsoleEngine {
     /// usage:
     /// ```
     /// use console_engine::MouseButton;
-    /// 
+    ///
     /// // prints a 'P' where the mouse's left button has been pressed
     /// let mouse_pos = engine.get_mouse_press(MouseButton::Left);
     /// if let Some(mouse_pos) = mouse_pos {
@@ -673,7 +673,11 @@ impl ConsoleEngine {
     }
 
     /// Give the mouse's terminal coordinates if the provided button + modifier (ctrl, shift, ...) has been pressed
-    pub fn get_mouse_press_with_modifier(&self, button: MouseButton, modifier: KeyModifiers) -> Option<(u32, u32)> {
+    pub fn get_mouse_press_with_modifier(
+        &self,
+        button: MouseButton,
+        modifier: KeyModifiers,
+    ) -> Option<(u32, u32)> {
         for evt in self.mouse_events.iter() {
             if let MouseEvent::Down(mouse, x, y, key) = evt {
                 if *mouse == button && *key == modifier {
@@ -689,7 +693,7 @@ impl ConsoleEngine {
     /// usage:
     /// ```
     /// use console_engine::MouseButton;
-    /// 
+    ///
     /// // prints a 'H' where the mouse is currently held
     /// let mouse_pos = engine.get_mouse_held(MouseButton::Left);
     /// if let Some(mouse_pos) = mouse_pos {
@@ -701,7 +705,11 @@ impl ConsoleEngine {
     }
 
     /// Give the mouse's terminal coordinates if a button + modifier (ctrl, shift, ...) is held on the mouse
-    pub fn get_mouse_held_with_modifier(&self, button: MouseButton, modifier: KeyModifiers) -> Option<(u32, u32)> {
+    pub fn get_mouse_held_with_modifier(
+        &self,
+        button: MouseButton,
+        modifier: KeyModifiers,
+    ) -> Option<(u32, u32)> {
         for evt in self.mouse_events.iter() {
             if let MouseEvent::Drag(mouse, x, y, key) = evt {
                 if *mouse == button && *key == modifier {
@@ -717,7 +725,7 @@ impl ConsoleEngine {
     /// usage:
     /// ```
     /// use console_engine::MouseButton;
-    /// 
+    ///
     /// // prints a 'R' where the mouse has been released
     /// let mouse_pos = engine.get_mouse_released(MouseButton::Left);
     /// if let Some(mouse_pos) = mouse_pos {
@@ -729,7 +737,11 @@ impl ConsoleEngine {
     }
 
     /// Give the mouse's terminal coordinates if a button + modifier (ctrl, shift, ...) has been released on the mouse
-    pub fn get_mouse_released_with_modifier(&self, button: MouseButton, modifier: KeyModifiers) -> Option<(u32, u32)> {
+    pub fn get_mouse_released_with_modifier(
+        &self,
+        button: MouseButton,
+        modifier: KeyModifiers,
+    ) -> Option<(u32, u32)> {
         for evt in self.mouse_events.iter() {
             if let MouseEvent::Up(mouse, x, y, key) = evt {
                 if *mouse == button && *key == modifier {
