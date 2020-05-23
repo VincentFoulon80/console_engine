@@ -151,26 +151,10 @@ impl ConsoleEngine {
     }
 
     /// Get the screen width
-    #[deprecated(
-        since = "0.6.0",
-        note = "please use `get_width` instead. This function will be removed in version 1.0"
-    )]
-    pub fn scr_w(&self) -> u32 {
-        self.screen.get_width()
-    }
-    /// Get the screen width
     pub fn get_width(&self) -> u32 {
         self.screen.get_width()
     }
 
-    /// Get the screen height
-    #[deprecated(
-        since = "0.6.0",
-        note = "please use `get_height` instead. This function will be removed in version 1.0"
-    )]
-    pub fn scr_h(&self) -> u32 {
-        self.screen.get_height()
-    }
     /// Get the screen height
     pub fn get_height(&self) -> u32 {
         self.screen.get_height()
