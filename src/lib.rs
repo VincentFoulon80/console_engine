@@ -430,6 +430,7 @@ impl ConsoleEngine {
         // But for windows terminal we can see huge improvements (example lines-fps goes from 35-40 fps to 65-70 for a 100x50 term)
         // reset cursor position
         queue!(self.stdout, crossterm::cursor::MoveTo(0, 0)).unwrap();
+        let mut first = true;
         let mut current_colors: (Color, Color) = (Color::Reset, Color::Reset);
         let mut moving = false;
         self.screen_last_frame.check_empty(); // refresh internal "empty" value
@@ -454,7 +455,7 @@ impl ConsoleEngine {
                     // the less we write on the output the faster we'll get
                     // and additional characters for colors we already have set is
                     // time consuming
-                    if current_colors != pixel.get_colors() {
+                    if current_colors != pixel.get_colors() || first {
                         current_colors = pixel.get_colors();
                         queue!(
                             self.stdout,
@@ -463,6 +464,7 @@ impl ConsoleEngine {
                             style::Print(pixel.chr)
                         )
                         .unwrap();
+                        first = false;
                     } else {
                         queue!(self.stdout, style::Print(pixel.chr)).unwrap();
                     }
