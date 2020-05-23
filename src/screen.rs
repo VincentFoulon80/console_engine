@@ -2,7 +2,9 @@
 
 use super::pixel;
 use super::pixel::Pixel;
-use super::termion::color;
+use super::crossterm::style::Color;
+use super::crossterm::{execute, style};
+use std::io::Write;
 
 /// Screen structure
 ///
@@ -22,7 +24,7 @@ pub struct Screen {
 /// ```
 /// use console_engine::pixel;
 /// use console_engine::screen::Screen;
-/// use console_engine::termion::color;
+/// use console_engine::Color;
 ///
 /// fn main() {
 ///     // create a screen of 20x11 characters
@@ -30,9 +32,9 @@ pub struct Screen {
 ///
 ///     // draw some shapes and prints some text
 ///     scr.rect(0,0, 19,10,pixel::pxl('#'));
-///     scr.fill_circle(5,5, 3, pixel::pxl('*'));
-///     scr.print(11,4, String::from("Hello,"));
-///     scr.print(11,5, String::from("World!"));
+///     scr.fill_circle(5,5, 3, pixel::pxl_fg('*', Color::Blue));
+///     scr.print(11,4, "Hello,");
+///     scr.print(11,5, "World!");
 ///
 ///     // print the screen to the terminal
 ///     println!("{}", scr.to_string());
@@ -76,17 +78,11 @@ impl Screen {
 
     /// Creates a new Screen object with the provided String and colors fitting the width and height parameters.
     /// The String length must correspond to width*height
-    pub fn from_string<C1: color::Color + Clone, C2: color::Color + Clone>(
-        string: String,
-        fg: C1,
-        bg: C2,
-        width: u32,
-        height: u32,
-    ) -> Screen {
+    pub fn from_string(string: String, fg: Color, bg: Color, width: u32, height: u32) -> Screen {
         assert!(string.chars().count() == (width*height) as usize, format!("The String must have the length corresponding to width*height (={}) but the given String has a length of {}.", width*height, string.chars().count()));
         let vec: Vec<Pixel> = string
             .chars()
-            .map(|chr| pixel::pxl_fbg(chr, fg.clone(), bg.clone()))
+            .map(|chr| pixel::pxl_fbg(chr, fg, bg))
             .collect();
         Screen::from_vec(vec, width, height)
     }
@@ -133,22 +129,11 @@ impl Screen {
     ///
     /// usage:
     /// ```
-    /// screen.print(0,0, String::from("Hello, world!"));
-    /// screen.print(0, 4, format!("Score: {}", score));
+    /// screen.print(0,0, "Hello, world!");
+    /// screen.print(0, 4, format!("Score: {}", score).as_str());
     /// ```
-    ///
-    /// examples :
-    /// - [drag-and-drop](https://github.com/VincentFoulon80/console_engine/blob/master/examples/drag-and-drop.rs)
-    /// - [graph](https://github.com/VincentFoulon80/console_engine/blob/master/examples/graph.rs)
-    /// - [lines-fps](https://github.com/VincentFoulon80/console_engine/blob/master/examples/lines-fps.rs)
-    /// - [screen-embed](https://github.com/VincentFoulon80/console_engine/blob/master/examples/screen-embed.rs)
-    /// - [screen-simple](https://github.com/VincentFoulon80/console_engine/blob/master/examples/screen-simple.rs)
-    /// - [screen-swap](https://github.com/VincentFoulon80/console_engine/blob/master/examples/screen-swap.rs)
-    /// - [shapes](https://github.com/VincentFoulon80/console_engine/blob/master/examples/shapes.rs)
-    /// - [snake](https://github.com/VincentFoulon80/console_engine/blob/master/examples/snake.rs)
-    /// - [tetris](https://github.com/VincentFoulon80/console_engine/blob/master/examples/tetris.rs)
     pub fn print(&mut self, x: i32, y: i32, string: &str) {
-        self.print_fbg(x, y, string, color::White, color::Black)
+        self.print_fbg(x, y, string, Color::Reset, Color::Reset)
     }
 
     /// prints a string at the specified coordinates with the specified foreground and background color  
@@ -156,23 +141,12 @@ impl Screen {
     ///
     /// usage:
     /// ```
+    /// use console_engine::Color;
+    /// 
     /// // print "Hello, world" in blue on white background
-    /// screen.print(0,0, String::from("Hello, world!"), color::Blue, color::White);
+    /// screen.print(0,0, "Hello, world!", Color::Blue, Color::White);
     /// ```
-    ///
-    /// examples :
-    /// - [graph](https://github.com/VincentFoulon80/console_engine/blob/master/examples/graph.rs)
-    /// - [screen-swap](https://github.com/VincentFoulon80/console_engine/blob/master/examples/screen-swap.rs)
-    /// - [snake](https://github.com/VincentFoulon80/console_engine/blob/master/examples/snake.rs)
-    /// - [tetris](https://github.com/VincentFoulon80/console_engine/blob/master/examples/tetris.rs)
-    pub fn print_fbg<C1: color::Color + Clone, C2: color::Color + Clone>(
-        &mut self,
-        x: i32,
-        y: i32,
-        string: &str,
-        fg: C1,
-        bg: C2,
-    ) {
+    pub fn print_fbg(&mut self, x: i32, y: i32, string: &str, fg: Color, bg: Color) {
         if y >= 0 && x < self.width as i32 && y < self.height as i32 {
             // get screen index, initializes a counter
             // and get chars of the provided String
@@ -189,7 +163,7 @@ impl Screen {
                     break;
                 }
                 // print the character on screen
-                self.screen[i] = pixel::pxl_fbg(char_vec[count], fg.clone(), bg.clone());
+                self.screen[i] = pixel::pxl_fbg(char_vec[count], fg, bg);
                 count += 1;
             }
         }
@@ -206,15 +180,11 @@ impl Screen {
     /// // create a new Screen struct and draw a square inside it
     /// let mut my_square = Screen::new(8,8);
     /// my_square.rect(0,0,7,7,pixel::pxl('#'));
-    /// my_square.print(1,1,String::from("square"));
+    /// my_square.print(1,1,"square");
     ///
     /// // prints the square in the main window at a specific location
     /// screen.print_screen(5,2, &my_square);
     /// ```
-    ///
-    /// examples :
-    /// - [screen-embed](https://github.com/VincentFoulon80/console_engine/blob/master/examples/screen-embed.rs)
-    /// - [tetris](https://github.com/VincentFoulon80/console_engine/blob/master/examples/tetris.rs)
     pub fn print_screen(&mut self, x: i32, y: i32, source: &Screen) {
         for j in 0..source.get_height() as i32 {
             for i in 0..source.get_width() as i32 {
@@ -227,9 +197,6 @@ impl Screen {
     /// Ignoring a character will behave like transparency
     ///
     /// see [print_screen](#method.print_screen) for usage
-    ///
-    /// examples :
-    /// - [tetris](https://github.com/VincentFoulon80/console_engine/blob/master/examples/tetris.rs)
     pub fn print_screen_alpha(&mut self, x: i32, y: i32, source: &Screen, alpha_character: char) {
         for j in 0..source.get_height() as i32 {
             for i in 0..source.get_width() as i32 {
@@ -241,7 +208,7 @@ impl Screen {
     }
 
     /// Optimized horizontal line drawing
-    /// Automatically called by line if needed
+    /// Automatically called by [line](#method.line) if needed
     pub fn h_line(&mut self, start_x: i32, start_y: i32, end_x: i32, character: Pixel) {
         let start = if start_x > end_x { end_x } else { start_x };
         let end = if start_x > end_x {
@@ -255,7 +222,7 @@ impl Screen {
     }
 
     /// Optimized vertical line drawing
-    /// Automatically called by line if needed
+    /// Automatically called by [line](#method.line) if needed
     pub fn v_line(&mut self, start_x: i32, start_y: i32, end_y: i32, character: Pixel) {
         let start = if start_y > end_y { end_y } else { start_y };
         let end = if start_y > end_y {
@@ -279,11 +246,6 @@ impl Screen {
     /// // ...
     /// screen.line(0, 0, 9, 9, pixel::pxl('#'));
     /// ```
-    ///
-    /// examples :
-    /// - [graph](https://github.com/VincentFoulon80/console_engine/blob/master/examples/graph.rs)
-    /// - [lines](https://github.com/VincentFoulon80/console_engine/blob/master/examples/lines.rs)
-    /// - [lines-fps](https://github.com/VincentFoulon80/console_engine/blob/master/examples/lines-fps.rs)
     pub fn line(&mut self, start_x: i32, start_y: i32, end_x: i32, end_y: i32, character: Pixel) {
         let delta_x = end_x - start_x;
         let delta_y = end_y - start_y;
@@ -361,14 +323,6 @@ impl Screen {
     /// // ...
     /// screen.rect(0, 0, 9, 9, pixel::pxl('#'));
     /// ```
-    ///
-    /// examples :
-    /// - [drag-and-drop](https://github.com/VincentFoulon80/console_engine/blob/master/examples/drag-and-drop.rs)
-    /// - [screen-embed](https://github.com/VincentFoulon80/console_engine/blob/master/examples/screen-embed.rs)
-    /// - [screen-simple](https://github.com/VincentFoulon80/console_engine/blob/master/examples/screen-simple.rs)
-    /// - [screen-swap](https://github.com/VincentFoulon80/console_engine/blob/master/examples/screen-swap.rs)
-    /// - [shapes](https://github.com/VincentFoulon80/console_engine/blob/master/examples/shapes.rs)
-    /// - [tetris](https://github.com/VincentFoulon80/console_engine/blob/master/examples/tetris.rs)
     pub fn rect(&mut self, start_x: i32, start_y: i32, end_x: i32, end_y: i32, character: Pixel) {
         self.h_line(start_x, start_y, end_x, character.clone()); // top
         self.v_line(end_x, start_y, end_y, character.clone()); // right
@@ -384,10 +338,6 @@ impl Screen {
     /// // ...
     /// screen.fill_rect(0, 0, 9, 9, pixel::pxl('#'));
     /// ```
-    ///
-    /// examples :
-    /// - [shapes](https://github.com/VincentFoulon80/console_engine/blob/master/examples/shapes.rs)
-    /// - [tetris](https://github.com/VincentFoulon80/console_engine/blob/master/examples/tetris.rs)
     pub fn fill_rect(
         &mut self,
         start_x: i32,
@@ -416,9 +366,6 @@ impl Screen {
     /// // ...
     /// screen.circle(10, 10, 4, pixel::pxl('#'));
     /// ```
-    ///
-    /// examples :
-    /// - [shapes](https://github.com/VincentFoulon80/console_engine/blob/master/examples/shapes.rs)
     pub fn circle(&mut self, x: i32, y: i32, radius: u32, character: Pixel) {
         let mut relative_pos_x = 0 as i32;
         let mut relative_pos_y = radius as i32;
@@ -456,11 +403,6 @@ impl Screen {
     /// // ...
     /// screen.fill_circle(10, 10, 4, pixel::pxl('#'));
     /// ```
-    ///
-    /// examples :
-    /// - [screen-simple](https://github.com/VincentFoulon80/console_engine/blob/master/examples/screen-simple.rs)
-    /// - [screen-swap](https://github.com/VincentFoulon80/console_engine/blob/master/examples/screen-swap.rs)
-    /// - [shapes](https://github.com/VincentFoulon80/console_engine/blob/master/examples/shapes.rs)
     pub fn fill_circle(&mut self, x: i32, y: i32, radius: u32, character: Pixel) {
         // Taken from wikipedia
         let mut relative_pos_x = 0 as i32;
@@ -502,9 +444,6 @@ impl Screen {
     /// // ...
     /// screen.triangle(8,8, 4,6, 9,2, pixel::pxl('#'));
     /// ```
-    ///
-    /// examples :
-    /// - [shapes](https://github.com/VincentFoulon80/console_engine/blob/master/examples/shapes.rs)
     pub fn triangle(
         &mut self,
         x1: i32,
@@ -529,10 +468,6 @@ impl Screen {
     /// // ...
     /// screen.fill_triangle(8,8, 4,6, 9,2, pixel::pxl('#'));
     /// ```
-    ///
-    /// examples :
-    /// - [shapes](https://github.com/VincentFoulon80/console_engine/blob/master/examples/shapes.rs)
-    /// - [screen-swap](https://github.com/VincentFoulon80/console_engine/blob/master/examples/screen-swap.rs)
     pub fn fill_triangle(
         &mut self,
         x1: i32,
@@ -650,13 +585,6 @@ impl Screen {
     /// // ...
     /// screen.set_pxl(3,8,pixel::pixel('o'));
     /// ```
-    ///
-    /// examples :
-    /// - [graph](https://github.com/VincentFoulon80/console_engine/blob/master/examples/graph.rs)
-    /// - [mouse](https://github.com/VincentFoulon80/console_engine/blob/master/examples/mouse.rs)
-    /// - [shapes](https://github.com/VincentFoulon80/console_engine/blob/master/examples/shapes.rs)
-    /// - [snake](https://github.com/VincentFoulon80/console_engine/blob/master/examples/snake.rs)
-    /// - [tetris](https://github.com/VincentFoulon80/console_engine/blob/master/examples/tetris.rs)
     pub fn set_pxl(&mut self, x: i32, y: i32, character: Pixel) {
         if x >= 0 && y >= 0 && x < self.width as i32 && y < self.height as i32 {
             let index = self.coord_to_index(x, y);
@@ -672,9 +600,6 @@ impl Screen {
     ///     screen.print(0,0,"Found a 'o'");
     /// }
     /// ```
-    ///
-    /// examples :
-    /// - [tetris](https://github.com/VincentFoulon80/console_engine/blob/master/examples/tetris.rs)
     pub fn get_pxl(&self, x: i32, y: i32) -> Result<Pixel, String> {
         if x >= 0 && y >= 0 && x < self.width as i32 && y < self.height as i32 {
             return Ok(self.screen[self.coord_to_index(x, y)].clone());
@@ -695,9 +620,6 @@ impl Screen {
     /// ```
     /// screen.resize()
     /// ```
-    ///
-    /// examples :
-    /// - *no examples*
     pub fn resize(&mut self, new_width: u32, new_height: u32) {
         // create new screens Vec
         let mut new_screen = vec![pixel::pxl(' '); (new_width * new_height) as usize];
@@ -715,24 +637,30 @@ impl Screen {
         self.height = new_height;
     }
 
+    pub fn draw(&self) {
+        let mut output = std::io::stdout();
+        crossterm::terminal::enable_raw_mode().unwrap();
+        for i in 0..self.width * self.height {
+            let pixel = &self.screen[i as usize];
+            execute!(
+                output,
+                style::SetForegroundColor(pixel.fg),
+                style::SetBackgroundColor(pixel.bg),
+                style::Print(pixel.chr)
+            )
+            .unwrap();
+            if i != self.width * self.height - 1 && i % self.width == self.width - 1 {
+                execute!(output, crossterm::cursor::MoveToNextLine(1)).unwrap();
+            }
+        }
+        crossterm::terminal::disable_raw_mode().unwrap();
+    }
+
     /// Converts x and y coordinates to screen index
     ///
     /// example : on a 10x10 screen
     /// `coord_to_index(2,1)` will return index 12
     fn coord_to_index(&self, x: i32, y: i32) -> usize {
         ((y * self.width as i32) + x) as usize
-    }
-}
-
-impl ToString for Screen {
-    fn to_string(&self) -> String {
-        let mut output = String::new();
-        for i in 0..self.width * self.height {
-            output.push_str(self.screen[i as usize].to_string().as_str());
-            if i != self.width * self.height - 1 && i % self.width == self.width - 1 {
-                output.push_str("\r\n");
-            }
-        }
-        output
     }
 }

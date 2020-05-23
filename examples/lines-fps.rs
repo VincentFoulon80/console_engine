@@ -1,6 +1,6 @@
 use console_engine::pixel;
-use console_engine::termion::color;
-use console_engine::termion::event::Key;
+use console_engine::Color;
+use console_engine::KeyCode;
 
 // generate a random pair of u32
 fn random_pos(max_x: u32, max_y: u32) -> (u32, u32) {
@@ -25,7 +25,7 @@ fn main() {
     loop {
         engine.wait_frame(); // wait for next frame + capture inputs
         engine.check_resize(); // resize the terminal if its size has changed
-        if engine.is_key_pressed(Key::Char('q')) {
+        if engine.is_key_pressed(KeyCode::Char('q')) {
             // if the user presses 'q' :
             break; // exits app
         }
@@ -41,7 +41,14 @@ fn main() {
             pos_1.1 as i32,
             pos_2.0 as i32,
             pos_2.1 as i32,
-            pixel::pxl_fg('#', color::Rgb(pxl_c.0, pxl_c.1, pxl_c.2)),
+            pixel::pxl_fg(
+                '#',
+                Color::Rgb {
+                    r: pxl_c.0,
+                    g: pxl_c.1,
+                    b: pxl_c.2,
+                },
+            ),
         );
 
         // we keep a small space to display FPS at the top-left corner

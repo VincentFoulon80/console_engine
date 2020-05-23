@@ -1,6 +1,5 @@
 use console_engine::pixel;
-use console_engine::termion::event::Key;
-use console_engine::termion::event::MouseButton;
+use console_engine::{KeyCode, MouseButton};
 
 fn main() {
     // initializes a screen filling the terminal with a target of 30 frames per second
@@ -18,7 +17,7 @@ fn main() {
     loop {
         engine.wait_frame(); // wait for next frame + capture inputs
         engine.check_resize(); // resize the terminal if its size has changed
-        if engine.is_key_pressed(Key::Char('q')) {
+        if engine.is_key_pressed(KeyCode::Char('q')) {
             // if the user presses 'q' :
             break; // exits app
         }
@@ -41,7 +40,7 @@ fn main() {
         }
 
         // check if a mouse button is currently held
-        let mouse_pos = engine.get_mouse_held();
+        let mouse_pos = engine.get_mouse_held(MouseButton::Left);
         if let Some(mouse_pos) = mouse_pos {
             // if dragging mode is enabled, move the rectangle according to mouse's position
             if dragging {
@@ -51,7 +50,7 @@ fn main() {
         }
 
         // check if the mouse has been released
-        let mouse_pos = engine.get_mouse_released();
+        let mouse_pos = engine.get_mouse_released(MouseButton::Left);
         if mouse_pos.is_some() {
             // disable dragging mode
             dragging = false;

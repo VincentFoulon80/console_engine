@@ -1,19 +1,18 @@
 //! Character and color management
 
-use termion::color;
+use crossterm::style::Color;
 
 /// # Pixel structure
 /// contains color data and character data
 #[derive(Clone, Eq, PartialEq)]
 pub struct Pixel {
-    pub colors: String,
+    pub bg: Color,
+    pub fg: Color,
     pub chr: char,
 }
-impl ToString for Pixel {
-    fn to_string(&self) -> String {
-        let mut output = String::from(self.colors.as_str());
-        output.push(self.chr);
-        output
+impl Pixel {
+    pub fn get_colors(&self) -> (Color, Color) {
+        (self.fg, self.bg)
     }
 }
 
@@ -22,15 +21,12 @@ impl ToString for Pixel {
 /// usage:
 /// ```
 /// use console_engine::pixel;
-/// use console_engine::termion::color;
+/// use console_engine::Color;
 /// // ...
-/// engine.set_pxl(0,0,pixel::pxl_fbg('X', color::Blue, color::White));
+/// engine.set_pxl(0,0,pixel::pxl_fbg('X', Color::Blue, Color::White));
 /// ```
-pub fn pxl_fbg<C1: color::Color, C2: color::Color>(value: char, fg: C1, bg: C2) -> Pixel {
-    Pixel {
-        colors: format!("{}{}", color::Fg(fg), color::Bg(bg)),
-        chr: value,
-    }
+pub fn pxl_fbg(value: char, fg: Color, bg: Color) -> Pixel {
+    Pixel { bg, fg, chr: value }
 }
 
 /// Generate a pixel using a character and a foreground color.  
@@ -39,13 +35,14 @@ pub fn pxl_fbg<C1: color::Color, C2: color::Color>(value: char, fg: C1, bg: C2) 
 /// usage:
 /// ```
 /// use console_engine::pixel;
-/// use console_engine::termion::color;
+/// use console_engine::Color;
 /// // ...
-/// engine.set_pxl(0,0,pixel::pxl_fg('X', color::Cyan));
+/// engine.set_pxl(0,0,pixel::pxl_fg('X', Color::Cyan));
 /// ```
-pub fn pxl_fg<C: color::Color>(value: char, fg: C) -> Pixel {
+pub fn pxl_fg(value: char, fg: Color) -> Pixel {
     Pixel {
-        colors: format!("{}{}", color::Fg(fg), color::Bg(color::Black)),
+        fg,
+        bg: Color::Reset,
         chr: value,
     }
 }
@@ -55,13 +52,14 @@ pub fn pxl_fg<C: color::Color>(value: char, fg: C) -> Pixel {
 /// usage:
 /// ```
 /// use console_engine::pixel;
-/// use console_engine::termion::color;
+/// use console_engine::Color;
 /// // ...
-/// engine.set_pxl(0,0,pixel::pxl_bg('X', color::Magenta));
+/// engine.set_pxl(0,0,pixel::pxl_bg('X', Color::Magenta));
 /// ```
-pub fn pxl_bg<C: color::Color>(value: char, bg: C) -> Pixel {
+pub fn pxl_bg(value: char, bg: Color) -> Pixel {
     Pixel {
-        colors: format!("{}{}", color::Fg(color::White), color::Bg(bg)),
+        fg: Color::Reset,
+        bg,
         chr: value,
     }
 }
@@ -78,7 +76,8 @@ pub fn pxl_bg<C: color::Color>(value: char, bg: C) -> Pixel {
 /// ```
 pub fn pxl(value: char) -> Pixel {
     Pixel {
-        colors: format!("{}{}", color::Fg(color::White), color::Bg(color::Black)),
+        fg: Color::Reset,
+        bg: Color::Reset,
         chr: value,
     }
 }

@@ -2,10 +2,12 @@
 
 [Changelog](https://github.com/VincentFoulon80/console_engine/releases)
 
+**There was a huge internal change between versions 0.x and 1.x. See the [Upgrade Guide](https://github.com/VincentFoulon80/console_engine/blob/master/UPGRADE_1.0.md) to migrate your code. There's not much to change on your side !**
+
 This library provides simple features for handling user's input and display for terminal applications.  
 Besides the user input and display, this library also provides some tools to build standalone "screens" that can be used as simply as printing it.
 
-It uses [Termion](https://crates.io/crates/termion) as main tool for handling the screen and inputs. You don't have to worry about initalizing anything because the lib will handle this for you.
+It uses [Crossterm](https://crates.io/crates/crossterm) as main tool for handling the screen and inputs. You don't have to worry about initalizing anything because the lib will handle this for you.
 
 ## Features
 
@@ -13,26 +15,20 @@ It uses [Termion](https://crates.io/crates/termion) as main tool for handling th
 - Terminal handling with a target frame per seconds
 - Keyboard and mouse support
 - Terminal resizing support
-- You are not interested by keyboard/mouse handling, even terminal handling ? You can still build "screens" to just draw using `println!()`
+- You are not interested by keyboard/mouse handling, even terminal handling ? You can still build "screens" that will just print its content.
+- Embedding screens to one another
 
 ## Platforms
 
-Works for Linux and possibly Mac (need confirmation).  
-
-Windows support will be available as soon as termion will support it [See here for more info](https://gitlab.redox-os.org/redox-os/termion/-/merge_requests/151)
-For now, you can change the cargo.toml termion dependency by this :
-```toml
-termion = { git = "https://gitlab.redox-os.org/Jezza/termion", branch = "windows-support", package = "termion"}
-```
-Note: window's input initialization requires the user to first press enter. ConsoleEngine will ask the user to press Enter while inializing.
+Since it uses `crossterm`, it should work on Windows, Linux and possibly Mac (see [Tested Terminals on Crossterm's page](https://crates.io/crates/crossterm#tested-terminals)).
 
 # example usage 
 
 ## ConsoleEngine (managing input & output)
 ```rust
 use console_engine::pixel;
-use console_engine::termion::color;
-use console_engine::termion::event::Key;
+use console_engine::Color;
+use console_engine::KeyCode;
 
 fn main() {
     // initializes a screen of 20x10 characters with a target of 3 frames per second
@@ -45,11 +41,11 @@ fn main() {
         engine.clear_screen(); // reset the screen
     
         engine.line(0, 0, 19, 9, pixel::pxl('#')); // draw a line of '#' from [0,0] to [19,9]
-        engine.print(0, 4, format!("Result: {}", value)); // prints some value at [0,4]
+        engine.print(0, 4, format!("Result: {}", value).as_str()); // prints some value at [0,4]
     
-        engine.set_pxl(4, 0, pixel::pxl_fg('O', color::Cyan)); // write a majestic cyan 'O' at [4,0]
+        engine.set_pxl(4, 0, pixel::pxl_fg('O', Color::Cyan)); // write a majestic cyan 'O' at [4,0]
 
-        if engine.is_key_pressed(Key::Char('q')) { // if the user presses 'q' :
+        if engine.is_key_pressed(KeyCode::Char('q')) { // if the user presses 'q' :
             break; // exits app
         }
     
@@ -60,18 +56,18 @@ fn main() {
 
 ## Screens (generating output)
 ```rust
-use console_engine::screen;
+use console_engine::screen::Screen;
 use console_engine::pixel;
 
 fn main() {
     // create a screen of 20x11 characters
-    let mut scr = screen::Screen::new(20,11);
+    let mut scr = Screen::new(20,11);
 
     // draw some shapes and prints some text
     scr.rect(0,0, 19,10,pixel::pxl('#'));
     scr.fill_circle(5,5, 3, pixel::pxl('*'));
-    scr.print(11,4, String::from("Hello,"));
-    scr.print(11,5, String::from("World!"));
+    scr.print(11,4, "Hello,");
+    scr.print(11,5, "World!");
 
     // print the screen to the terminal
     println!("{}", scr.to_string());
