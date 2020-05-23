@@ -97,8 +97,8 @@ See [examples](https://github.com/VincentFoulon80/console_engine/tree/master/exa
 
 ## Example: "shapes"
 
-![](https://github.com/VincentFoulon80/console_engine/blob/master/docs/example-shapes.png)
+![](https://raw.githubusercontent.com/VincentFoulon80/console_engine/master/docs/example-shapes.png)
 
 ## Example: "tetris"
 
-![](https://github.com/VincentFoulon80/console_engine/blob/master/docs/example-tetris.png)
+![](https://raw.githubusercontent.com/VincentFoulon80/console_engine/master/docs/example-tetris.png)
