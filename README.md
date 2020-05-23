@@ -92,3 +92,13 @@ See [examples](https://github.com/VincentFoulon80/console_engine/tree/master/exa
 - **screen-embed** : Example usage of Screen's `print_screen` function to embed one screen into another
 - **screen-swap** : Swap between several Screen structures
 - **tetris** : A game of Tetris
+
+# Screenshots
+
+## Example: "shapes"
+
+![](https://github.com/VincentFoulon80/console_engine/blob/master/docs/example-shapes.png)
+
+## Example: "tetris"
+
+![](https://github.com/VincentFoulon80/console_engine/blob/master/docs/example-tetris.png)
