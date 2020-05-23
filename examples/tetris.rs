@@ -1,6 +1,6 @@
 use console_engine::screen::Screen;
-use console_engine::termion::color;
-use console_engine::termion::event::Key;
+use console_engine::Color;
+use console_engine::KeyCode;
 use console_engine::{pixel, ConsoleEngine};
 
 /// This function returns a random tetromino
@@ -67,12 +67,12 @@ impl Tetromino {
                 Orientation::Normal | Orientation::Half => Screen::from_string(
                     String::from(
                         ".█..\
-                                                         .█..\
-                                                         .█..\
-                                                         .█..",
+                         .█..\
+                         .█..\
+                         .█..",
                     ),
-                    color::Cyan,
-                    color::Black,
+                    Color::Cyan,
+                    Color::Black,
                     4,
                     4,
                 ),
@@ -80,12 +80,12 @@ impl Tetromino {
                 Orientation::Quarter | Orientation::ThreeQuarters => Screen::from_string(
                     String::from(
                         "....\
-                                                         ████\
-                                                         ....\
-                                                         ....",
+                         ████\
+                         ....\
+                         ....",
                     ),
-                    color::Cyan,
-                    color::Black,
+                    Color::Cyan,
+                    Color::Black,
                     4,
                     4,
                 ),
@@ -93,12 +93,12 @@ impl Tetromino {
             Tetromino::O => Screen::from_string(
                 String::from(
                     "....\
-                                                              .██.\
-                                                              .██.\
-                                                              ....",
+                     .██.\
+                     .██.\
+                     ....",
                 ),
-                color::LightYellow,
-                color::Black,
+                Color::Yellow,
+                Color::Black,
                 4,
                 4,
             ),
@@ -106,12 +106,12 @@ impl Tetromino {
                 Orientation::Normal => Screen::from_string(
                     String::from(
                         "....\
-                                                         ███.\
-                                                         .█..\
-                                                         ....",
+                         ███.\
+                         .█..\
+                         ....",
                     ),
-                    color::Magenta,
-                    color::Black,
+                    Color::Magenta,
+                    Color::Black,
                     4,
                     4,
                 ),
@@ -119,12 +119,12 @@ impl Tetromino {
                 Orientation::Quarter => Screen::from_string(
                     String::from(
                         ".█..\
-                                                         ██..\
-                                                         .█..\
-                                                         ....",
+                         ██..\
+                         .█..\
+                         ....",
                     ),
-                    color::Magenta,
-                    color::Black,
+                    Color::Magenta,
+                    Color::Black,
                     4,
                     4,
                 ),
@@ -132,12 +132,12 @@ impl Tetromino {
                 Orientation::Half => Screen::from_string(
                     String::from(
                         ".█..\
-                                                         ███.\
-                                                         ....\
-                                                         ....",
+                         ███.\
+                         ....\
+                         ....",
                     ),
-                    color::Magenta,
-                    color::Black,
+                    Color::Magenta,
+                    Color::Black,
                     4,
                     4,
                 ),
@@ -145,12 +145,12 @@ impl Tetromino {
                 Orientation::ThreeQuarters => Screen::from_string(
                     String::from(
                         ".█..\
-                                                         .██.\
-                                                         .█..\
-                                                         ....",
+                         .██.\
+                         .█..\
+                         ....",
                     ),
-                    color::Magenta,
-                    color::Black,
+                    Color::Magenta,
+                    Color::Black,
                     4,
                     4,
                 ),
@@ -159,12 +159,12 @@ impl Tetromino {
                 Orientation::Normal => Screen::from_string(
                     String::from(
                         ".█..\
-                                                         .█..\
-                                                         ██..\
-                                                         ....",
+                         .█..\
+                         ██..\
+                         ....",
                     ),
-                    color::Blue,
-                    color::Black,
+                    Color::Blue,
+                    Color::Black,
                     4,
                     4,
                 ),
@@ -172,12 +172,12 @@ impl Tetromino {
                 Orientation::Quarter => Screen::from_string(
                     String::from(
                         "█...\
-                                                         ███.\
-                                                         ....\
-                                                         ....",
+                         ███.\
+                         ....\
+                         ....",
                     ),
-                    color::Blue,
-                    color::Black,
+                    Color::Blue,
+                    Color::Black,
                     4,
                     4,
                 ),
@@ -185,12 +185,12 @@ impl Tetromino {
                 Orientation::Half => Screen::from_string(
                     String::from(
                         ".██.\
-                                                         .█..\
-                                                         .█..\
-                                                         ....",
+                         .█..\
+                         .█..\
+                         ....",
                     ),
-                    color::Blue,
-                    color::Black,
+                    Color::Blue,
+                    Color::Black,
                     4,
                     4,
                 ),
@@ -198,12 +198,12 @@ impl Tetromino {
                 Orientation::ThreeQuarters => Screen::from_string(
                     String::from(
                         "....\
-                                                         ███.\
-                                                         ..█.\
-                                                         ....",
+                         ███.\
+                         ..█.\
+                         ....",
                     ),
-                    color::Blue,
-                    color::Black,
+                    Color::Blue,
+                    Color::Black,
                     4,
                     4,
                 ),
@@ -212,12 +212,12 @@ impl Tetromino {
                 Orientation::Normal => Screen::from_string(
                     String::from(
                         ".█..\
-                                                         .█..\
-                                                         .██.\
-                                                         ....",
+                         .█..\
+                         .██.\
+                         ....",
                     ),
-                    color::Yellow,
-                    color::Black,
+                    Color::DarkYellow,
+                    Color::Black,
                     4,
                     4,
                 ),
@@ -225,12 +225,12 @@ impl Tetromino {
                 Orientation::Quarter => Screen::from_string(
                     String::from(
                         "....\
-                                                         ███.\
-                                                         █...\
-                                                         ....",
+                         ███.\
+                         █...\
+                         ....",
                     ),
-                    color::Yellow,
-                    color::Black,
+                    Color::DarkYellow,
+                    Color::Black,
                     4,
                     4,
                 ),
@@ -238,12 +238,12 @@ impl Tetromino {
                 Orientation::Half => Screen::from_string(
                     String::from(
                         "██..\
-                                                         .█..\
-                                                         .█..\
-                                                         ....",
+                         .█..\
+                         .█..\
+                         ....",
                     ),
-                    color::Yellow,
-                    color::Black,
+                    Color::DarkYellow,
+                    Color::Black,
                     4,
                     4,
                 ),
@@ -251,12 +251,12 @@ impl Tetromino {
                 Orientation::ThreeQuarters => Screen::from_string(
                     String::from(
                         "..█.\
-                                                         ███.\
-                                                         ....\
-                                                         ....",
+                         ███.\
+                         ....\
+                         ....",
                     ),
-                    color::Yellow,
-                    color::Black,
+                    Color::DarkYellow,
+                    Color::Black,
                     4,
                     4,
                 ),
@@ -265,12 +265,12 @@ impl Tetromino {
                 Orientation::Normal | Orientation::Half => Screen::from_string(
                     String::from(
                         "....\
-                                                         .██.\
-                                                         ██..\
-                                                         ....",
+                         .██.\
+                         ██..\
+                         ....",
                     ),
-                    color::Green,
-                    color::Black,
+                    Color::Green,
+                    Color::Black,
                     4,
                     4,
                 ),
@@ -278,12 +278,12 @@ impl Tetromino {
                 Orientation::Quarter | Orientation::ThreeQuarters => Screen::from_string(
                     String::from(
                         "█...\
-                                                         ██..\
-                                                         .█..\
-                                                         ....",
+                         ██..\
+                         .█..\
+                         ....",
                     ),
-                    color::Green,
-                    color::Black,
+                    Color::Green,
+                    Color::Black,
                     4,
                     4,
                 ),
@@ -292,12 +292,12 @@ impl Tetromino {
                 Orientation::Normal | Orientation::Half => Screen::from_string(
                     String::from(
                         "....\
-                                                         ██..\
-                                                         .██.\
-                                                         ....",
+                         ██..\
+                         .██.\
+                         ....",
                     ),
-                    color::Red,
-                    color::Black,
+                    Color::Red,
+                    Color::Black,
                     4,
                     4,
                 ),
@@ -305,12 +305,12 @@ impl Tetromino {
                 Orientation::Quarter | Orientation::ThreeQuarters => Screen::from_string(
                     String::from(
                         ".█..\
-                                                         ██..\
-                                                         █...\
-                                                         ....",
+                         ██..\
+                         █...\
+                         ....",
                     ),
-                    color::Red,
-                    color::Black,
+                    Color::Red,
+                    Color::Black,
                     4,
                     4,
                 ),
@@ -415,18 +415,24 @@ fn main() {
         0,
         game_w + 1,
         game_scr.get_height() as i32,
-        pixel::pxl('█'),
+        pixel::pxl_fg('█', Color::Grey),
     ); // walls
     engine.rect(
         game_w + 1,
         0,
         engine.get_width() as i32 - 1,
         2,
-        pixel::pxl('█'),
+        pixel::pxl_fg('█', Color::Grey),
     ); // score's border
-    engine.print_fbg(game_w + 3, 0, "Score:", color::Black, color::White);
-    engine.rect(game_w + 3, 4, game_w + 8, 9, pixel::pxl('█')); // next piece's border
-    engine.print_fbg(game_w + 4, 4, "Next", color::Black, color::White);
+    engine.print_fbg(game_w + 3, 0, "Score:", Color::Black, Color::Grey);
+    engine.rect(
+        game_w + 3,
+        4,
+        game_w + 8,
+        9,
+        pixel::pxl_fg('█', Color::Grey),
+    ); // next piece's border
+    engine.print_fbg(game_w + 4, 4, "Next", Color::Black, Color::Grey);
 
     // constant values
     let start_pos_x = game_scr.get_width() as i32 / 2 - 1;
@@ -445,32 +451,32 @@ fn main() {
     // main loop, be aware that you'll have to break it because ctrl+C is captured
     loop {
         engine.wait_frame(); // wait for next frame + capture inputs
-        if engine.is_key_pressed(Key::Char('q')) {
+        if engine.is_key_pressed(KeyCode::Char('q')) {
             // if the user presses 'q' :
             break; // exits app
         }
 
         // rotate the piece
-        if (engine.is_key_held(Key::Char('8')) || engine.is_key_held(Key::Up))
+        if (engine.is_key_held(KeyCode::Char('8')) || engine.is_key_held(KeyCode::Up))
             && piece_fits(&game_scr, &piece, &piece_r.turn_right(), piece_x, piece_y)
         {
             piece_r = piece_r.turn_right();
         }
         // move the piece left or right
-        if (engine.is_key_held(Key::Char('4')) || engine.is_key_held(Key::Left))
+        if (engine.is_key_held(KeyCode::Char('4')) || engine.is_key_held(KeyCode::Left))
             && piece_x > 0
             && piece_fits(&game_scr, &piece, &piece_r, piece_x - 1, piece_y)
         {
             piece_x -= 1;
         }
-        if (engine.is_key_held(Key::Char('6')) || engine.is_key_held(Key::Right))
+        if (engine.is_key_held(KeyCode::Char('6')) || engine.is_key_held(KeyCode::Right))
             && piece_x < game_w
             && piece_fits(&game_scr, &piece, &piece_r, piece_x + 1, piece_y)
         {
             piece_x += 1;
         }
         // force the piece to drop
-        if engine.is_key_held(Key::Char('2')) || engine.is_key_held(Key::Down) {
+        if engine.is_key_held(KeyCode::Char('2')) || engine.is_key_held(KeyCode::Down) {
             fall_counter = 1;
         }
 
@@ -520,7 +526,7 @@ fn main() {
                     );
 
                     engine.rect(game_w + 3, 11, game_w + 13, 13, pixel::pxl('█'));
-                    engine.print_fbg(game_w + 4, 12, "GAME OVER", color::Black, color::White);
+                    engine.print_fbg(game_w + 4, 12, "GAME OVER", Color::Black, Color::Grey);
 
                     // wait 20 frames (=2 seconds) while still drawing the game
                     for _ in 0..20 {

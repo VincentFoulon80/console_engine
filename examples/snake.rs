@@ -1,7 +1,7 @@
 use console_engine::pixel;
-use console_engine::termion::color;
-use console_engine::termion::event::Key;
+use console_engine::Color;
 use console_engine::ConsoleEngine;
+use console_engine::KeyCode;
 
 /// custom function for generating a random u32 bound into [0;max[
 fn random(max: u32) -> u32 {
@@ -84,21 +84,21 @@ impl Snake {
     pub fn input(&mut self, engine: &ConsoleEngine) {
         if self.playing {
             // Change snake's direction based on a keypad layout
-            if engine.is_key_pressed(Key::Char('8')) || engine.is_key_pressed(Key::Up) {
+            if engine.is_key_pressed(KeyCode::Char('8')) || engine.is_key_pressed(KeyCode::Up) {
                 self.direction = Direction::North;
             }
-            if engine.is_key_pressed(Key::Char('6')) || engine.is_key_pressed(Key::Right) {
+            if engine.is_key_pressed(KeyCode::Char('6')) || engine.is_key_pressed(KeyCode::Right) {
                 self.direction = Direction::East;
             }
-            if engine.is_key_pressed(Key::Char('2')) || engine.is_key_pressed(Key::Down) {
+            if engine.is_key_pressed(KeyCode::Char('2')) || engine.is_key_pressed(KeyCode::Down) {
                 self.direction = Direction::South;
             }
-            if engine.is_key_pressed(Key::Char('4')) || engine.is_key_pressed(Key::Left) {
+            if engine.is_key_pressed(KeyCode::Char('4')) || engine.is_key_pressed(KeyCode::Left) {
                 self.direction = Direction::West;
             }
         } else {
             // check when the player starts the game with space
-            if engine.is_key_pressed(Key::Char(' ')) {
+            if engine.is_key_pressed(KeyCode::Char(' ')) {
                 // Initialize game values to a starting state
                 self.playing = true;
                 self.direction = Direction::East;
@@ -166,30 +166,30 @@ impl Snake {
             engine.set_pxl(
                 self.apple_x as i32,
                 self.apple_y as i32,
-                pixel::pxl_fg('O', color::Red),
+                pixel::pxl_fg('O', Color::Red),
             );
             // draw snake's body
             for segment in self.body.iter() {
                 engine.set_pxl(
                     segment.0 as i32,
                     segment.1 as i32,
-                    pixel::pxl_fg('#', color::Green),
+                    pixel::pxl_fg('#', Color::Green),
                 );
             }
             // don't forget snake's head !
             engine.set_pxl(
                 self.pos_x as i32,
                 self.pos_y as i32,
-                pixel::pxl_fg('☻', color::LightGreen),
+                pixel::pxl_fg('☻', Color::Green),
             )
         } else {
             // blink a message, inviting the player to press space
             // and display controls on the other side
             if engine.frame_count % 8 >= 4 {
-                engine.print_fbg(2, 1, "Press", color::LightYellow, color::Black);
-                engine.print_fbg(2, 2, "Space", color::LightYellow, color::Black);
-                engine.print_fbg(3, 3, "To", color::LightYellow, color::Black);
-                engine.print_fbg(2, 4, "Play", color::LightYellow, color::Black);
+                engine.print_fbg(2, 1, "Press", Color::Yellow, Color::Black);
+                engine.print_fbg(2, 2, "Space", Color::Yellow, Color::Black);
+                engine.print_fbg(3, 3, "To", Color::Yellow, Color::Black);
+                engine.print_fbg(2, 4, "Play", Color::Yellow, Color::Black);
             } else {
                 engine.print(4, 1, "8");
                 engine.print(4, 2, "^");
@@ -216,7 +216,7 @@ fn main() {
                              // engine.check_resize(); here we do not want to resize the terminal because it could break the boundaries of the game
 
         // exit check
-        if engine.is_key_pressed(Key::Char('q')) {
+        if engine.is_key_pressed(KeyCode::Char('q')) {
             break;
         }
         engine.clear_screen(); // reset the screen

@@ -1,6 +1,6 @@
 use console_engine::pixel;
-use console_engine::termion::color;
-use console_engine::termion::event::Key;
+use console_engine::Color;
+use console_engine::KeyCode;
 
 #[derive(Debug, PartialEq, Clone)]
 enum Shapes {
@@ -24,7 +24,7 @@ fn main() {
         engine.wait_frame(); // wait for next frame + capture inputs
         engine.check_resize(); // resize the terminal if its size has changed
                                // exit check
-        if engine.is_key_pressed(Key::Char('q')) {
+        if engine.is_key_pressed(KeyCode::Char('q')) {
             break;
         }
         engine.clear_screen();
@@ -145,45 +145,45 @@ fn main() {
         // display the configured coordinates and highlight the current one
         if engine.frame_count % 4 >= 2 {
             for coord in coords.iter() {
-                engine.set_pxl(coord.0, coord.1, pixel::pxl_fg('#', color::Cyan));
+                engine.set_pxl(coord.0, coord.1, pixel::pxl_fg('#', Color::Cyan));
             }
             engine.set_pxl(
                 coords[selection].0,
                 coords[selection].1,
-                pixel::pxl_fg('#', color::LightYellow),
+                pixel::pxl_fg('#', Color::Yellow),
             );
         }
 
         // handling coordinate displacement with a particular case for selection 1 of circle
         // because it's the range selection
-        if (engine.is_key_held(Key::Char('8')) || engine.is_key_pressed(Key::Up))
+        if (engine.is_key_held(KeyCode::Char('8')) || engine.is_key_pressed(KeyCode::Up))
             && coords[selection].1 > 0
             && (selection == 0 || shape != Shapes::Circle)
         {
             coords[selection].1 -= 1;
         }
-        if (engine.is_key_held(Key::Char('6')) || engine.is_key_pressed(Key::Right))
+        if (engine.is_key_held(KeyCode::Char('6')) || engine.is_key_pressed(KeyCode::Right))
             && coords[selection].0 < engine.get_width() as i32 - 1
         {
             coords[selection].0 += 1;
         }
-        if (engine.is_key_held(Key::Char('2')) || engine.is_key_pressed(Key::Down))
+        if (engine.is_key_held(KeyCode::Char('2')) || engine.is_key_pressed(KeyCode::Down))
             && coords[selection].1 < engine.get_height() as i32 - 1
             && (selection == 0 || shape != Shapes::Circle)
         {
             coords[selection].1 += 1;
         }
-        if (engine.is_key_held(Key::Char('4')) || engine.is_key_pressed(Key::Left))
+        if (engine.is_key_held(KeyCode::Char('4')) || engine.is_key_pressed(KeyCode::Left))
             && coords[selection].0 > 0
         {
             coords[selection].0 -= 1;
         }
         // switch between configured coordinates
-        if engine.is_key_pressed(Key::Char('5')) || engine.is_key_pressed(Key::Char(' ')) {
+        if engine.is_key_pressed(KeyCode::Char('5')) || engine.is_key_pressed(KeyCode::Char(' ')) {
             selection = (selection + 1) % coords.len();
         }
         // switch between shapes
-        if engine.is_key_pressed(Key::Char('s')) {
+        if engine.is_key_pressed(KeyCode::Char('s')) {
             selection = 0;
             match shape {
                 Shapes::Rect => {
@@ -206,7 +206,7 @@ fn main() {
             }
         }
         // toggle fill flag
-        if engine.is_key_pressed(Key::Char('f')) {
+        if engine.is_key_pressed(KeyCode::Char('f')) {
             fill = !fill;
         }
 

@@ -2,22 +2,23 @@
 //!
 //! Besides the user input and display, this library also provides some tools to build standalone "screens" that can be used as simply as printing it.
 //!
-//! It uses [Termion](https://crates.io/crates/termion) as main tool for handling the screen and inputs. You don't have to worry about initalizing anything because the lib will handle this for you.
+//! It uses [Crossterm](https://crates.io/crates/crossterm) as main tool for handling the screen and inputs. You don't have to worry about initalizing anything because the lib will handle this for you.
 
-pub extern crate termion;
+pub extern crate crossterm;
 
 pub mod pixel;
 pub mod screen;
 mod utils;
 
+use crossterm::event::{self, Event, KeyEvent, MouseEvent};
+pub use crossterm::event::{KeyCode, KeyModifiers, MouseButton};
+pub use crossterm::style::Color;
+use crossterm::terminal::{self, ClearType};
+use crossterm::{execute, queue, style};
 use pixel::Pixel;
 use screen::Screen;
 use std::io::Write;
 use std::io::{stdout, Stdout};
-use termion::color;
-use termion::event::{Event, Key};
-use termion::input::{MouseTerminal, TermRead};
-use termion::raw::IntoRawMode;
 
 /// Console Engine Framework
 ///
@@ -34,8 +35,8 @@ use termion::raw::IntoRawMode;
 ///
 /// ```
 /// use console_engine::pixel;
-/// use console_engine::termion::color;
-/// use console_engine::termion::event::Key;
+/// use console_engine::Color;
+/// use console_engine::KeyCode;
 ///
 /// fn main() {
 ///     // initializes a screen of 20x10 characters with a target of 3 frame per second
@@ -48,11 +49,11 @@ use termion::raw::IntoRawMode;
 ///         engine.clear_screen(); // reset the screen
 ///     
 ///         engine.line(0, 0, 19, 9, pixel::pxl('#')); // draw a line of '#' from [0,0] to [19,9]
-///         engine.print(0, 4, format!("Result: {}", value)); // prints some value at [0,4]
+///         engine.print(0, 4, format!("Result: {}", value).as_str()); // prints some value at [0,4]
 ///     
-///         engine.set_pxl(4, 0, pixel::pxl_fg('O', color::Cyan)); // write a majestic cyan 'O' at [4,0]
+///         engine.set_pxl(4, 0, pixel::pxl_fg('O', Color::Cyan)); // write a majestic cyan 'O' at [4,0]
 ///
-///         if engine.is_key_pressed(Key::Char('q')) { // if the user presses 'q' :
+///         if engine.is_key_pressed(KeyCode::Char('q')) { // if the user presses 'q' :
 ///             break; // exits app
 ///         }
 ///     
@@ -64,8 +65,7 @@ use termion::raw::IntoRawMode;
 /// #
 ///
 pub struct ConsoleEngine {
-    input: termion::input::Events<termion::AsyncReader>,
-    output: MouseTerminal<termion::raw::RawTerminal<Stdout>>,
+    stdout: Stdout,
     time_limit: std::time::Duration,
     /// The current frame count, publicly accessible
     pub frame_count: usize,
@@ -74,20 +74,20 @@ pub struct ConsoleEngine {
     screen: Screen,
     screen_last_frame: Screen,
     instant: std::time::Instant,
-    keys_pressed: Vec<Event>,
-    keys_held: Vec<Event>,
-    keys_released: Vec<Event>,
+    keys_pressed: Vec<KeyEvent>,
+    keys_held: Vec<KeyEvent>,
+    keys_released: Vec<KeyEvent>,
+    mouse_events: Vec<MouseEvent>,
 }
 
 impl ConsoleEngine {
     /// Initialize a screen of the provided width and height, and load the target FPS
     pub fn init(width: u32, height: u32, target_fps: u32) -> ConsoleEngine {
         assert!(target_fps > 0, "Target FPS needs to be greater than zero.");
-        let size = termion::terminal_size().unwrap();
+        let size = crossterm::terminal::size().unwrap();
         assert!(size.0 as u32 >= width && size.1 as u32 >= height, "Your terminal must have at least a width and height of {}x{} characters. Currently has {}x{}", width, height, size.0, size.1);
         let mut my = ConsoleEngine {
-            output: MouseTerminal::from(stdout().into_raw_mode().unwrap()),
-            input: termion::async_stdin().events(),
+            stdout: stdout(),
             time_limit: std::time::Duration::from_millis(1000 / target_fps as u64),
             frame_count: 0,
             width,
@@ -98,6 +98,7 @@ impl ConsoleEngine {
             keys_pressed: vec![],
             keys_held: vec![],
             keys_released: vec![],
+            mouse_events: vec![],
         };
         my.begin();
         my
@@ -105,49 +106,44 @@ impl ConsoleEngine {
 
     /// Initialize a screen filling the entire terminal with the target FPS
     pub fn init_fill(target_fps: u32) -> ConsoleEngine {
-        let size = termion::terminal_size().unwrap();
+        let size = crossterm::terminal::size().unwrap();
         ConsoleEngine::init(size.0 as u32, size.1 as u32, target_fps)
     }
 
     /// Initialize a screen filling the entire terminal with the target FPS  
     /// Also check the terminal width and height and assert if the terminal has at least the asked size
     pub fn init_fill_require(width: u32, height: u32, target_fps: u32) -> ConsoleEngine {
-        let size = termion::terminal_size().unwrap();
+        let size = crossterm::terminal::size().unwrap();
         assert!(size.0 as u32 >= width && size.1 as u32 >= height, "Your terminal must have at least a width and height of {}x{} characters. Currently has {}x{}", width, height, size.0, size.1);
         ConsoleEngine::init_fill(target_fps)
     }
 
-    #[cfg(windows)]
-    /// Initializes the internal components such as input system
-    fn begin(&mut self) {
-        println!("Please Press Enter to initialize inputs");
-        while self.input.next().is_none() {}
-        println!(
-            "{}{}{}",
-            termion::cursor::Hide,
-            termion::clear::All,
-            termion::cursor::Goto(1, 1)
-        );
-    }
-    #[cfg(not(windows))]
     /// Initializes the internal components such as hiding the cursor
     fn begin(&mut self) {
-        println!(
-            "{}{}{}",
-            termion::cursor::Hide,
-            termion::clear::All,
-            termion::cursor::Goto(1, 1)
-        );
+        terminal::enable_raw_mode().unwrap();
+        execute!(
+            self.stdout,
+            terminal::Clear(ClearType::All),
+            terminal::EnterAlternateScreen,
+            crossterm::cursor::Hide,
+            crossterm::cursor::MoveTo(0, 0),
+            crossterm::event::EnableMouseCapture
+        )
+        .unwrap();
     }
 
     /// Gracefully stop the engine, and set back a visible cursor
     fn end(&mut self) {
-        println!(
-            "{}{}{}\r\n",
-            termion::cursor::Show,
-            color::Fg(color::Reset),
-            color::Bg(color::Reset)
-        );
+        execute!(
+            self.stdout,
+            crossterm::cursor::Show,
+            style::SetBackgroundColor(Color::Reset),
+            style::SetForegroundColor(Color::Reset),
+            crossterm::event::DisableMouseCapture,
+            terminal::LeaveAlternateScreen
+        )
+        .unwrap();
+        terminal::disable_raw_mode().unwrap();
     }
 
     /// Get the screen width
@@ -170,20 +166,9 @@ impl ConsoleEngine {
     ///
     /// usage:
     /// ```
-    /// engine.print(0,0, String::from("Hello, world!"));
-    /// engine.print(0, 4, format!("Score: {}", score));
+    /// engine.print(0,0, "Hello, world!");
+    /// engine.print(0, 4, format!("Score: {}", score).as_str());
     /// ```
-    ///
-    /// examples :
-    /// - [drag-and-drop](https://github.com/VincentFoulon80/console_engine/blob/master/examples/drag-and-drop.rs)
-    /// - [graph](https://github.com/VincentFoulon80/console_engine/blob/master/examples/graph.rs)
-    /// - [lines-fps](https://github.com/VincentFoulon80/console_engine/blob/master/examples/lines-fps.rs)
-    /// - [screen-embed](https://github.com/VincentFoulon80/console_engine/blob/master/examples/screen-embed.rs)
-    /// - [screen-simple](https://github.com/VincentFoulon80/console_engine/blob/master/examples/screen-simple.rs)
-    /// - [screen-swap](https://github.com/VincentFoulon80/console_engine/blob/master/examples/screen-swap.rs)
-    /// - [shapes](https://github.com/VincentFoulon80/console_engine/blob/master/examples/shapes.rs)
-    /// - [snake](https://github.com/VincentFoulon80/console_engine/blob/master/examples/snake.rs)
-    /// - [tetris](https://github.com/VincentFoulon80/console_engine/blob/master/examples/tetris.rs)
     pub fn print(&mut self, x: i32, y: i32, string: &str) {
         self.screen.print(x, y, string)
     }
@@ -193,23 +178,12 @@ impl ConsoleEngine {
     ///
     /// usage:
     /// ```
-    /// // print "Hello, world" in blue on white background
-    /// engine.print(0,0, String::from("Hello, world!"), color::Blue, color::White);
-    /// ```
+    /// use console_engine::Color;
     ///
-    /// examples :
-    /// - [graph](https://github.com/VincentFoulon80/console_engine/blob/master/examples/graph.rs)
-    /// - [screen-swap](https://github.com/VincentFoulon80/console_engine/blob/master/examples/screen-swap.rs)
-    /// - [snake](https://github.com/VincentFoulon80/console_engine/blob/master/examples/snake.rs)
-    /// - [tetris](https://github.com/VincentFoulon80/console_engine/blob/master/examples/tetris.rs)
-    pub fn print_fbg<C1: color::Color + Clone, C2: color::Color + Clone>(
-        &mut self,
-        x: i32,
-        y: i32,
-        string: &str,
-        fg: C1,
-        bg: C2,
-    ) {
+    /// // print "Hello, world" in blue on white background
+    /// engine.print(0,0, "Hello, world!", Color::Blue, Color::White);
+    /// ```
+    pub fn print_fbg(&mut self, x: i32, y: i32, string: &str, fg: Color, bg: Color) {
         self.screen.print_fbg(x, y, string, fg, bg)
     }
 
@@ -226,15 +200,11 @@ impl ConsoleEngine {
     /// // create a new Screen struct and draw a square inside it
     /// let mut my_square = Screen::new(8,8);
     /// my_square.rect(0,0,7,7,pixel::pxl('#'));
-    /// my_square.print(1,1,String::from("square"));
+    /// my_square.print(1,1,"square");
     ///
     /// // prints the square in the engine's screen at a specific location
     /// engine.print_screen(5,2, &my_square);
     /// ```
-    ///
-    /// examples :
-    /// - [screen-embed](https://github.com/VincentFoulon80/console_engine/blob/master/examples/screen-embed.rs)
-    /// - [tetris](https://github.com/VincentFoulon80/console_engine/blob/master/examples/tetris.rs)
     pub fn print_screen(&mut self, x: i32, y: i32, source: &Screen) {
         self.screen.print_screen(x, y, source)
     }
@@ -243,9 +213,6 @@ impl ConsoleEngine {
     /// Ignoring a character will behave like transparency
     ///
     /// see [print_screen](#method.print_screen) for usage
-    ///
-    /// examples :
-    /// - [tetris](https://github.com/VincentFoulon80/console_engine/blob/master/examples/tetris.rs)
     pub fn print_screen_alpha(&mut self, x: i32, y: i32, source: &Screen, alpha_character: char) {
         self.screen
             .print_screen_alpha(x, y, source, alpha_character)
@@ -262,11 +229,6 @@ impl ConsoleEngine {
     /// // ...
     /// engine.line(0, 0, 9, 9, pixel::pxl('#'));
     /// ```
-    ///
-    /// examples :
-    /// - [graph](https://github.com/VincentFoulon80/console_engine/blob/master/examples/graph.rs)
-    /// - [lines](https://github.com/VincentFoulon80/console_engine/blob/master/examples/lines.rs)
-    /// - [lines-fps](https://github.com/VincentFoulon80/console_engine/blob/master/examples/lines-fps.rs)
     pub fn line(&mut self, start_x: i32, start_y: i32, end_x: i32, end_y: i32, character: Pixel) {
         self.screen.line(start_x, start_y, end_x, end_y, character)
     }
@@ -279,14 +241,6 @@ impl ConsoleEngine {
     /// // ...
     /// engine.rect(0, 0, 9, 9, pixel::pxl('#'));
     /// ```
-    ///
-    /// examples :
-    /// - [drag-and-drop](https://github.com/VincentFoulon80/console_engine/blob/master/examples/drag-and-drop.rs)
-    /// - [screen-embed](https://github.com/VincentFoulon80/console_engine/blob/master/examples/screen-embed.rs)
-    /// - [screen-simple](https://github.com/VincentFoulon80/console_engine/blob/master/examples/screen-simple.rs)
-    /// - [screen-swap](https://github.com/VincentFoulon80/console_engine/blob/master/examples/screen-swap.rs)
-    /// - [shapes](https://github.com/VincentFoulon80/console_engine/blob/master/examples/shapes.rs)
-    /// - [tetris](https://github.com/VincentFoulon80/console_engine/blob/master/examples/tetris.rs)
     pub fn rect(&mut self, start_x: i32, start_y: i32, end_x: i32, end_y: i32, character: Pixel) {
         self.screen.rect(start_x, start_y, end_x, end_y, character)
     }
@@ -299,10 +253,6 @@ impl ConsoleEngine {
     /// // ...
     /// engine.fill_rect(0, 0, 9, 9, pixel::pxl('#'));
     /// ```
-    ///
-    /// examples :
-    /// - [shapes](https://github.com/VincentFoulon80/console_engine/blob/master/examples/shapes.rs)
-    /// - [tetris](https://github.com/VincentFoulon80/console_engine/blob/master/examples/tetris.rs)
     pub fn fill_rect(
         &mut self,
         start_x: i32,
@@ -324,9 +274,6 @@ impl ConsoleEngine {
     /// // ...
     /// engine.circle(10, 10, 4, pixel::pxl('#'));
     /// ```
-    ///
-    /// examples :
-    /// - [shapes](https://github.com/VincentFoulon80/console_engine/blob/master/examples/shapes.rs)
     pub fn circle(&mut self, x: i32, y: i32, radius: u32, character: Pixel) {
         self.screen.circle(x, y, radius, character)
     }
@@ -340,11 +287,6 @@ impl ConsoleEngine {
     /// // ...
     /// engine.fill_circle(10, 10, 4, pixel::pxl('#'));
     /// ```
-    ///
-    /// examples :
-    /// - [screen-simple](https://github.com/VincentFoulon80/console_engine/blob/master/examples/screen-simple.rs)
-    /// - [screen-swap](https://github.com/VincentFoulon80/console_engine/blob/master/examples/screen-swap.rs)
-    /// - [shapes](https://github.com/VincentFoulon80/console_engine/blob/master/examples/shapes.rs)
     pub fn fill_circle(&mut self, x: i32, y: i32, radius: u32, character: Pixel) {
         self.screen.fill_circle(x, y, radius, character)
     }
@@ -357,9 +299,6 @@ impl ConsoleEngine {
     /// // ...
     /// engine.triangle(8,8, 4,6, 9,2, pixel::pxl('#'));
     /// ```
-    ///
-    /// examples :
-    /// - [shapes](https://github.com/VincentFoulon80/console_engine/blob/master/examples/shapes.rs)
     pub fn triangle(
         &mut self,
         x1: i32,
@@ -382,10 +321,6 @@ impl ConsoleEngine {
     /// // ...
     /// engine.fill_triangle(8,8, 4,6, 9,2, pixel::pxl('#'));
     /// ```
-    ///
-    /// examples :
-    /// - [shapes](https://github.com/VincentFoulon80/console_engine/blob/master/examples/shapes.rs)
-    /// - [screen-swap](https://github.com/VincentFoulon80/console_engine/blob/master/examples/screen-swap.rs)
     pub fn fill_triangle(
         &mut self,
         x1: i32,
@@ -408,13 +343,6 @@ impl ConsoleEngine {
     /// // ...
     /// engine.set_pxl(3,8,pixel::pixel('o'));
     /// ```
-    ///
-    /// examples :
-    /// - [graph](https://github.com/VincentFoulon80/console_engine/blob/master/examples/graph.rs)
-    /// - [mouse](https://github.com/VincentFoulon80/console_engine/blob/master/examples/mouse.rs)
-    /// - [shapes](https://github.com/VincentFoulon80/console_engine/blob/master/examples/shapes.rs)
-    /// - [snake](https://github.com/VincentFoulon80/console_engine/blob/master/examples/snake.rs)
-    /// - [tetris](https://github.com/VincentFoulon80/console_engine/blob/master/examples/tetris.rs)
     pub fn set_pxl(&mut self, x: i32, y: i32, character: Pixel) {
         self.screen.set_pxl(x, y, character)
     }
@@ -427,9 +355,6 @@ impl ConsoleEngine {
     ///     engine.print(0,0,"Found a 'o'");
     /// }
     /// ```
-    ///
-    /// examples :
-    /// - [tetris](https://github.com/VincentFoulon80/console_engine/blob/master/examples/tetris.rs)
     pub fn get_pxl(&self, x: i32, y: i32) -> Result<Pixel, String> {
         self.screen.get_pxl(x, y)
     }
@@ -441,9 +366,6 @@ impl ConsoleEngine {
     /// ```
     /// engine.resize(40,10)
     /// ```
-    ///
-    /// examples :
-    /// - *no examples*
     pub fn resize(&mut self, new_width: u32, new_height: u32) {
         self.screen.resize(new_width, new_height);
         self.width = new_width;
@@ -471,9 +393,6 @@ impl ConsoleEngine {
     /// // set back the old screen
     /// engine.set_screen(&old_scr);
     /// ```
-    ///
-    /// examples :
-    /// - [screen-swap](https://github.com/VincentFoulon80/console_engine/blob/master/examples/screen-swap.rs)
     pub fn set_screen(&mut self, screen: &Screen) {
         self.width = screen.get_width();
         self.height = screen.get_height();
@@ -492,9 +411,6 @@ impl ConsoleEngine {
     /// ```
     /// let scr = engine.get_screen();
     /// ```
-    ///
-    /// examples :
-    /// - *no examples*
     pub fn get_screen(&self) -> Screen {
         self.screen.clone()
     }
@@ -504,30 +420,17 @@ impl ConsoleEngine {
     ///
     /// usage:
     /// ```
-    /// engine.print(0,0,String::from("Hello, world!")); // <- prints "Hello, world!" in 'screen' memory
+    /// engine.print(0,0,"Hello, world!"); // <- prints "Hello, world!" in 'screen' memory
     /// engine.draw(); // display 'screen' memory to the user's terminal
     /// ```
-    ///
-    /// examples :
-    /// - [drag-and-drop](https://github.com/VincentFoulon80/console_engine/blob/master/examples/drag-and-drop.rs)
-    /// - [graph](https://github.com/VincentFoulon80/console_engine/blob/master/examples/graph.rs)
-    /// - [lines](https://github.com/VincentFoulon80/console_engine/blob/master/examples/lines.rs)
-    /// - [lines-fps](https://github.com/VincentFoulon80/console_engine/blob/master/examples/lines-fps.rs)
-    /// - [mouse](https://github.com/VincentFoulon80/console_engine/blob/master/examples/mouse.rs)
-    /// - [screen-swap](https://github.com/VincentFoulon80/console_engine/blob/master/examples/screen-swap.rs)
-    /// - [shapes](https://github.com/VincentFoulon80/console_engine/blob/master/examples/shapes.rs)
-    /// - [snake](https://github.com/VincentFoulon80/console_engine/blob/master/examples/snake.rs)
-    /// - [tetris](https://github.com/VincentFoulon80/console_engine/blob/master/examples/tetris.rs)
     pub fn draw(&mut self) {
         // we prepare an "output_screen" String variable to store in one-shot the screen we'll write.
         // This is an optimization because we write all we need once instead of writing small bit of screen by small bit of screen.
         // Actually, this does not change much for Linux terminals (like 5 fps gained from this)
         // But for windows terminal we can see huge improvements (example lines-fps goes from 35-40 fps to 65-70 for a 100x50 term)
         // reset cursor position
-        let mut output_screen = String::new();
-        output_screen.push_str(&format!("{}", termion::cursor::Goto(1, 1)));
-        // write!(output_screen, "{}", termion::cursor::Goto(1,1)).unwrap();
-        let mut current_colors = String::from("");
+        queue!(self.stdout, crossterm::cursor::MoveTo(0, 0)).unwrap();
+        let mut current_colors: (Color, Color) = (Color::Reset, Color::Reset);
         let mut moving = false;
         self.screen_last_frame.check_empty(); // refresh internal "empty" value
                                               // iterates through the screen memory and prints it on the output buffer
@@ -543,11 +446,7 @@ impl ConsoleEngine {
                         // if the moving flag is set, we need to write a goto instruction first
                         // this optimization minimize useless write on the screen
                         // actually writing to the screen is very slow so it's a good compromise
-                        output_screen.push_str(&format!(
-                            "{}",
-                            termion::cursor::Goto(1 + x as u16, 1 + y as u16)
-                        ));
-                        // write!(output_screen, "{}", termion::cursor::Goto(1+x as u16,1+y as u16)).unwrap();
+                        queue!(self.stdout, crossterm::cursor::MoveTo(x as u16, y as u16)).unwrap();
                         moving = false;
                     }
                     // we check if the last color is the same as the current one.
@@ -555,24 +454,28 @@ impl ConsoleEngine {
                     // the less we write on the output the faster we'll get
                     // and additional characters for colors we already have set is
                     // time consuming
-                    if current_colors != pixel.colors {
-                        current_colors = pixel.colors.clone();
-                        output_screen.push_str(pixel.to_string().as_str());
+                    if current_colors != pixel.get_colors() {
+                        current_colors = pixel.get_colors();
+                        queue!(
+                            self.stdout,
+                            style::SetForegroundColor(pixel.fg),
+                            style::SetBackgroundColor(pixel.bg),
+                            style::Print(pixel.chr)
+                        )
+                        .unwrap();
                     } else {
-                        output_screen.push(pixel.chr);
+                        queue!(self.stdout, style::Print(pixel.chr)).unwrap();
                     }
                 } else {
                     moving = true
                 }
             }
             if y < self.height as i32 - 1 {
-                output_screen.push_str("\r\n");
+                queue!(self.stdout, crossterm::cursor::MoveToNextLine(1)).unwrap();
             }
         }
         // flush the buffer into user's terminal
-        let mut out = self.output.lock();
-        write!(out, "{}", output_screen).unwrap();
-        out.flush().unwrap();
+        self.stdout.flush().unwrap();
         self.screen_last_frame = self.screen.clone();
     }
 
@@ -588,43 +491,44 @@ impl ConsoleEngine {
     ///     // do your stuff
     /// }
     /// ```
-    ///
-    /// examples :
-    /// - [drag-and-drop](https://github.com/VincentFoulon80/console_engine/blob/master/examples/drag-and-drop.rs)
-    /// - [graph](https://github.com/VincentFoulon80/console_engine/blob/master/examples/graph.rs)
-    /// - [lines](https://github.com/VincentFoulon80/console_engine/blob/master/examples/lines.rs)
-    /// - [lines-fps](https://github.com/VincentFoulon80/console_engine/blob/master/examples/lines-fps.rs)
-    /// - [mouse](https://github.com/VincentFoulon80/console_engine/blob/master/examples/mouse.rs)
-    /// - [screen-swap](https://github.com/VincentFoulon80/console_engine/blob/master/examples/screen-swap.rs)
-    /// - [shapes](https://github.com/VincentFoulon80/console_engine/blob/master/examples/shapes.rs)
-    /// - [snake](https://github.com/VincentFoulon80/console_engine/blob/master/examples/snake.rs)
-    /// - [tetris](https://github.com/VincentFoulon80/console_engine/blob/master/examples/tetris.rs)
     pub fn wait_frame(&mut self) {
-        let mut pressed: Vec<Event> = vec![];
+        let mut captured_keyboard: Vec<KeyEvent> = vec![];
+        let mut captured_mouse: Vec<MouseEvent> = vec![];
 
-        // if there is time before next frame, sleep until next frame
-        if self.time_limit > self.instant.elapsed() {
-            std::thread::sleep(std::time::Duration::from_millis(
-                ((self.time_limit - self.instant.elapsed()).as_millis()
-                    % self.time_limit.as_millis()) as u64,
-            ));
+        // if there is time before next frame, poll keyboard and mouse events until next frame
+        let mut elapsed_time = self.instant.elapsed();
+        while self.time_limit > elapsed_time {
+            let remaining_time = self.time_limit - elapsed_time;
+            if event::poll(std::time::Duration::from_millis(
+                (remaining_time.as_millis() % self.time_limit.as_millis()) as u64,
+            ))
+            .unwrap()
+            {
+                match event::read().unwrap() {
+                    Event::Key(evt) => {
+                        captured_keyboard.push(evt);
+                    }
+                    Event::Mouse(evt) => {
+                        captured_mouse.push(evt);
+                    }
+                    // we ignore resize events for now
+                    Event::Resize(_w, _h) => {}
+                };
+            }
+            elapsed_time = self.instant.elapsed();
         }
         self.instant = std::time::Instant::now();
         self.frame_count += 1;
 
-        // captures user's input
-        let captured_inputs: Vec<Result<Event, std::io::Error>> =
-            self.input.by_ref().take(10).collect();
-        for input in captured_inputs.iter() {
-            if input.is_ok() {
-                pressed.push(input.as_ref().unwrap().clone());
-            }
-        }
         // updates pressed / held / released states
-        let held = utils::intersect(&utils::union(&self.keys_pressed, &self.keys_held), &pressed);
+        let held = utils::intersect(
+            &utils::union(&self.keys_pressed, &self.keys_held),
+            &captured_keyboard,
+        );
         self.keys_released = utils::outersect_left(&self.keys_held, &held);
-        self.keys_pressed = utils::outersect_left(&pressed, &held);
+        self.keys_pressed = utils::outersect_left(&captured_keyboard, &held);
         self.keys_held = utils::union(&held, &self.keys_pressed);
+        self.mouse_events = captured_mouse;
     }
 
     /// Check and resize the terminal if needed.
@@ -641,18 +545,10 @@ impl ConsoleEngine {
     ///     // do your stuff
     /// }
     /// ```
-    ///
-    /// examples :
-    /// - [drag-and-drop](https://github.com/VincentFoulon80/console_engine/blob/master/examples/drag-and-drop.rs)
-    /// - [graph](https://github.com/VincentFoulon80/console_engine/blob/master/examples/graph.rs)
-    /// - [lines](https://github.com/VincentFoulon80/console_engine/blob/master/examples/lines.rs)
-    /// - [lines-fps](https://github.com/VincentFoulon80/console_engine/blob/master/examples/lines-fps.rs)
-    /// - [mouse](https://github.com/VincentFoulon80/console_engine/blob/master/examples/mouse.rs)
-    /// - [shapes](https://github.com/VincentFoulon80/console_engine/blob/master/examples/shapes.rs)
     pub fn check_resize(&mut self) {
-        if termion::terminal_size().unwrap() != (self.width as u16, self.height as u16) {
+        if crossterm::terminal::size().unwrap() != (self.width as u16, self.height as u16) {
             // resize terminal
-            let size = termion::terminal_size().unwrap();
+            let size = crossterm::terminal::size().unwrap();
             let new_width = size.0 as u32;
             let new_height = size.1 as u32;
 
@@ -664,88 +560,112 @@ impl ConsoleEngine {
     ///
     /// usage:
     /// ```
+    /// use console_engine::KeyCode;
+    ///
     /// loop {
     ///     engine.wait_frame(); // wait for next frame + captures input
     ///     
-    ///     if engine.is_key_pressed(Key::Char('q')) {
+    ///     if engine.is_key_pressed(KeyCode::Char('q')) {
     ///         break; // exits app
     ///     }
     /// }
     /// ```
+    pub fn is_key_pressed(&self, key: KeyCode) -> bool {
+        self.is_key_pressed_with_modifier(key, KeyModifiers::NONE)
+    }
+
+    /// checks whenever a key + a modifier (ctrl, shift...) is pressed (first frame held only)
     ///
-    /// examples :
-    /// - [drag-and-drop](https://github.com/VincentFoulon80/console_engine/blob/master/examples/drag-and-drop.rs)
-    /// - [graph](https://github.com/VincentFoulon80/console_engine/blob/master/examples/graph.rs)
-    /// - [lines](https://github.com/VincentFoulon80/console_engine/blob/master/examples/lines.rs)
-    /// - [lines-fps](https://github.com/VincentFoulon80/console_engine/blob/master/examples/lines-fps.rs)
-    /// - [mouse](https://github.com/VincentFoulon80/console_engine/blob/master/examples/mouse.rs)
-    /// - [screen-swap](https://github.com/VincentFoulon80/console_engine/blob/master/examples/screen-swap.rs)
-    /// - [shapes](https://github.com/VincentFoulon80/console_engine/blob/master/examples/shapes.rs)
-    /// - [snake](https://github.com/VincentFoulon80/console_engine/blob/master/examples/snake.rs)
-    /// - [tetris](https://github.com/VincentFoulon80/console_engine/blob/master/examples/tetris.rs)
-    pub fn is_key_pressed(&self, key: Key) -> bool {
-        self.keys_pressed.contains(&Event::Key(key))
+    /// usage:
+    /// ```
+    /// use console_engine::{KeyCode, KeyModifiers}
+    ///
+    /// loop {
+    ///     engine.wait_frame(); // wait for next frame + captures input
+    ///     
+    ///     if engine.is_key_pressed_with_modifier(KeyCode::Char('c'), KeyModifiers::CONTROL) {
+    ///         break; // exits app
+    ///     }
+    /// }
+    /// ```
+    pub fn is_key_pressed_with_modifier(&self, key: KeyCode, modifier: KeyModifiers) -> bool {
+        self.keys_pressed.contains(&KeyEvent::new(key, modifier))
     }
 
     /// checks whenever a key is held down
     ///
     /// usage:
     /// ```
+    /// use console_engine::KeyCode;
+    ///
     /// loop {
     ///     engine.wait_frame(); // wait for next frame + captures input
     ///     
-    ///     if engine.is_key_held(Key::Char('8')) && pos_y > 0 {
+    ///     if engine.is_key_held(KeyCode::Char('8')) && pos_y > 0 {
     ///         pos_y -= 1; // move position upward
     ///     }
     /// }
     /// ```
-    ///
-    /// examples :
-    /// - [shapes](https://github.com/VincentFoulon80/console_engine/blob/master/examples/shapes.rs)
-    /// - [tetris](https://github.com/VincentFoulon80/console_engine/blob/master/examples/tetris.rs)
-    pub fn is_key_held(&self, key: Key) -> bool {
-        self.keys_held.contains(&Event::Key(key))
+    pub fn is_key_held(&self, key: KeyCode) -> bool {
+        self.is_key_held_with_modifier(key, KeyModifiers::NONE)
+    }
+
+    /// checks whenever a key + a modifier (ctrl, shift...) is held down
+    pub fn is_key_held_with_modifier(&self, key: KeyCode, modifier: KeyModifiers) -> bool {
+        self.keys_held.contains(&KeyEvent::new(key, modifier))
     }
 
     /// checks whenever a key has been released (first frame released)
     ///  
     /// usage:
     /// ```
-    /// if engine.is_key_held(Key::Char('h')) {
+    /// use console_engine::KeyCode;
+    ///
+    /// if engine.is_key_held(KeyCode::Char('h')) {
     ///     engine.clear_screen();
     ///     engine.print(0,0,"Please don't hold this button.");
     ///     engine.draw();
-    ///     while !engine.is_key_released(Key::Char('h')) {
+    ///     while !engine.is_key_released(KeyCode::Char('h')) {
     ///         engine.wait_frame(); // refresh button's states
     ///     }
     /// }
     /// ```
-    ///
-    /// examples :
-    /// - *no example*
-    pub fn is_key_released(&self, key: Key) -> bool {
-        self.keys_released.contains(&Event::Key(key))
+    pub fn is_key_released(&self, key: KeyCode) -> bool {
+        self.is_key_released_with_modifier(key, KeyModifiers::NONE)
+    }
+
+    /// checks whenever a key + a modifier (ctrl, shift...) has been released (first frame released)
+    pub fn is_key_released_with_modifier(&self, key: KeyCode, modifier: KeyModifiers) -> bool {
+        self.keys_released.contains(&KeyEvent::new(key, modifier))
     }
 
     /// Give the mouse's terminal coordinates if the provided button has been pressed
     ///
     /// usage:
     /// ```
+    /// use console_engine::MouseButton;
+    ///
     /// // prints a 'P' where the mouse's left button has been pressed
-    /// let mouse_pos = engine.get_mouse_press(termion::event::MouseButton::Left);
+    /// let mouse_pos = engine.get_mouse_press(MouseButton::Left);
     /// if let Some(mouse_pos) = mouse_pos {
     ///     engine.set_pxl(mouse_pos.0 as i32, mouse_pos.1 as i32, pixel::pxl('P'));
     /// }
     /// ```
     ///
-    /// examples :
-    /// - [drag-and-drop](https://github.com/VincentFoulon80/console_engine/blob/master/examples/drag-and-drop.rs)
-    /// - [mouse](https://github.com/VincentFoulon80/console_engine/blob/master/examples/mouse.rs)
-    pub fn get_mouse_press(&self, button: termion::event::MouseButton) -> Option<(u32, u32)> {
-        for evt in self.keys_pressed.iter() {
-            if let Event::Mouse(termion::event::MouseEvent::Press(mouse, x, y)) = evt {
-                if *mouse == button {
-                    return Some((*x as u32 - 1, *y as u32 - 1));
+    pub fn get_mouse_press(&self, button: MouseButton) -> Option<(u32, u32)> {
+        self.get_mouse_press_with_modifier(button, KeyModifiers::NONE)
+    }
+
+    /// Give the mouse's terminal coordinates if the provided button + modifier (ctrl, shift, ...) has been pressed
+    pub fn get_mouse_press_with_modifier(
+        &self,
+        button: MouseButton,
+        modifier: KeyModifiers,
+    ) -> Option<(u32, u32)> {
+        for evt in self.mouse_events.iter() {
+            if let MouseEvent::Down(mouse, x, y, key) = evt {
+                if *mouse == button && *key == modifier {
+                    return Some((*x as u32, *y as u32));
                 }
             };
         }
@@ -756,20 +676,29 @@ impl ConsoleEngine {
     ///
     /// usage:
     /// ```
+    /// use console_engine::MouseButton;
+    ///
     /// // prints a 'H' where the mouse is currently held
-    /// let mouse_pos = engine.get_mouse_held();
+    /// let mouse_pos = engine.get_mouse_held(MouseButton::Left);
     /// if let Some(mouse_pos) = mouse_pos {
     ///     engine.set_pxl(mouse_pos.0 as i32, mouse_pos.1 as i32, pixel::pxl('H'));
     /// }
     /// ```
-    ///
-    /// examples :
-    /// - [drag-and-drop](https://github.com/VincentFoulon80/console_engine/blob/master/examples/drag-and-drop.rs)
-    /// - [mouse](https://github.com/VincentFoulon80/console_engine/blob/master/examples/mouse.rs)
-    pub fn get_mouse_held(&self) -> Option<(u32, u32)> {
-        for evt in self.keys_pressed.iter() {
-            if let Event::Mouse(termion::event::MouseEvent::Hold(x, y)) = evt {
-                return Some((*x as u32 - 1, *y as u32 - 1));
+    pub fn get_mouse_held(&self, button: MouseButton) -> Option<(u32, u32)> {
+        self.get_mouse_held_with_modifier(button, KeyModifiers::NONE)
+    }
+
+    /// Give the mouse's terminal coordinates if a button + modifier (ctrl, shift, ...) is held on the mouse
+    pub fn get_mouse_held_with_modifier(
+        &self,
+        button: MouseButton,
+        modifier: KeyModifiers,
+    ) -> Option<(u32, u32)> {
+        for evt in self.mouse_events.iter() {
+            if let MouseEvent::Drag(mouse, x, y, key) = evt {
+                if *mouse == button && *key == modifier {
+                    return Some((*x as u32, *y as u32));
+                }
             };
         }
         None
@@ -779,20 +708,29 @@ impl ConsoleEngine {
     ///
     /// usage:
     /// ```
+    /// use console_engine::MouseButton;
+    ///
     /// // prints a 'R' where the mouse has been released
-    /// let mouse_pos = engine.get_mouse_released();
+    /// let mouse_pos = engine.get_mouse_released(MouseButton::Left);
     /// if let Some(mouse_pos) = mouse_pos {
     ///     engine.set_pxl(mouse_pos.0 as i32, mouse_pos.1 as i32, pixel::pxl('R'));
     /// }
     /// ```
-    ///
-    /// examples :
-    /// - [drag-and-drop](https://github.com/VincentFoulon80/console_engine/blob/master/examples/drag-and-drop.rs)
-    /// - [mouse](https://github.com/VincentFoulon80/console_engine/blob/master/examples/mouse.rs)
-    pub fn get_mouse_released(&self) -> Option<(u32, u32)> {
-        for evt in self.keys_pressed.iter() {
-            if let Event::Mouse(termion::event::MouseEvent::Release(x, y)) = evt {
-                return Some((*x as u32 - 1, *y as u32 - 1));
+    pub fn get_mouse_released(&self, button: MouseButton) -> Option<(u32, u32)> {
+        self.get_mouse_released_with_modifier(button, KeyModifiers::NONE)
+    }
+
+    /// Give the mouse's terminal coordinates if a button + modifier (ctrl, shift, ...) has been released on the mouse
+    pub fn get_mouse_released_with_modifier(
+        &self,
+        button: MouseButton,
+        modifier: KeyModifiers,
+    ) -> Option<(u32, u32)> {
+        for evt in self.mouse_events.iter() {
+            if let MouseEvent::Up(mouse, x, y, key) = evt {
+                if *mouse == button && *key == modifier {
+                    return Some((*x as u32, *y as u32));
+                }
             };
         }
         None
