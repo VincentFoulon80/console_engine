@@ -1,7 +1,7 @@
 use console_engine::pixel;
 use console_engine::screen::Screen;
-use console_engine::termion::color;
-use console_engine::termion::event::Key;
+use console_engine::Color;
+use console_engine::KeyCode;
 
 fn main() {
     // initializes a screen of 30x10 characters with a target of 10 frames per second
@@ -21,17 +21,11 @@ fn main() {
 
     // initializes screen_shapes
     screen_shapes.rect(0, 0, 29, 9, pixel::pxl('+'));
-    screen_shapes.fill_circle(4, 4, 2, pixel::pxl_fg('0', color::LightBlue));
-    screen_shapes.fill_triangle(27, 2, 27, 7, 17, 7, pixel::pxl_fg('#', color::Green));
+    screen_shapes.fill_circle(4, 4, 2, pixel::pxl_fg('0', Color::Blue));
+    screen_shapes.fill_triangle(27, 2, 27, 7, 17, 7, pixel::pxl_fg('#', Color::Green));
 
     // initializes screen_empty
-    screen_empty.print_fbg(
-        11,
-        9,
-        "It's empty, right ?",
-        color::LightBlack,
-        color::Black,
-    );
+    screen_empty.print_fbg(11, 9, "It's empty, right ?", Color::DarkGrey, Color::Black);
 
     // set the engine's screen to help on startup
     engine.set_screen(&screen_help);
@@ -41,16 +35,16 @@ fn main() {
         engine.wait_frame(); // wait for next frame + capture inputs
 
         // exit check
-        if engine.is_key_pressed(Key::Char('q')) {
+        if engine.is_key_pressed(KeyCode::Char('q')) {
             break;
         }
 
         // when the corresponding key is pressed (1,2 or 3), swap to the corresponding screen
-        if engine.is_key_pressed(Key::Char('1')) {
+        if engine.is_key_pressed(KeyCode::Char('1')) {
             engine.set_screen(&screen_help);
-        } else if engine.is_key_pressed(Key::Char('2')) {
+        } else if engine.is_key_pressed(KeyCode::Char('2')) {
             engine.set_screen(&screen_shapes);
-        } else if engine.is_key_pressed(Key::Char('3')) {
+        } else if engine.is_key_pressed(KeyCode::Char('3')) {
             engine.set_screen(&screen_empty);
         }
 

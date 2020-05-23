@@ -1,6 +1,6 @@
 use console_engine::pixel;
-use console_engine::termion::color;
-use console_engine::termion::event::Key;
+use console_engine::Color;
+use console_engine::KeyCode;
 
 const MAX_VALUES: usize = 64;
 
@@ -55,7 +55,7 @@ fn main() {
         // and display a message when it's finished
         if value_position >= MAX_VALUES {
             if engine.frame_count % 10 > 5 {
-                engine.print_fbg(2, 3, "Press 'q' to close", color::LightYellow, color::Black);
+                engine.print_fbg(2, 3, "Press 'q' to close", Color::Yellow, Color::Black);
             }
         } else {
             let value = VALUES[value_position];
@@ -84,13 +84,13 @@ fn main() {
                 2,
                 (value_position as f32 * step) as i32,
                 engine.get_height() as i32 - 1,
-                pixel::pxl_bg(' ', color::Blue),
+                pixel::pxl_bg(' ', Color::Blue),
             );
         }
         // draw the graph
         draw_graph(&mut engine, values);
 
-        if engine.is_key_pressed(Key::Char('q')) {
+        if engine.is_key_pressed(KeyCode::Char('q')) {
             // if the user presses 'q' :
             break; // exits app
         }
