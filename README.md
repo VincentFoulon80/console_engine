@@ -70,7 +70,7 @@ fn main() {
     scr.print(11,5, "World!");
 
     // print the screen to the terminal
-    println!("{}", scr.to_string());
+    scr.draw();
 }
 ```
 
