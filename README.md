@@ -93,12 +93,6 @@ See [examples](https://github.com/VincentFoulon80/console_engine/tree/master/exa
 - **screen-swap** : Swap between several Screen structures
 - **tetris** : A game of Tetris
 
-# Screenshots
+# Media
 
-## Example: "shapes"
-
-![](https://raw.githubusercontent.com/VincentFoulon80/console_engine/master/docs/example-shapes.png)
-
-## Example: "tetris"
-
-![](https://raw.githubusercontent.com/VincentFoulon80/console_engine/master/docs/example-tetris.png)
+![](https://raw.githubusercontent.com/VincentFoulon80/console_engine/master/docs/examples.gif)
