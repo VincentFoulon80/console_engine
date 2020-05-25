@@ -473,7 +473,7 @@ impl ConsoleEngine {
                 }
             }
             if y < self.height as i32 - 1 {
-                queue!(self.stdout, crossterm::cursor::MoveToNextLine(1)).unwrap();
+                queue!(self.stdout, style::Print("\r\n")).unwrap();
             }
         }
         // flush the buffer into user's terminal

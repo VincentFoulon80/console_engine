@@ -650,7 +650,7 @@ impl Screen {
             )
             .unwrap();
             if i != self.width * self.height - 1 && i % self.width == self.width - 1 {
-                execute!(output, style::Print("\n\r")).unwrap();
+                execute!(output, style::Print("\r\n")).unwrap();
             }
         }
         crossterm::terminal::disable_raw_mode().unwrap();

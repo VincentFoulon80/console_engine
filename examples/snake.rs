@@ -173,14 +173,14 @@ impl Snake {
                 engine.set_pxl(
                     segment.0 as i32,
                     segment.1 as i32,
-                    pixel::pxl_fg('#', Color::Green),
+                    pixel::pxl_fg('█', Color::Green),
                 );
             }
             // don't forget snake's head !
             engine.set_pxl(
                 self.pos_x as i32,
                 self.pos_y as i32,
-                pixel::pxl_fg('☻', Color::Green),
+                pixel::pxl_fg('█', Color::DarkGreen),
             )
         } else {
             // blink a message, inviting the player to press space
