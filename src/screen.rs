@@ -147,24 +147,63 @@ impl Screen {
     /// screen.print(0,0, "Hello, world!", Color::Blue, Color::White);
     /// ```
     pub fn print_fbg(&mut self, x: i32, y: i32, string: &str, fg: Color, bg: Color) {
-        if y >= 0 && x < self.width as i32 && y < self.height as i32 {
-            // get screen index, initializes a counter
-            // and get chars of the provided String
-            let pos = self.coord_to_index(std::cmp::max(0, x), y);
-            let delta_x = if x < 0 { x.abs() as usize } else { 0usize };
-            let mut count = delta_x;
-            let char_vec: Vec<char> = string.chars().collect();
-            let origin_row = pos / self.get_width() as usize;
-            // place each characters one by one. Stops before overflowing
-            for i in pos..std::cmp::min(pos + char_vec.len() - delta_x, self.screen.capacity()) {
-                // if the row changes, break.
-                // removing this statement will cause a wrapping of the text
-                if origin_row != i / self.get_width() as usize {
-                    break;
+        if x < self.width as i32 && y < self.height as i32 {
+            let mut string = string;
+            let mut y = y;
+            // if the cursor is above the screen
+            if y < 0 {
+                // cuts the string per \n character
+                // until the cursor enters the screen
+                let mut delta_y = -y;
+                while delta_y > 0 {
+                    if let Some(pos) = string.find('\n') {
+                        string = &string[pos+1..];
+                        delta_y -= 1;
+                    } else {
+                        // no more rows
+                        string = "";
+                        break;
+                    }
                 }
-                // print the character on screen
-                self.screen[i] = pixel::pxl_fbg(char_vec[count], fg, bg);
-                count += 1;
+                y = 0;
+            }
+            // get screen index, initializes a counter
+            let mut pos = self.coord_to_index(std::cmp::max(0, x), y);
+            let delta_x = if x < 0 { -x } else { 0 };
+            // set an ignore count to skip a certain number of chars if the text is hidden on the left
+            let mut ignore_count = delta_x;
+            let mut origin_row = pos / self.get_width() as usize;
+            // place each characters one by one. Stops before overflowing
+            for str_chr in string.chars() {
+                let mut chr = str_chr;
+                // process carret return and new line characters
+                if chr == '\n' {
+                    y += 1;
+                    origin_row += 1;
+                    ignore_count = delta_x;
+                    if y >= self.height as i32 { break; }
+                }
+                if chr == '\n' || chr == '\r' {
+                    // the cursor is sent back to the x index
+                    // instead of rolling back on the left of the screen
+                    pos = self.coord_to_index(std::cmp::max(0, x), y);
+                    continue;
+                }
+                // tabs are ignored, replaced by space
+                if chr == '\t' {
+                    chr = ' ';
+                }
+
+                if ignore_count <= 0 {
+                    // write on the screen until the row changes, 
+                    // skip the rest until a \n character is found
+                    if origin_row == pos / self.get_width() as usize {
+                        self.screen[pos] = pixel::pxl_fbg(chr, fg, bg);
+                        pos += 1;
+                    }   
+                } else {
+                    ignore_count -= 1;
+                }
             }
         }
     }
