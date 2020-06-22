@@ -84,8 +84,6 @@ impl ConsoleEngine {
     /// Initialize a screen of the provided width and height, and load the target FPS
     pub fn init(width: u32, height: u32, target_fps: u32) -> ConsoleEngine {
         assert!(target_fps > 0, "Target FPS needs to be greater than zero.");
-        let size = crossterm::terminal::size().unwrap();
-        assert!(size.0 as u32 >= width && size.1 as u32 >= height, "Your terminal must have at least a width and height of {}x{} characters. Currently has {}x{}", width, height, size.0, size.1);
         let mut my = ConsoleEngine {
             stdout: stdout(),
             time_limit: std::time::Duration::from_millis(1000 / target_fps as u64),
@@ -101,6 +99,7 @@ impl ConsoleEngine {
             mouse_events: vec![],
         };
         my.begin();
+        my.try_resize(width, height);
         my
     }
 
@@ -113,9 +112,24 @@ impl ConsoleEngine {
     /// Initialize a screen filling the entire terminal with the target FPS  
     /// Also check the terminal width and height and assert if the terminal has at least the asked size
     pub fn init_fill_require(width: u32, height: u32, target_fps: u32) -> ConsoleEngine {
+        let mut my = ConsoleEngine::init_fill(target_fps);
+        my.try_resize(width, height);
+        my
+    }
+
+    /// Try to resize the terminal to match the asked width and height at minimum
+    fn try_resize(&mut self, width: u32, height: u32) {
         let size = crossterm::terminal::size().unwrap();
-        assert!(size.0 as u32 >= width && size.1 as u32 >= height, "Your terminal must have at least a width and height of {}x{} characters. Currently has {}x{}", width, height, size.0, size.1);
-        ConsoleEngine::init_fill(target_fps)
+        if (size.0 as u32) < width || (size.1 as u32) < height {
+            execute!(self.stdout, 
+                crossterm::terminal::SetSize(width as u16, height as u16),
+                crossterm::terminal::SetSize(width as u16, height as u16)
+            ).ok();
+            self.resize(width, height);
+        }
+        if crossterm::terminal::size().unwrap() < (width as u16, height as u16) {
+            panic!("Your terminal must have at least a width and height of {}x{} characters. Currently has {}x{}", width, height, size.0, size.1)
+        }
     }
 
     /// Initializes the internal components such as hiding the cursor
@@ -145,6 +159,13 @@ impl ConsoleEngine {
         .unwrap();
         terminal::disable_raw_mode().unwrap();
     }
+
+    /// Set the terminal's title
+    pub fn set_title(&mut self, title: &str) {
+        execute!(self.stdout,
+            crossterm::terminal::SetTitle(title)
+        ).ok();
+    } 
 
     /// Get the screen width
     pub fn get_width(&self) -> u32 {
