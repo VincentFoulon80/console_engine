@@ -676,6 +676,39 @@ impl Screen {
         self.height = new_height;
     }
 
+    /// Extracts part of the current screen as a separate Screen object
+    /// The original screen is not altered
+    /// If the coordinates are out of bounds, they'll be replace by the `default` pixel
+    /// 
+    /// usage:
+    /// ```
+    /// use console_engine::pixel;
+    /// // extract a 3x2 screen from the screen variable and print it
+    /// let scr_chunk = screen.extract(10, 4, 12, 5, pixel::pxl(' '));
+    /// scr_chunk.draw();
+    /// ```
+    pub fn extract(&self, start_x: i32, start_y: i32, end_x: i32, end_y: i32, default: Pixel) -> Screen {
+        let target_width = (end_x - start_x).abs() as u32+1;
+        let target_height = (end_y - start_y).abs() as u32+1;
+        let mut extracted_screen = vec![default; (target_width*target_height) as usize];
+        let x_reversed = start_x > end_x;
+        let y_reversed = start_y > end_y;
+        let mut x = if x_reversed { target_width as i32-1 } else { 0 };
+        let mut y = if y_reversed { target_height as i32-1 } else { 0 };
+        for j in if y_reversed {end_y..=start_y} else {start_y..=end_y} {
+            for i in if x_reversed {end_x..=start_x} else {start_x..=end_x} {
+                if i >= 0 && i < self.width as i32 && j >= 0 && j < self.height as i32 {
+                    extracted_screen[((y * target_width as i32) + x) as usize] = self.screen[self.coord_to_index(i, j)].clone();
+                }
+                x += if x_reversed {-1} else {1};
+            }
+            y += if y_reversed {-1} else {1};
+            x = if x_reversed { target_width as i32-1 } else { 0 };
+        }
+        Screen::from_vec(extracted_screen, target_width, target_height)
+    }
+
+    /// Draws the screen into the terminal
     pub fn draw(&self) {
         let mut output = std::io::stdout();
         crossterm::terminal::enable_raw_mode().unwrap();

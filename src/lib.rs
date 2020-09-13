@@ -394,6 +394,20 @@ impl ConsoleEngine {
         self.screen_last_frame = Screen::new_empty(self.width, self.height);
     }
 
+    /// Extracts part of the current screen as a separate Screen object
+    /// The original screen is not altered
+    /// If the coordinates are out of bounds, they'll be replace by the `default` pixel
+    /// 
+    /// usage:
+    /// ```
+    /// use console_engine::pixel;
+    /// // extract a 3x2 screen from the engine screen
+    /// let scr_chunk = engine.extract(10, 4, 12, 5, pixel::pxl(' '));
+    /// ```
+    pub fn extract(&self, start_x: i32, start_y: i32, end_x: i32, end_y: i32, default: Pixel) -> Screen {
+        self.screen.extract(start_x, start_y, end_x, end_y, default)
+    }
+
     /// Changes the screen instance used by the engine and updates internal informations
     ///
     /// Useful if you want to manage multiple screens independently.
