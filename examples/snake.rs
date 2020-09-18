@@ -23,12 +23,15 @@ struct Snake {
     bound_w: u32,
     bound_h: u32,
     direction: Direction,
+    old_dx: i8,
+    old_dy: i8,
     pos_x: u32,
     pos_y: u32,
     apple_x: u32,
     apple_y: u32,
     body: Vec<(u32, u32)>,
 }
+
 impl Snake {
     /// Game initialization
     pub fn init(game_width: u32, game_height: u32) -> Snake {
@@ -37,6 +40,8 @@ impl Snake {
             bound_w: game_width,
             bound_h: game_height,
             direction: Direction::East,
+            old_dx: 1, // start condition should be 1 due to starting direction being East
+            old_dy: 0,
             pos_x: 4,
             pos_y: 4,
             apple_x: 0,
@@ -79,8 +84,7 @@ impl Snake {
             }
         }
     }
-
-    //
+    
     pub fn input(&mut self, engine: &ConsoleEngine) {
         if self.playing {
             // Change snake's direction based on a keypad layout
@@ -122,16 +126,30 @@ impl Snake {
                 Direction::South => dy = 1,
                 Direction::West => dx = -1,
             }
+
+            // checks to see if old inputed direction overlaps with actual inputed direction
+            // such as East then West.. This would cause the game to think that the snake collided 
+            // with itself causing a gameover >>
+            // if dx's or dy's are opposites then continue moving in old direction
+            if self.old_dx + dx == 0 || self.old_dy + dy == 0 {
+                dx = self.old_dx;
+                dy = self.old_dy;
+            } else {
+                self.old_dx = dx;
+                self.old_dy = dy;
+            }
+
             // if the snake collides with top and left boundaries, game over
             // this check need to be made first to bypass an underflowing
             if self.pos_x == 0 && dx == -1 || self.pos_y == 0 && dy == -1 {
                 self.playing = false;
                 return;
             }
+
             // calculate new position, can't underflow because of the check above
             let new_pos = (
-                (self.pos_x as i32 + dx) as u32,
-                (self.pos_y as i32 + dy) as u32,
+                (self.pos_x as i32 + dx as i32) as u32,
+                (self.pos_y as i32 + dy as i32) as u32,
             );
 
             // if collide with bottom and right boundaries, game over
@@ -139,17 +157,20 @@ impl Snake {
                 self.playing = false;
                 return;
             }
+
             // if collide with own tail, game over
             if self.body.contains(&new_pos) {
                 self.playing = false;
                 return;
             }
+
             // if collide with apple, add a new segment in snake's body
             // and generate a new apple
             if new_pos == (self.apple_x, self.apple_y) {
                 self.body.insert(0, (self.pos_x, self.pos_y));
                 self.gen_apple();
             }
+
             // if still alive, move the body
             if self.playing {
                 self.body.insert(0, (self.pos_x, self.pos_y));
