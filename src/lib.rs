@@ -98,6 +98,12 @@ impl ConsoleEngine {
             keys_released: vec![],
             mouse_events: vec![],
         };
+        let previous_panic_hook = std::panic::take_hook();
+        std::panic::set_hook(Box::new(move |panic_info| {
+            Self::handle_panic(panic_info);
+            previous_panic_hook(panic_info);
+            std::process::exit(1);
+        }));
         my.begin();
         my.try_resize(width, height);
         my
@@ -137,8 +143,8 @@ impl ConsoleEngine {
         terminal::enable_raw_mode().unwrap();
         execute!(
             self.stdout,
-            terminal::Clear(ClearType::All),
             terminal::EnterAlternateScreen,
+            terminal::Clear(ClearType::All),
             crossterm::cursor::Hide,
             crossterm::cursor::MoveTo(0, 0),
             crossterm::event::EnableMouseCapture
@@ -150,6 +156,19 @@ impl ConsoleEngine {
     fn end(&mut self) {
         execute!(
             self.stdout,
+            crossterm::cursor::Show,
+            style::SetBackgroundColor(Color::Reset),
+            style::SetForegroundColor(Color::Reset),
+            crossterm::event::DisableMouseCapture,
+            terminal::LeaveAlternateScreen
+        )
+        .unwrap();
+        terminal::disable_raw_mode().unwrap();
+    }
+
+    fn handle_panic(_panic_info: &std::panic::PanicInfo) {
+        execute!(
+            stdout(),
             crossterm::cursor::Show,
             style::SetBackgroundColor(Color::Reset),
             style::SetForegroundColor(Color::Reset),

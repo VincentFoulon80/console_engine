@@ -11,15 +11,15 @@ fn main() {
     scr.print(1,2, "World!");
 
     scr.draw();
-    println!("");
+    println!();
 
     // the extract function returns a screen containing the provided section
     // if the section coordinates are reversed the resulting screen will also be reversed
 
     // extract the "hello, world!" section and print it to the terminal
     scr.extract(1,1,6,2, pixel::pxl(' ')).draw();
-    println!("");
+    println!();
     // extract the same section but in reverse and print it to the terminal
     scr.extract(6,2,1,1, pixel::pxl(' ')).draw();
-    println!("");
+    println!();
 }
