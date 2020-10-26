@@ -1,7 +1,7 @@
 [package]
 name = "console_engine"
 description = "A simple terminal framework that provides display and input features"
-version = "1.1.0"
+version = "1.2.0"
 authors = ["Vincent Foulon <sup.vfoulon@gmail.com>"]
 repository = "https://github.com/VincentFoulon80/console_engine"
 readme = "README.md"
