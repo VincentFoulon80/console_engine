@@ -742,6 +742,13 @@ impl ConsoleEngine {
     }
 
     /// Give the terminal resize event
+    ///
+    /// usage:
+    /// ```
+    /// if let Some((width, height)) = engine.get_resize() {
+    ///     // do something
+    /// }
+    /// ```
     pub fn get_resize(&self) -> Option<(u16, u16)> {
         for evt in self.resize_events.iter() {
             if let Event::Resize(w, h) = Event::Resize(evt.0, evt.1) {
