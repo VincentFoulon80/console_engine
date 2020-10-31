@@ -47,16 +47,16 @@ use std::io::{stdout, Stdout};
 ///     loop {
 ///         engine.wait_frame(); // wait for next frame + capture inputs
 ///         engine.clear_screen(); // reset the screen
-///     
+///
 ///         engine.line(0, 0, 19, 9, pixel::pxl('#')); // draw a line of '#' from [0,0] to [19,9]
 ///         engine.print(0, 4, format!("Result: {}", value).as_str()); // prints some value at [0,4]
-///     
+///
 ///         engine.set_pxl(4, 0, pixel::pxl_fg('O', Color::Cyan)); // write a majestic cyan 'O' at [4,0]
 ///
 ///         if engine.is_key_pressed(KeyCode::Char('q')) { // if the user presses 'q' :
 ///             break; // exits app
 ///         }
-///     
+///
 ///         engine.draw(); // draw the screen
 ///     }
 /// }
@@ -78,6 +78,7 @@ pub struct ConsoleEngine {
     keys_held: Vec<KeyEvent>,
     keys_released: Vec<KeyEvent>,
     mouse_events: Vec<MouseEvent>,
+    resize_events: Vec<(u16, u16)>,
 }
 
 impl ConsoleEngine {
@@ -97,6 +98,7 @@ impl ConsoleEngine {
             keys_held: vec![],
             keys_released: vec![],
             mouse_events: vec![],
+            resize_events: vec![],
         };
         let previous_panic_hook = std::panic::take_hook();
         std::panic::set_hook(Box::new(move |panic_info| {
@@ -115,7 +117,7 @@ impl ConsoleEngine {
         ConsoleEngine::init(size.0 as u32, size.1 as u32, target_fps)
     }
 
-    /// Initialize a screen filling the entire terminal with the target FPS  
+    /// Initialize a screen filling the entire terminal with the target FPS
     /// Also check the terminal width and height and assert if the terminal has at least the asked size
     pub fn init_fill_require(width: u32, height: u32, target_fps: u32) -> ConsoleEngine {
         let mut my = ConsoleEngine::init_fill(target_fps);
@@ -127,10 +129,12 @@ impl ConsoleEngine {
     fn try_resize(&mut self, width: u32, height: u32) {
         let size = crossterm::terminal::size().unwrap();
         if (size.0 as u32) < width || (size.1 as u32) < height {
-            execute!(self.stdout, 
+            execute!(
+                self.stdout,
                 crossterm::terminal::SetSize(width as u16, height as u16),
                 crossterm::terminal::SetSize(width as u16, height as u16)
-            ).ok();
+            )
+            .ok();
             self.resize(width, height);
         }
         if crossterm::terminal::size().unwrap() < (width as u16, height as u16) {
@@ -181,10 +185,8 @@ impl ConsoleEngine {
 
     /// Set the terminal's title
     pub fn set_title(&mut self, title: &str) {
-        execute!(self.stdout,
-            crossterm::terminal::SetTitle(title)
-        ).ok();
-    } 
+        execute!(self.stdout, crossterm::terminal::SetTitle(title)).ok();
+    }
 
     /// Get the screen width
     pub fn get_width(&self) -> u32 {
@@ -201,7 +203,7 @@ impl ConsoleEngine {
         self.screen.clear()
     }
 
-    /// prints a string at the specified coordinates.  
+    /// prints a string at the specified coordinates.
     /// The string will be cropped if it reach the right border
     ///
     /// usage:
@@ -213,7 +215,7 @@ impl ConsoleEngine {
         self.screen.print(x, y, string)
     }
 
-    /// prints a string at the specified coordinates with the specified foreground and background color  
+    /// prints a string at the specified coordinates with the specified foreground and background color
     /// The string will automatically overlaps if it reach the right border
     ///
     /// usage:
@@ -258,7 +260,7 @@ impl ConsoleEngine {
             .print_screen_alpha(x, y, source, alpha_character)
     }
 
-    /// draws a line of the provided character between two sets of coordinates  
+    /// draws a line of the provided character between two sets of coordinates
     /// see: [Bresenham's line algorithm](https://en.wikipedia.org/wiki/Bresenham%27s_line_algorithm)
     ///
     /// Note : Your line can start or end out of bounds. These pixels won't be drawn
@@ -273,7 +275,7 @@ impl ConsoleEngine {
         self.screen.line(start_x, start_y, end_x, end_y, character)
     }
 
-    /// Draws a rectangle of the provided character between two sets of coordinates  
+    /// Draws a rectangle of the provided character between two sets of coordinates
     ///
     /// usage:
     /// ```
@@ -285,7 +287,7 @@ impl ConsoleEngine {
         self.screen.rect(start_x, start_y, end_x, end_y, character)
     }
 
-    /// Fill a rectangle of the provided character between two sets of coordinates  
+    /// Fill a rectangle of the provided character between two sets of coordinates
     ///
     /// usage:
     /// ```
@@ -416,14 +418,21 @@ impl ConsoleEngine {
     /// Extracts part of the current screen as a separate Screen object
     /// The original screen is not altered
     /// If the coordinates are out of bounds, they'll be replace by the `default` pixel
-    /// 
+    ///
     /// usage:
     /// ```
     /// use console_engine::pixel;
     /// // extract a 3x2 screen from the engine screen
     /// let scr_chunk = engine.extract(10, 4, 12, 5, pixel::pxl(' '));
     /// ```
-    pub fn extract(&self, start_x: i32, start_y: i32, end_x: i32, end_y: i32, default: Pixel) -> Screen {
+    pub fn extract(
+        &self,
+        start_x: i32,
+        start_y: i32,
+        end_x: i32,
+        end_y: i32,
+        default: Pixel,
+    ) -> Screen {
         self.screen.extract(start_x, start_y, end_x, end_y, default)
     }
 
@@ -469,7 +478,7 @@ impl ConsoleEngine {
         self.screen.clone()
     }
 
-    /// Draw the screen in the terminal  
+    /// Draw the screen in the terminal
     /// For best results, use it once per frame
     ///
     /// usage:
@@ -535,7 +544,7 @@ impl ConsoleEngine {
         self.screen_last_frame = self.screen.clone();
     }
 
-    /// Pause the execution until the next frame need to be rendered  
+    /// Pause the execution until the next frame need to be rendered
     /// Internally gets user's input for the next frame
     ///
     /// usage:
@@ -550,6 +559,7 @@ impl ConsoleEngine {
     pub fn wait_frame(&mut self) {
         let mut captured_keyboard: Vec<KeyEvent> = vec![];
         let mut captured_mouse: Vec<MouseEvent> = vec![];
+        let mut captured_resize: Vec<(u16, u16)> = vec![];
 
         // if there is time before next frame, poll keyboard and mouse events until next frame
         let mut elapsed_time = self.instant.elapsed();
@@ -567,8 +577,10 @@ impl ConsoleEngine {
                     Event::Mouse(evt) => {
                         captured_mouse.push(evt);
                     }
-                    // we ignore resize events for now
-                    Event::Resize(_w, _h) => {}
+
+                    Event::Resize(w, h) => {
+                        captured_resize.push((w, h));
+                    }
                 };
             }
             elapsed_time = self.instant.elapsed();
@@ -585,6 +597,7 @@ impl ConsoleEngine {
         self.keys_pressed = utils::outersect_left(&captured_keyboard, &held);
         self.keys_held = utils::union(&held, &self.keys_pressed);
         self.mouse_events = captured_mouse;
+        self.resize_events = captured_resize;
     }
 
     /// Check and resize the terminal if needed.
@@ -620,7 +633,7 @@ impl ConsoleEngine {
     ///
     /// loop {
     ///     engine.wait_frame(); // wait for next frame + captures input
-    ///     
+    ///
     ///     if engine.is_key_pressed(KeyCode::Char('q')) {
     ///         break; // exits app
     ///     }
@@ -638,7 +651,7 @@ impl ConsoleEngine {
     ///
     /// loop {
     ///     engine.wait_frame(); // wait for next frame + captures input
-    ///     
+    ///
     ///     if engine.is_key_pressed_with_modifier(KeyCode::Char('c'), KeyModifiers::CONTROL) {
     ///         break; // exits app
     ///     }
@@ -656,7 +669,7 @@ impl ConsoleEngine {
     ///
     /// loop {
     ///     engine.wait_frame(); // wait for next frame + captures input
-    ///     
+    ///
     ///     if engine.is_key_held(KeyCode::Char('8')) && pos_y > 0 {
     ///         pos_y -= 1; // move position upward
     ///     }
@@ -672,7 +685,7 @@ impl ConsoleEngine {
     }
 
     /// checks whenever a key has been released (first frame released)
-    ///  
+    ///
     /// usage:
     /// ```
     /// use console_engine::KeyCode;
@@ -723,6 +736,23 @@ impl ConsoleEngine {
                 if *mouse == button && *key == modifier {
                     return Some((*x as u32, *y as u32));
                 }
+            };
+        }
+        None
+    }
+
+    /// Give the terminal resize event
+    ///
+    /// usage:
+    /// ```
+    /// if let Some((width, height)) = engine.get_resize() {
+    ///     // do something
+    /// }
+    /// ```
+    pub fn get_resize(&self) -> Option<(u16, u16)> {
+        for evt in self.resize_events.iter() {
+            if let Event::Resize(w, h) = Event::Resize(evt.0, evt.1) {
+                return Some((w, h));
             };
         }
         None
