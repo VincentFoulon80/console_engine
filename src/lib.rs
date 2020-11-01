@@ -586,7 +586,7 @@ impl ConsoleEngine {
             elapsed_time = self.instant.elapsed();
         }
         self.instant = std::time::Instant::now();
-        self.frame_count += 1;
+        self.frame_count = self.frame_count.wrapping_add(1);
 
         // updates pressed / held / released states
         let held = utils::intersect(
