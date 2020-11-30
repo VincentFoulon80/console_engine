@@ -1,6 +1,11 @@
 # Console Engine
 
-[Changelog](https://github.com/VincentFoulon80/console_engine/releases)
+![Crates.io](https://img.shields.io/crates/v/console_engine)
+![docs.rs](https://docs.rs/console_engine/badge.svg)
+![GitHub](https://img.shields.io/github/license/VincentFoulon80/console_engine)
+[![Gitter](https://badges.gitter.im/rs_console_engine/community.svg)](https://gitter.im/rs_console_engine/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
+
+![Changelog](https://img.shields.io/badge/-changelog-informational?link=https://github.com/VincentFoulon80/console_engine/releases)
 
 **There was a huge internal change between versions 0.x and 1.x. See the [Upgrade Guide](https://github.com/VincentFoulon80/console_engine/blob/master/UPGRADE_1.0.md) to migrate your code. There's not much to change on your side !**
 
