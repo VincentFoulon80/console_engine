@@ -86,17 +86,18 @@ Take a look at the [generated documentation](https://docs.rs/console_engine/).
 # Examples
 
 See [examples](https://github.com/VincentFoulon80/console_engine/tree/master/examples) :
+- **drag-and-drop** : Move a rectangle with your mouse
 - **graph** : Display a graph being generated with some values.
-- **snake** : A simple game of snake.
 - **lines** : Draw random lines of random colors on the screen.
 - **lines-fps** : same example as lines, but with a FPS counter.
-- **shapes** : Shape's functions testing tool
 - **mouse** : Simple mouse clicking test
-- **drag-and-drop** : Move a rectangle with your mouse
-- **screen-simple** : Example usage of Screen struct instead of ConsoleEngine
 - **screen-embed** : Example usage of Screen's `print_screen` function to embed one screen into another
 - **screen-extract** : Example usage of Screen's `extract` function to extract part of a screen
+- **screen-simple** : Example usage of Screen struct instead of ConsoleEngine
 - **screen-swap** : Swap between several Screen structures
+- **scroll** : example for the `scroll` function
+- **shapes** : Shape's functions testing tool
+- **snake** : A simple game of snake.
 - **tetris** : A game of Tetris
 
 # Media

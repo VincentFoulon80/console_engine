@@ -4,13 +4,14 @@ use crossterm::style::Color;
 
 /// # Pixel structure
 /// contains color data and character data
-#[derive(Clone, Eq, PartialEq)]
+#[derive(Clone, Eq, PartialEq, Copy)]
 pub struct Pixel {
     pub bg: Color,
     pub fg: Color,
     pub chr: char,
 }
 impl Pixel {
+    /// returns a tuple containing the background and foreground colors of a Pixel
     pub fn get_colors(&self) -> (Color, Color) {
         (self.fg, self.bg)
     }

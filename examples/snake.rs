@@ -84,7 +84,7 @@ impl Snake {
             }
         }
     }
-    
+
     pub fn input(&mut self, engine: &ConsoleEngine) {
         if self.playing {
             // Change snake's direction based on a keypad layout
@@ -128,7 +128,7 @@ impl Snake {
             }
 
             // checks to see if old inputed direction overlaps with actual inputed direction
-            // such as East then West.. This would cause the game to think that the snake collided 
+            // such as East then West.. This would cause the game to think that the snake collided
             // with itself causing a gameover >>
             // if dx's or dy's are opposites then continue moving in old direction
             if self.old_dx + dx == 0 || self.old_dy + dy == 0 {

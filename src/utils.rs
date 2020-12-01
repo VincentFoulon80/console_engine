@@ -1,3 +1,4 @@
+/// Returns a vector containing the values of both arrays, keeping the values unique
 pub fn union<T: PartialEq + Clone>(vector1: &[T], vector2: &[T]) -> Vec<T> {
     let mut unioned: Vec<T> = vec![];
     for element in vector1 {
@@ -11,6 +12,7 @@ pub fn union<T: PartialEq + Clone>(vector1: &[T], vector2: &[T]) -> Vec<T> {
     unioned
 }
 
+/// Returns a vector containing the values in common from the two arrays
 pub fn intersect<T: PartialEq + Clone>(vector1: &[T], vector2: &[T]) -> Vec<T> {
     let mut intersected = vec![];
     for element in vector1 {
@@ -37,6 +39,7 @@ pub fn intersect<T: PartialEq + Clone>(vector1: &[T], vector2: &[T]) -> Vec<T> {
 //     return outersected;
 // }
 
+/// Returns a vector containing the values of the first array minus the values from the second
 pub fn outersect_left<T: PartialEq + Clone>(vector1: &[T], vector2: &[T]) -> Vec<T> {
     let mut outersected = vec![];
     for element in vector1 {

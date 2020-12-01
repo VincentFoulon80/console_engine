@@ -64,6 +64,7 @@ use std::io::{stdout, Stdout};
 ///
 /// #
 ///
+#[allow(clippy::needless_doctest_main)]
 pub struct ConsoleEngine {
     stdout: Stdout,
     time_limit: std::time::Duration,
@@ -170,6 +171,9 @@ impl ConsoleEngine {
         terminal::disable_raw_mode().unwrap();
     }
 
+    /// stops the engine when a panic occurs
+    /// Similar to the end function, but without the engine instance.
+    /// So we assume we used stdout, and free it.
     fn handle_panic(_panic_info: &std::panic::PanicInfo) {
         execute!(
             stdout(),
@@ -201,6 +205,11 @@ impl ConsoleEngine {
     /// Reset the screen to a blank state
     pub fn clear_screen(&mut self) {
         self.screen.clear()
+    }
+
+    // Fill the entire screen to the given pixel
+    pub fn fill(&mut self, pixel: Pixel) {
+        self.screen.fill(pixel);
     }
 
     /// prints a string at the specified coordinates.
@@ -341,6 +350,7 @@ impl ConsoleEngine {
     /// // ...
     /// engine.triangle(8,8, 4,6, 9,2, pixel::pxl('#'));
     /// ```
+    #[allow(clippy::too_many_arguments)]
     pub fn triangle(
         &mut self,
         x1: i32,
@@ -363,6 +373,7 @@ impl ConsoleEngine {
     /// // ...
     /// engine.fill_triangle(8,8, 4,6, 9,2, pixel::pxl('#'));
     /// ```
+    #[allow(clippy::too_many_arguments)]
     pub fn fill_triangle(
         &mut self,
         x1: i32,
@@ -374,6 +385,30 @@ impl ConsoleEngine {
         character: Pixel,
     ) {
         self.screen.fill_triangle(x1, y1, x2, y2, x3, y3, character)
+    }
+
+    /// Scrolls the screen for a certain amount of characters vertically or horizontally
+    /// Scrolling is a destructive process, the outer border will be filled with the background pixel.
+    ///
+    /// Scrolling a positive value will move the screen characters to the left / top,
+    /// freeing space to the right / bottom
+    ///
+    /// Scrolling a negative value will move the screen characters to the right / bottom,
+    /// freeing space to the left / top
+    ///
+    /// usage :
+    /// ```
+    /// use console_engine::pixel;
+    ///
+    /// // fill the screen with characters
+    /// engine.fill(pixel::pxl('#'));
+    /// // free one space to the bottom
+    /// engine.scroll(0,1,pixel::pxl(' '));
+    /// // print something at this place
+    /// engine.print(0, height-1, "Hello, world!");
+    /// ```
+    pub fn scroll(&mut self, h_scroll: i32, v_scroll: i32, background: Pixel) {
+        self.screen.scroll(h_scroll, v_scroll, background);
     }
 
     /// sets the provided character in the specified coordinates
@@ -872,6 +907,7 @@ impl ConsoleEngine {
 }
 
 impl Drop for ConsoleEngine {
+    /// gracefully stop the engine when dropping it
     fn drop(&mut self) {
         self.end();
     }
