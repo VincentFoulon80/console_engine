@@ -366,9 +366,9 @@ impl Screen {
     /// screen.rect(0, 0, 9, 9, pixel::pxl('#'));
     /// ```
     pub fn rect(&mut self, start_x: i32, start_y: i32, end_x: i32, end_y: i32, character: Pixel) {
-        self.h_line(start_x, start_y, end_x, character.clone()); // top
-        self.v_line(end_x, start_y, end_y, character.clone()); // right
-        self.h_line(end_x, end_y, start_x, character.clone()); // bottom
+        self.h_line(start_x, start_y, end_x, character); // top
+        self.v_line(end_x, start_y, end_y, character); // right
+        self.h_line(end_x, end_y, start_x, character); // bottom
         self.v_line(start_x, end_y, start_y, character); // left
     }
 
@@ -395,7 +395,7 @@ impl Screen {
             start_y + 1
         };
         for y in y0..y1 {
-            self.h_line(start_x, y, end_x, character.clone());
+            self.h_line(start_x, y, end_x, character);
         }
     }
 
@@ -497,8 +497,8 @@ impl Screen {
         y3: i32,
         character: Pixel,
     ) {
-        self.line(x1, y1, x2, y2, character.clone());
-        self.line(x2, y2, x3, y3, character.clone());
+        self.line(x1, y1, x2, y2, character);
+        self.line(x2, y2, x3, y3, character);
         self.line(x3, y3, x1, y1, character);
     }
 
@@ -523,13 +523,7 @@ impl Screen {
         character: Pixel,
     ) {
         self.triangle(
-            x1 as i32,
-            y1 as i32,
-            x2 as i32,
-            y2 as i32,
-            x3 as i32,
-            y3 as i32,
-            character.clone(),
+            x1 as i32, y1 as i32, x2 as i32, y2 as i32, x3 as i32, y3 as i32, character,
         );
         // we use tuples for this for now
         let v0 = (x1 as i32, y1 as i32);
@@ -635,7 +629,7 @@ impl Screen {
         if h_scroll != 0 {
             // if the scroll is beyond the size of the screen, simply clear it
             if h_scroll >= width || h_scroll <= -width {
-                self.fill(background.clone());
+                self.fill(background);
             } else if h_scroll > 0 {
                 let step = h_scroll as usize;
                 // scroll to the left

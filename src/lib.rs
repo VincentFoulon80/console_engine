@@ -600,23 +600,24 @@ impl ConsoleEngine {
         let mut elapsed_time = self.instant.elapsed();
         while self.time_limit > elapsed_time {
             let remaining_time = self.time_limit - elapsed_time;
-            if event::poll(std::time::Duration::from_millis(
+            if let Ok(has_event) = event::poll(std::time::Duration::from_millis(
                 (remaining_time.as_millis() % self.time_limit.as_millis()) as u64,
-            ))
-            .unwrap()
-            {
-                match event::read().unwrap() {
-                    Event::Key(evt) => {
-                        captured_keyboard.push(evt);
+            )) {
+                if has_event {
+                    if let Ok(current_event) = event::read() {
+                        match current_event {
+                            Event::Key(evt) => {
+                                captured_keyboard.push(evt);
+                            }
+                            Event::Mouse(evt) => {
+                                captured_mouse.push(evt);
+                            }
+                            Event::Resize(w, h) => {
+                                captured_resize.push((w, h));
+                            }
+                        };
                     }
-                    Event::Mouse(evt) => {
-                        captured_mouse.push(evt);
-                    }
-
-                    Event::Resize(w, h) => {
-                        captured_resize.push((w, h));
-                    }
-                };
+                }
             }
             elapsed_time = self.instant.elapsed();
         }
