@@ -230,6 +230,7 @@ impl Screen {
     pub fn print_screen(&mut self, x: i32, y: i32, source: &Screen) {
         for j in 0..source.get_height() as i32 {
             for i in 0..source.get_width() as i32 {
+                // unwrap here because we are sure that we won't get out of range
                 self.set_pxl(x + i, y + j, source.get_pxl(i, j).unwrap());
             }
         }
@@ -242,8 +243,10 @@ impl Screen {
     pub fn print_screen_alpha(&mut self, x: i32, y: i32, source: &Screen, alpha_character: char) {
         for j in 0..source.get_height() as i32 {
             for i in 0..source.get_width() as i32 {
-                if source.get_pxl(i, j).unwrap().chr != alpha_character {
-                    self.set_pxl(x + i, y + j, source.get_pxl(i, j).unwrap());
+                // unwrap here because we are sure that we won't get out of range
+                let pxl = source.get_pxl(i, j).unwrap();
+                if pxl.chr != alpha_character {
+                    self.set_pxl(x + i, y + j, pxl);
                 }
             }
         }
