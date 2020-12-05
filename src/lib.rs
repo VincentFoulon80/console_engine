@@ -207,7 +207,7 @@ impl ConsoleEngine {
         self.screen.clear()
     }
 
-    // Fill the entire screen to the given pixel
+    /// Fill the entire screen to the given pixel
     pub fn fill(&mut self, pixel: Pixel) {
         self.screen.fill(pixel);
     }
@@ -495,7 +495,7 @@ impl ConsoleEngine {
         self.width = screen.get_width();
         self.height = screen.get_height();
         self.screen = screen.clone();
-        self.screen_last_frame = Screen::new_empty(self.width, self.height);
+        self.request_full_draw();
     }
 
     /// Returns a clone of the current screen
@@ -516,13 +516,18 @@ impl ConsoleEngine {
     /// Draw the screen in the terminal
     /// For best results, use it once per frame
     ///
+    /// If the terminal content is changed outside of the draw call, the draw function won't be aware of it and may leave some artifacts.
+    /// If you want to force the draw function to redraw the entire screen, you should call [request_full_draw](#method.request_full_draw) before `draw()`.
+    ///
+    /// That's because for optimizing the output speed, the draw function only draw the difference between each frames.
+    ///
     /// usage:
     /// ```
     /// engine.print(0,0,"Hello, world!"); // <- prints "Hello, world!" in 'screen' memory
     /// engine.draw(); // display 'screen' memory to the user's terminal
     /// ```
     pub fn draw(&mut self) {
-        // we prepare an "output_screen" String variable to store in one-shot the screen we'll write.
+        // we use the queue! macro to store in one-shot the screen we'll write.
         // This is an optimization because we write all we need once instead of writing small bit of screen by small bit of screen.
         // Actually, this does not change much for Linux terminals (like 5 fps gained from this)
         // But for windows terminal we can see huge improvements (example lines-fps goes from 35-40 fps to 65-70 for a 100x50 term)
@@ -531,13 +536,14 @@ impl ConsoleEngine {
         let mut first = true;
         let mut current_colors: (Color, Color) = (Color::Reset, Color::Reset);
         let mut moving = false;
-        self.screen_last_frame.check_empty(); // refresh internal "empty" value
-                                              // iterates through the screen memory and prints it on the output buffer
+        self.screen_last_frame.check_empty(); // refresh internal "empty" value of the last_frame screen
+
+        // iterates through the screen memory and prints it on the output buffer
         for y in 0..self.height as i32 {
             for x in 0..self.width as i32 {
                 let pixel = self.screen.get_pxl(x, y).unwrap();
-                // we check if the screen has been modified at this coordinate
-                // if so, we write like normally, else we set a 'moving' flag
+                // we check if the screen has been modified at this coordinate or if the last_frame screen is empty
+                // if so, we write on the terminal normally, else we set a 'moving' flag
                 if self.screen_last_frame.is_empty()
                     || pixel != self.screen_last_frame.get_pxl(x, y).unwrap()
                 {
@@ -570,13 +576,25 @@ impl ConsoleEngine {
                     moving = true
                 }
             }
+            // at the end of each line, we write a newline character
+            // I believe that since we're on raw mode we need CR and LF even on unix terminals
             if y < self.height as i32 - 1 {
                 queue!(self.stdout, style::Print("\r\n")).unwrap();
             }
         }
         // flush the buffer into user's terminal
         self.stdout.flush().unwrap();
+        // store the frame for the next draw call
         self.screen_last_frame = self.screen.clone();
+    }
+
+    /// Ask the engine to redraw the entire screen on the next `draw` call
+    /// Useful if the terminal's content got altered outside of the `draw` function.
+    ///
+    /// See [draw](#method.draw) for more info about the drawing process
+    pub fn request_full_draw(&mut self) {
+        // reset the last_frame screen to force a full redraw
+        self.screen_last_frame = Screen::new_empty(self.width, self.height);
     }
 
     /// Pause the execution until the next frame need to be rendered

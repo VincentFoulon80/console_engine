@@ -102,14 +102,14 @@ impl Screen {
         self.fill(pixel::pxl(' '));
     }
 
-    // Fill the entire screen to the given pixel
+    /// Fill the entire screen to the given pixel
     pub fn fill(&mut self, pixel: Pixel) {
         self.empty = pixel.chr == '\u{0}';
         self.screen = vec![pixel; (self.width * self.height) as usize];
     }
 
-    // checks whenever the screen is full of "zero" characters
-    // refresh internal "empty" value
+    /// checks whenever the screen is full of "zero" characters
+    /// refresh internal "empty" value
     pub fn check_empty(&mut self) -> bool {
         for pxl in self.screen.iter() {
             if pxl.chr != '\u{0}' {
@@ -121,6 +121,7 @@ impl Screen {
         true
     }
 
+    /// Returns a cached result of [check_empty](#method.check_empty)
     pub fn is_empty(&self) -> bool {
         self.empty
     }
@@ -826,6 +827,9 @@ impl Screen {
 
     /// Draws the screen into the terminal
     /// Uses stdout as target
+    ///
+    /// You should not use this function while a ConsoleEngine is running.
+    /// You may want to use ConsoleEngine's `print_screen`, `print_screen_alpha` or `set_screen` instead
     pub fn draw(&self) {
         let mut output = std::io::stdout();
         crossterm::terminal::enable_raw_mode().unwrap();

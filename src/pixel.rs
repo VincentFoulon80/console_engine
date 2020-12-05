@@ -6,8 +6,11 @@ use crossterm::style::Color;
 /// contains color data and character data
 #[derive(Clone, Eq, PartialEq, Copy)]
 pub struct Pixel {
+    /// Background color of the Pixel
     pub bg: Color,
+    /// Foreground color of the Pixel
     pub fg: Color,
+    /// Character of the Pixel
     pub chr: char,
 }
 impl Pixel {
