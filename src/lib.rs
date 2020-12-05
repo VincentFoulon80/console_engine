@@ -1,8 +1,8 @@
-//! This library provides simple features for handling user's input and display for terminal applications.
+//! This library provides simple features to draw things and manage user input for terminal applications.
 //!
-//! Besides the user input and display, this library also provides some tools to build standalone "screens" that can be used as simply as printing it.
+//! Besides these features, this library also provides some tools to build standalone "screens" that can be used outside of the engine itself.
 //!
-//! It uses [Crossterm](https://crates.io/crates/crossterm) as main tool for handling the screen and inputs. You don't have to worry about initalizing anything because the lib will handle this for you.
+//! It's built on top of [Crossterm](https://crates.io/crates/crossterm) for handling the screen and inputs. You don't have to worry about initalizing anything because this crate will handle this for you.
 
 pub extern crate crossterm;
 
@@ -69,6 +69,7 @@ pub struct ConsoleEngine {
     stdout: Stdout,
     time_limit: std::time::Duration,
     /// The current frame count, publicly accessible
+    /// Has no purpose internally, use it as you want
     pub frame_count: usize,
     width: u32,
     height: u32,

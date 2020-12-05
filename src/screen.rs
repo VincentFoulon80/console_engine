@@ -10,7 +10,7 @@ use std::io::Write;
 ///
 /// A standalone structure that provides every drawing function that ConsoleEngine provides.
 ///
-/// You can get the full content of the screen via the to_string method.
+/// You can get the full content of the screen via the [draw](#method.draw) method.
 #[derive(Clone)]
 pub struct Screen {
     width: u32,
@@ -37,7 +37,7 @@ pub struct Screen {
 ///     scr.print(11,5, "World!");
 ///
 ///     // print the screen to the terminal
-///     println!("{}", scr.to_string());
+///     scr.draw();
 /// }
 /// ```
 #[allow(clippy::needless_doctest_main)]
@@ -131,7 +131,7 @@ impl Screen {
     ///
     /// usage:
     /// ```
-    /// screen.print(0,0, "Hello, world!");
+    /// screen.print(0, 0, "Hello, world!");
     /// screen.print(0, 4, format!("Score: {}", score).as_str());
     /// ```
     pub fn print(&mut self, x: i32, y: i32, string: &str) {
@@ -146,7 +146,7 @@ impl Screen {
     /// use console_engine::Color;
     ///
     /// // print "Hello, world" in blue on white background
-    /// screen.print(0,0, "Hello, world!", Color::Blue, Color::White);
+    /// screen.print(0, 0, "Hello, world!", Color::Blue, Color::White);
     /// ```
     pub fn print_fbg(&mut self, x: i32, y: i32, string: &str, fg: Color, bg: Color) {
         if x < self.width as i32 && y < self.height as i32 {
@@ -628,8 +628,8 @@ impl Screen {
     /// screen.print(0, height-1, "Hello, world!");
     /// ```
     pub fn scroll(&mut self, h_scroll: i32, v_scroll: i32, background: Pixel) {
-        let width = self.get_width() as i32;
-        let height = self.get_height() as i32;
+        let width = self.width as i32;
+        let height = self.height as i32;
         if h_scroll != 0 {
             // if the scroll is beyond the size of the screen, simply clear it
             if h_scroll >= width || h_scroll <= -width {
@@ -733,7 +733,7 @@ impl Screen {
             return Ok(self.screen[self.coord_to_index(x, y)]);
         }
         Err(format!(
-            "Attempted to get_pxl out of bounds (coords: [{}, {}], bounds: [{}, {}]",
+            "Attempted to get_pxl out of bounds (coords: [{}, {}], bounds: [{}, {}])",
             x,
             y,
             self.width - 1,
