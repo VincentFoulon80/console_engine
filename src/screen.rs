@@ -4,7 +4,6 @@ use super::crossterm::style::Color;
 use super::crossterm::{execute, style};
 use super::pixel;
 use super::pixel::Pixel;
-use std::io::Write;
 
 /// Screen structure
 ///

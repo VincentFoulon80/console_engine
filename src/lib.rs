@@ -10,7 +10,7 @@ pub mod pixel;
 pub mod screen;
 mod utils;
 
-use crossterm::event::{self, Event, KeyEvent, MouseEvent};
+use crossterm::event::{self, Event, KeyEvent, MouseEvent, MouseEventKind};
 pub use crossterm::event::{KeyCode, KeyModifiers, MouseButton};
 pub use crossterm::style::Color;
 use crossterm::terminal::{self, ClearType};
@@ -787,9 +787,9 @@ impl ConsoleEngine {
         modifier: KeyModifiers,
     ) -> Option<(u32, u32)> {
         for evt in self.mouse_events.iter() {
-            if let MouseEvent::Down(mouse, x, y, key) = evt {
-                if *mouse == button && *key == modifier {
-                    return Some((*x as u32, *y as u32));
+            if let MouseEventKind::Down(mouse) = evt.kind {
+                if mouse == button && evt.modifiers == modifier {
+                    return Some((evt.column as u32, evt.row as u32));
                 }
             };
         }
@@ -836,9 +836,9 @@ impl ConsoleEngine {
         modifier: KeyModifiers,
     ) -> Option<(u32, u32)> {
         for evt in self.mouse_events.iter() {
-            if let MouseEvent::Drag(mouse, x, y, key) = evt {
-                if *mouse == button && *key == modifier {
-                    return Some((*x as u32, *y as u32));
+            if let MouseEventKind::Drag(mouse) = evt.kind {
+                if mouse == button && evt.modifiers == modifier {
+                    return Some((evt.column as u32, evt.row as u32));
                 }
             };
         }
@@ -868,9 +868,9 @@ impl ConsoleEngine {
         modifier: KeyModifiers,
     ) -> Option<(u32, u32)> {
         for evt in self.mouse_events.iter() {
-            if let MouseEvent::Up(mouse, x, y, key) = evt {
-                if *mouse == button && *key == modifier {
-                    return Some((*x as u32, *y as u32));
+            if let MouseEventKind::Up(mouse) = evt.kind {
+                if mouse == button && evt.modifiers == modifier {
+                    return Some((evt.column as u32, evt.row as u32));
                 }
             };
         }
@@ -892,8 +892,8 @@ impl ConsoleEngine {
     /// checks whenever the mouse's scroll has been turned down, towards the user with a modifier (ctrl, shift, ...)
     pub fn is_mouse_scrolled_down_with_modifier(&self, modifier: KeyModifiers) -> bool {
         for evt in self.mouse_events.iter() {
-            if let MouseEvent::ScrollDown(_x, _y, key) = evt {
-                if *key == modifier {
+            if let MouseEventKind::ScrollDown = evt.kind {
+                if evt.modifiers == modifier {
                     return true;
                 }
             };
@@ -916,8 +916,8 @@ impl ConsoleEngine {
     /// checks whenever the mouse's scroll has been turned up, away from the user with a modifier (ctrl, shift, ...)
     pub fn is_mouse_scrolled_up_with_modifier(&self, modifier: KeyModifiers) -> bool {
         for evt in self.mouse_events.iter() {
-            if let MouseEvent::ScrollUp(_x, _y, key) = evt {
-                if *key == modifier {
+            if let MouseEventKind::ScrollUp = evt.kind {
+                if evt.modifiers == modifier {
                     return true;
                 }
             };

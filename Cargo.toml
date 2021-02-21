@@ -1,18 +1,18 @@
 [package]
-name = "console_engine"
-description = "A simple terminal framework to draw things and manage user input"
-version = "1.4.2"
 authors = ["Vincent Foulon <sup.vfoulon@gmail.com>"]
-repository = "https://github.com/VincentFoulon80/console_engine"
-readme = "README.md"
-keywords = ["terminal","tui", "input"]
-license = "MIT"
+description = "A simple terminal framework to draw things and manage user input"
 edition = "2018"
+keywords = ["terminal", "tui", "input"]
+license = "MIT"
+name = "console_engine"
+readme = "README.md"
+repository = "https://github.com/VincentFoulon80/console_engine"
+version = "1.4.3"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-crossterm = "0.18"
+crossterm = "0.19"
 
 [dev-dependencies]
-rand = "0.7"
+rand = "0.8"
