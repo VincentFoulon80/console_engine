@@ -538,6 +538,7 @@ impl ConsoleEngine {
         let mut current_colors: (Color, Color) = (Color::Reset, Color::Reset);
         let mut moving = false;
         self.screen_last_frame.check_empty(); // refresh internal "empty" value of the last_frame screen
+        let mut skip_next = false;
 
         // iterates through the screen memory and prints it on the output buffer
         for y in 0..self.height as i32 {
@@ -545,6 +546,13 @@ impl ConsoleEngine {
                 let pixel = self.screen.get_pxl(x, y).unwrap();
                 // we check if the screen has been modified at this coordinate or if the last_frame screen is empty
                 // if so, we write on the terminal normally, else we set a 'moving' flag
+                if skip_next { 
+                    skip_next = false;
+                    continue; 
+                }
+                if unicode_width::UnicodeWidthChar::width(pixel.chr).unwrap() > 1 {
+                    skip_next = true;
+                }
                 if self.screen_last_frame.is_empty()
                     || pixel != self.screen_last_frame.get_pxl(x, y).unwrap()
                 {

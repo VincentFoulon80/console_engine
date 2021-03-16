@@ -13,6 +13,7 @@ version = "1.5.0"
 
 [dependencies]
 crossterm = "0.19"
+unicode-width = "0.1.8"
 
 [dev-dependencies]
 rand = "0.8"

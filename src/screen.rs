@@ -832,8 +832,16 @@ impl Screen {
     pub fn draw(&self) {
         let mut output = std::io::stdout();
         crossterm::terminal::enable_raw_mode().unwrap();
+        let mut skip_next = false;
         for i in 0..self.width * self.height {
             let pixel = &self.screen[i as usize];
+            if skip_next { 
+                skip_next = false;
+                continue; 
+            }
+            if unicode_width::UnicodeWidthChar::width(pixel.chr).unwrap() > 1 {
+                skip_next = true;
+            }
             execute!(
                 output,
                 style::SetForegroundColor(pixel.fg),
