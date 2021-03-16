@@ -835,9 +835,9 @@ impl Screen {
         let mut skip_next = false;
         for i in 0..self.width * self.height {
             let pixel = &self.screen[i as usize];
-            if skip_next { 
+            if skip_next {
                 skip_next = false;
-                continue; 
+                continue;
             }
             if unicode_width::UnicodeWidthChar::width(pixel.chr).unwrap() > 1 {
                 skip_next = true;

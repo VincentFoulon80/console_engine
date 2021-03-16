@@ -546,9 +546,9 @@ impl ConsoleEngine {
                 let pixel = self.screen.get_pxl(x, y).unwrap();
                 // we check if the screen has been modified at this coordinate or if the last_frame screen is empty
                 // if so, we write on the terminal normally, else we set a 'moving' flag
-                if skip_next { 
+                if skip_next {
                     skip_next = false;
-                    continue; 
+                    continue;
                 }
                 if unicode_width::UnicodeWidthChar::width(pixel.chr).unwrap() > 1 {
                     skip_next = true;
