@@ -7,7 +7,6 @@
 
 [![Changelog](https://img.shields.io/badge/-changelog-informational)](https://github.com/VincentFoulon80/console_engine/releases)
 
-**There was a huge internal change between versions 0.x and 1.x. See the [Upgrade Guide](https://github.com/VincentFoulon80/console_engine/blob/master/UPGRADE_1.0.md) to migrate your code. There's not much to change on your side !**
 
 This library provides simple features for handling user's input and display for terminal applications.  
 Besides the user input and display, this library also provides some tools to build standalone "screens" that can be used as simply as printing it.
