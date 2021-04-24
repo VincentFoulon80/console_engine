@@ -12,7 +12,7 @@ enum Shapes {
 
 fn main() {
     // initializes a screen filling the terminal of at least 50x20 of size with a target of 3 frame per second
-    let mut engine = console_engine::ConsoleEngine::init_fill_require(50, 20, 5);
+    let mut engine = console_engine::ConsoleEngine::init_fill_require(50, 20, 5).unwrap();
 
     let mut coords = vec![(4, 4), (18, 12)];
     let mut selection = 0;

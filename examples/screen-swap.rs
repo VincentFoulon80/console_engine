@@ -5,7 +5,7 @@ use console_engine::KeyCode;
 
 fn main() {
     // initializes a screen of 30x10 characters with a target of 10 frames per second
-    let mut engine = console_engine::ConsoleEngine::init(30, 10, 10);
+    let mut engine = console_engine::ConsoleEngine::init(30, 10, 10).unwrap();
 
     // create three screen and fill them with some data
     let mut screen_help = Screen::new(30, 10);

@@ -1,7 +1,7 @@
-use console_engine::{KeyCode, pixel};
+use console_engine::{pixel, KeyCode};
 
 fn main() {
-    let mut engine = console_engine::ConsoleEngine::init(6, 5, 3);
+    let mut engine = console_engine::ConsoleEngine::init(6, 5, 3).unwrap();
     loop {
         engine.wait_frame();
         engine.clear_screen();

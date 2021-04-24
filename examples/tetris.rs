@@ -374,6 +374,7 @@ fn check_and_remove_lines(game_scr: &mut Screen) -> u32 {
 /// Draw the game
 /// Be aware that we drawed the interface (walls, borders, ...) once at the start of the game,
 /// and since they will never change, we don't need to draw them on every frame
+#[allow(clippy::clippy::too_many_arguments)]
 fn draw_game(
     engine: &mut ConsoleEngine,
     game_scr: &Screen,
@@ -405,7 +406,7 @@ fn draw_game(
 
 fn main() {
     // initializes engine
-    let mut engine = ConsoleEngine::init(40, 22, 10);
+    let mut engine = ConsoleEngine::init(40, 22, 10).unwrap();
 
     // initalizes game screen + game interface
     let mut game_scr = Screen::new(10, 20);

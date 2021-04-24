@@ -17,6 +17,7 @@ fn draw_graph(engine: &mut console_engine::ConsoleEngine, values: [u8; MAX_VALUE
     let step = engine.get_width() as f32 / MAX_VALUES as f32;
     let mut last_position = 0;
     // for each values in the dataset
+    #[allow(clippy::clippy::needless_range_loop)]
     for i in 0..MAX_VALUES - 1 {
         let value = values[i];
         // process the position based on the available space in the terminal
@@ -38,7 +39,8 @@ fn draw_graph(engine: &mut console_engine::ConsoleEngine, values: [u8; MAX_VALUE
 
 fn main() {
     // initializes a screen filling the terminal of at least MAX_VALUESx10 of size with a target of 10 frame per second
-    let mut engine = console_engine::ConsoleEngine::init_fill_require(MAX_VALUES as u32, 10, 10);
+    let mut engine =
+        console_engine::ConsoleEngine::init_fill_require(MAX_VALUES as u32, 10, 10).unwrap();
 
     // initalize some variables
     let mut values: [u8; MAX_VALUES] = [0; MAX_VALUES];

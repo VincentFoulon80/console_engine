@@ -17,7 +17,7 @@ fn random_color() -> (u8, u8, u8) {
 
 fn main() {
     // initializes a screen filling the terminal with a target of 60 frame per second
-    let mut engine = console_engine::ConsoleEngine::init_fill(60);
+    let mut engine = console_engine::ConsoleEngine::init_fill(60).unwrap();
     // main loop, be aware that you'll have to break it because ctrl+C is captured
     loop {
         engine.wait_frame(); // wait for next frame + capture inputs

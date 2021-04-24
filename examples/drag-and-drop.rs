@@ -3,7 +3,7 @@ use console_engine::{KeyCode, MouseButton};
 
 fn main() {
     // initializes a screen filling the terminal with a target of 30 frames per second
-    let mut engine = console_engine::ConsoleEngine::init_fill_require(30, 20, 30);
+    let mut engine = console_engine::ConsoleEngine::init_fill_require(30, 20, 30).unwrap();
 
     let mut rect_x = 8;
     let mut rect_y = 3;

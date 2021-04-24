@@ -5,7 +5,7 @@ use console_engine::KeyCode;
 fn main() {
     // initializes a screen of 30x20 characters with a target of 3 frames per second
     // coordinates will range from [0,0] to [29,19]
-    let mut engine = console_engine::ConsoleEngine::init(30, 20, 10);
+    let mut engine = console_engine::ConsoleEngine::init(30, 20, 10).unwrap();
     // draw the background
     engine.fill(pixel::pxl_bg(' ', Color::Cyan));
     // draw the window background

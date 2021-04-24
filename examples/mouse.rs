@@ -4,7 +4,7 @@ use console_engine::MouseButton;
 
 fn main() {
     // initializes a screen filling the terminal with a target of 30 frames per second
-    let mut engine = console_engine::ConsoleEngine::init_fill(30);
+    let mut engine = console_engine::ConsoleEngine::init_fill(30).unwrap();
 
     // main loop, be aware that you'll have to break it because ctrl+C is captured
     loop {

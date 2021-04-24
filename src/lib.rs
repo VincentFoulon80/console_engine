@@ -10,10 +10,13 @@ pub mod pixel;
 pub mod screen;
 mod utils;
 
-use crossterm::event::{self, Event, KeyEvent, MouseEvent, MouseEventKind};
 pub use crossterm::event::{KeyCode, KeyModifiers, MouseButton};
 pub use crossterm::style::Color;
 use crossterm::terminal::{self, ClearType};
+use crossterm::{
+    event::{self, Event, KeyEvent, MouseEvent, MouseEventKind},
+    ErrorKind,
+};
 use crossterm::{execute, queue, style};
 use pixel::Pixel;
 use screen::Screen;
@@ -85,9 +88,9 @@ pub struct ConsoleEngine {
 
 impl ConsoleEngine {
     /// Initialize a screen of the provided width and height, and load the target FPS
-    pub fn init(width: u32, height: u32, target_fps: u32) -> ConsoleEngine {
+    pub fn init(width: u32, height: u32, target_fps: u32) -> Result<ConsoleEngine, ErrorKind> {
         assert!(target_fps > 0, "Target FPS needs to be greater than zero.");
-        let mut my = ConsoleEngine {
+        let mut engine = ConsoleEngine {
             stdout: stdout(),
             time_limit: std::time::Duration::from_millis(1000 / target_fps as u64),
             frame_count: 0,
@@ -108,44 +111,49 @@ impl ConsoleEngine {
             previous_panic_hook(panic_info);
             std::process::exit(1);
         }));
-        my.begin();
-        my.try_resize(width, height);
-        my
+        engine.begin()?;
+        engine.try_resize(width, height)?;
+        Ok(engine)
     }
 
     /// Initialize a screen filling the entire terminal with the target FPS
-    pub fn init_fill(target_fps: u32) -> ConsoleEngine {
+    pub fn init_fill(target_fps: u32) -> Result<ConsoleEngine, ErrorKind> {
         let size = crossterm::terminal::size().unwrap();
         ConsoleEngine::init(size.0 as u32, size.1 as u32, target_fps)
     }
 
     /// Initialize a screen filling the entire terminal with the target FPS
     /// Also check the terminal width and height and assert if the terminal has at least the asked size
-    pub fn init_fill_require(width: u32, height: u32, target_fps: u32) -> ConsoleEngine {
-        let mut my = ConsoleEngine::init_fill(target_fps);
-        my.try_resize(width, height);
-        my
+    pub fn init_fill_require(
+        width: u32,
+        height: u32,
+        target_fps: u32,
+    ) -> Result<ConsoleEngine, ErrorKind> {
+        let mut engine = ConsoleEngine::init_fill(target_fps)?;
+        engine.try_resize(width, height)?;
+        Ok(engine)
     }
 
     /// Try to resize the terminal to match the asked width and height at minimum
-    fn try_resize(&mut self, width: u32, height: u32) {
-        let size = crossterm::terminal::size().unwrap();
+    fn try_resize(&mut self, width: u32, height: u32) -> Result<(), ErrorKind> {
+        let size = crossterm::terminal::size()?;
         if (size.0 as u32) < width || (size.1 as u32) < height {
             execute!(
                 self.stdout,
                 crossterm::terminal::SetSize(width as u16, height as u16),
                 crossterm::terminal::SetSize(width as u16, height as u16)
-            )
-            .ok();
+            )?;
             self.resize(width, height);
         }
-        if crossterm::terminal::size().unwrap() < (width as u16, height as u16) {
-            panic!("Your terminal must have at least a width and height of {}x{} characters. Currently has {}x{}", width, height, size.0, size.1)
+        if crossterm::terminal::size()? < (width as u16, height as u16) {
+            Err(ErrorKind::ResizingTerminalFailure(format!("Your terminal must have at least a width and height of {}x{} characters. Currently has {}x{}", width, height, size.0, size.1)))
+        } else {
+            Ok(())
         }
     }
 
     /// Initializes the internal components such as hiding the cursor
-    fn begin(&mut self) {
+    fn begin(&mut self) -> Result<(), ErrorKind> {
         terminal::enable_raw_mode().unwrap();
         execute!(
             self.stdout,
@@ -155,7 +163,6 @@ impl ConsoleEngine {
             crossterm::cursor::MoveTo(0, 0),
             crossterm::event::EnableMouseCapture
         )
-        .unwrap();
     }
 
     /// Gracefully stop the engine, and set back a visible cursor
