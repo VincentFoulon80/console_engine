@@ -8,6 +8,7 @@ pub extern crate crossterm;
 
 pub mod pixel;
 pub mod screen;
+pub mod rect_style;
 mod utils;
 
 pub use crossterm::event::{KeyCode, KeyModifiers, MouseButton};
@@ -19,6 +20,7 @@ use crossterm::{
 };
 use crossterm::{execute, queue, style};
 use pixel::Pixel;
+use rect_style::BorderStyle;
 use screen::Screen;
 use std::io::Write;
 use std::io::{stdout, Stdout};
@@ -302,6 +304,18 @@ impl ConsoleEngine {
     /// ```
     pub fn rect(&mut self, start_x: i32, start_y: i32, end_x: i32, end_y: i32, character: Pixel) {
         self.screen.rect(start_x, start_y, end_x, end_y, character)
+    }
+
+    /// Draws a rectangle with custom borders of the provided between two sets of coordinates. Check the BorderStyle struct to learn how to use built-in or custom styles
+    /// 
+    /// usage:
+    /// ```
+    /// use console_engine::rect_style::BorderStyle;
+    /// // ...
+    /// screen.rect_border(0, 0, 9, 9, BorderStyle::new_simple());
+    /// ```
+    pub fn rect_border(&mut self, start_x: i32, start_y: i32, end_x: i32, end_y: i32, rect_style: BorderStyle) {
+        self.screen.rect_border(start_x, start_y, end_x, end_y, rect_style)
     }
 
     /// Fill a rectangle of the provided character between two sets of coordinates
