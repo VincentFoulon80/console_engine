@@ -12,7 +12,6 @@ pub struct BorderStyle {
 }
 
 impl BorderStyle {
-
     /// Simple border (uses only ascii characters +, -, |)
     pub fn new_simple() -> Self {
         Self {

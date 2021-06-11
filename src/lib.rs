@@ -7,8 +7,8 @@
 pub extern crate crossterm;
 
 pub mod pixel;
-pub mod screen;
 pub mod rect_style;
+pub mod screen;
 mod utils;
 
 pub use crossterm::event::{KeyCode, KeyModifiers, MouseButton};
@@ -148,7 +148,7 @@ impl ConsoleEngine {
             self.resize(width, height);
         }
         if crossterm::terminal::size()? < (width as u16, height as u16) {
-            Err(ErrorKind::ResizingTerminalFailure(format!("Your terminal must have at least a width and height of {}x{} characters. Currently has {}x{}", width, height, size.0, size.1)))
+            Err(ErrorKind::new(std::io::ErrorKind::Other, format!("Your terminal must have at least a width and height of {}x{} characters. Currently has {}x{}", width, height, size.0, size.1)))
         } else {
             Ok(())
         }
@@ -307,15 +307,23 @@ impl ConsoleEngine {
     }
 
     /// Draws a rectangle with custom borders of the provided between two sets of coordinates. Check the BorderStyle struct to learn how to use built-in or custom styles
-    /// 
+    ///
     /// usage:
     /// ```
     /// use console_engine::rect_style::BorderStyle;
     /// // ...
     /// engine.rect_border(0, 0, 9, 9, BorderStyle::new_simple());
     /// ```
-    pub fn rect_border(&mut self, start_x: i32, start_y: i32, end_x: i32, end_y: i32, rect_style: BorderStyle) {
-        self.screen.rect_border(start_x, start_y, end_x, end_y, rect_style)
+    pub fn rect_border(
+        &mut self,
+        start_x: i32,
+        start_y: i32,
+        end_x: i32,
+        end_y: i32,
+        rect_style: BorderStyle,
+    ) {
+        self.screen
+            .rect_border(start_x, start_y, end_x, end_y, rect_style)
     }
 
     /// Fill a rectangle of the provided character between two sets of coordinates

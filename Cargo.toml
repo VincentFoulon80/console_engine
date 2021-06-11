@@ -7,12 +7,12 @@ license = "MIT"
 name = "console_engine"
 readme = "README.md"
 repository = "https://github.com/VincentFoulon80/console_engine"
-version = "2.0.0"
+version = "2.0.1"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-crossterm = "0.19"
+crossterm = "0.20"
 unicode-width = "0.1.8"
 
 [dev-dependencies]
