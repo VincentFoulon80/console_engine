@@ -1,5 +1,7 @@
 //! Standalone screens
 
+use crate::rect_style::BorderStyle;
+
 use super::crossterm::style::Color;
 use super::crossterm::{execute, style};
 use super::pixel;
@@ -373,6 +375,33 @@ impl Screen {
         self.v_line(end_x, start_y, end_y, character); // right
         self.h_line(end_x, end_y, start_x, character); // bottom
         self.v_line(start_x, end_y, start_y, character); // left
+    }
+
+    /// Draws a rectangle with custom borders of the provided between two sets of coordinates. Check the BorderStyle struct to learn how to use built-in or custom styles
+    /// 
+    /// usage:
+    /// ```
+    /// use console_engine::rect_style::BorderStyle;
+    /// // ...
+    /// screen.rect_border(0, 0, 9, 9, BorderStyle::new_simple());
+    /// ```
+    pub fn rect_border(
+        &mut self,
+        start_x: i32,
+        start_y: i32,
+        end_x: i32,
+        end_y: i32,
+        rect_style: BorderStyle,
+    ) {
+        self.h_line(start_x, start_y, end_x, rect_style.top_bottom); // top
+        self.v_line(end_x, start_y, end_y, rect_style.left_right); // right
+        self.h_line(end_x, end_y, start_x, rect_style.top_bottom); // bottom
+        self.v_line(start_x, end_y, start_y, rect_style.left_right); // top left
+        // borders
+        self.set_pxl(start_x, start_y, rect_style.corner_top_left); // top left corner
+        self.set_pxl(end_x, start_y, rect_style.corner_top_right); // top right corner
+        self.set_pxl(start_x, end_y, rect_style.corner_bottom_left); // bottom left corner
+        self.set_pxl(end_x, end_y, rect_style.corner_bottom_right); // bottom right corner
     }
 
     /// Fill a rectangle of the provided character between two sets of coordinates  
