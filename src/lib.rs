@@ -312,7 +312,7 @@ impl ConsoleEngine {
     /// ```
     /// use console_engine::rect_style::BorderStyle;
     /// // ...
-    /// screen.rect_border(0, 0, 9, 9, BorderStyle::new_simple());
+    /// engine.rect_border(0, 0, 9, 9, BorderStyle::new_simple());
     /// ```
     pub fn rect_border(&mut self, start_x: i32, start_y: i32, end_x: i32, end_y: i32, rect_style: BorderStyle) {
         self.screen.rect_border(start_x, start_y, end_x, end_y, rect_style)
