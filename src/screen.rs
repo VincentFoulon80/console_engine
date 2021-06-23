@@ -441,7 +441,7 @@ impl Screen {
     /// screen.circle(10, 10, 4, pixel::pxl('#'));
     /// ```
     pub fn circle(&mut self, x: i32, y: i32, radius: u32, character: Pixel) {
-        let mut relative_pos_x = 0 as i32;
+        let mut relative_pos_x = 0;
         let mut relative_pos_y = radius as i32;
         let mut distance: i32 = 3 - 2 * radius as i32;
         if radius == 0 {
@@ -479,7 +479,7 @@ impl Screen {
     /// ```
     pub fn fill_circle(&mut self, x: i32, y: i32, radius: u32, character: Pixel) {
         // Taken from wikipedia
-        let mut relative_pos_x = 0 as i32;
+        let mut relative_pos_x = 0;
         let mut relative_pos_y = radius as i32;
         let mut distance: i32 = 3 - 2 * radius as i32;
         if radius == 0 {
