@@ -378,7 +378,7 @@ impl Screen {
     }
 
     /// Draws a rectangle with custom borders of the provided between two sets of coordinates. Check the BorderStyle struct to learn how to use built-in or custom styles
-    /// 
+    ///
     /// usage:
     /// ```
     /// use console_engine::rect_style::BorderStyle;
@@ -397,6 +397,7 @@ impl Screen {
         self.v_line(end_x, start_y, end_y, rect_style.left_right); // right
         self.h_line(end_x, end_y, start_x, rect_style.top_bottom); // bottom
         self.v_line(start_x, end_y, start_y, rect_style.left_right); // top left
+
         // borders
         self.set_pxl(start_x, start_y, rect_style.corner_top_left); // top left corner
         self.set_pxl(end_x, start_y, rect_style.corner_top_right); // top right corner
