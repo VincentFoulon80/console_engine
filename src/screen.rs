@@ -69,7 +69,7 @@ impl Screen {
     /// Creates a new Screen object with the provided Vec<Pixel> structure fitting the width and height parameters.
     /// The Vec length must correspond to width*height
     pub fn from_vec(vec: Vec<Pixel>, width: u32, height: u32) -> Screen {
-        assert!(vec.len() == (width*height) as usize, format!("The Vec structure must have the length corresponding to width*height (={}) but the given Vec has a length of {}.", width*height, vec.len()));
+        assert!(vec.len() == (width*height) as usize, "The Vec structure must have the length corresponding to width*height (={}) but the given Vec has a length of {}.", width*height, vec.len());
         Screen {
             width,
             height,
@@ -81,7 +81,7 @@ impl Screen {
     /// Creates a new Screen object with the provided String and colors fitting the width and height parameters.
     /// The String length must correspond to width*height
     pub fn from_string(string: String, fg: Color, bg: Color, width: u32, height: u32) -> Screen {
-        assert!(string.chars().count() == (width*height) as usize, format!("The String must have the length corresponding to width*height (={}) but the given String has a length of {}.", width*height, string.chars().count()));
+        assert!(string.chars().count() == (width*height) as usize, "The String must have the length corresponding to width*height (={}) but the given String has a length of {}.", width*height, string.chars().count());
         let vec: Vec<Pixel> = string
             .chars()
             .map(|chr| pixel::pxl_fbg(chr, fg, bg))
