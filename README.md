@@ -2,7 +2,8 @@
 
 [![Crates.io](https://img.shields.io/crates/v/console_engine)](https://crates.io/crates/console_engine)
 [![docs.rs](https://docs.rs/console_engine/badge.svg)](https://docs.rs/console_engine/)
-[![GitHub](https://img.shields.io/github/license/VincentFoulon80/console_engine)](https://github.com/VincentFoulon80/console_engine/blob/master/LICENSE)
+[![dependency status](https://deps.rs/repo/github/vincentfoulon80/console_engine/status.svg)](https://deps.rs/repo/github/vincentfoulon80/console_engine)
+[![Crates.io](https://img.shields.io/crates/l/console_engine)](https://github.com/VincentFoulon80/console_engine/blob/master/LICENSE)
 [![Discussions](https://img.shields.io/badge/discuss-on%20github-success)](https://github.com/VincentFoulon80/console_engine/discussions)
 
 [![Changelog](https://img.shields.io/badge/-changelog-informational)](https://github.com/VincentFoulon80/console_engine/releases)
