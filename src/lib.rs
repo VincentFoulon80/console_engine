@@ -582,8 +582,10 @@ impl ConsoleEngine {
                     skip_next = false;
                     continue;
                 }
-                if unicode_width::UnicodeWidthChar::width(pixel.chr).unwrap() > 1 {
-                    skip_next = true;
+                if let Some(char_width) = unicode_width::UnicodeWidthChar::width(pixel.chr) {
+                    if char_width > 1 {
+                        skip_next = true;
+                    }
                 }
                 if self.screen_last_frame.is_empty()
                     || pixel != self.screen_last_frame.get_pxl(x, y).unwrap()
@@ -718,9 +720,16 @@ impl ConsoleEngine {
     /// ```
     #[cfg(feature = "event")]
     pub fn poll(&mut self) -> events::Event {
+        use std::time::Duration;
+
         let mut elapsed_time = self.instant.elapsed();
-        while self.time_limit > elapsed_time {
-            let remaining_time = self.time_limit - elapsed_time;
+        // guarantees that this loop is running at least once
+        loop {
+            let remaining_time = if self.time_limit > elapsed_time {
+                self.time_limit - elapsed_time
+            } else {
+                Duration::from_millis(0)
+            };
             if let Ok(has_event) = event::poll(std::time::Duration::from_millis(
                 (remaining_time.as_millis() % self.time_limit.as_millis()) as u64,
             )) {
@@ -735,6 +744,9 @@ impl ConsoleEngine {
                 }
             }
             elapsed_time = self.instant.elapsed();
+            if self.time_limit <= elapsed_time {
+                break;
+            }
         }
         self.instant = std::time::Instant::now();
         self.frame_count = self.frame_count.wrapping_add(1);
