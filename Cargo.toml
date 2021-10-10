@@ -16,8 +16,9 @@ crossterm = "0.20"
 unicode-width = "0.1.8"
 
 [dev-dependencies]
+console_engine = {path = ".", features = ["event"]}
 rand = "0.8"
 
 [features]
-default = ["event"]
+default = []
 event = []

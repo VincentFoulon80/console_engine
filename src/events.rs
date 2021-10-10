@@ -1,3 +1,4 @@
+#![cfg(feature = "event")]
 use crossterm::event::{KeyEvent, MouseEvent};
 
 /// # ConsoleEngine events
