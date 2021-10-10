@@ -11,6 +11,9 @@ pub mod rect_style;
 pub mod screen;
 mod utils;
 
+#[cfg(feature = "event")]
+pub mod events;
+
 pub use crossterm::event::{KeyCode, KeyModifiers, MouseButton};
 pub use crossterm::style::Color;
 use crossterm::terminal::{self, ClearType};
@@ -579,8 +582,10 @@ impl ConsoleEngine {
                     skip_next = false;
                     continue;
                 }
-                if unicode_width::UnicodeWidthChar::width(pixel.chr).unwrap() > 1 {
-                    skip_next = true;
+                if let Some(char_width) = unicode_width::UnicodeWidthChar::width(pixel.chr) {
+                    if char_width > 1 {
+                        skip_next = true;
+                    }
                 }
                 if self.screen_last_frame.is_empty()
                     || pixel != self.screen_last_frame.get_pxl(x, y).unwrap()
@@ -690,6 +695,62 @@ impl ConsoleEngine {
         self.keys_held = utils::union(&held, &self.keys_pressed);
         self.mouse_events = captured_mouse;
         self.resize_events = captured_resize;
+    }
+
+    /// Poll the next ConsoleEngine Event
+    /// This function waits for the next event to occur,
+    /// from a user event like key press or mouse click to automatic events like frame change
+    ///
+    /// usage:
+    /// ```
+    /// use console_engine::events::Event;
+    /// // initializes a screen with a 10x10 screen and targetting 30 fps
+    /// let mut engine = console_engine::ConsoleEngine::init(10, 10, 30).unwrap();
+    /// loop {
+    ///     match engine.poll() {
+    ///         Event::Frame => {
+    ///             // do things
+    ///             engine.draw();
+    ///         }
+    ///         Event::Key(key_event) => {
+    ///             // handle keys
+    ///         }
+    ///     }
+    /// }
+    /// ```
+    #[cfg(feature = "event")]
+    pub fn poll(&mut self) -> events::Event {
+        use std::time::Duration;
+
+        let mut elapsed_time = self.instant.elapsed();
+        // guarantees that this loop is running at least once
+        loop {
+            let remaining_time = if self.time_limit > elapsed_time {
+                self.time_limit - elapsed_time
+            } else {
+                Duration::from_millis(0)
+            };
+            if let Ok(has_event) = event::poll(std::time::Duration::from_millis(
+                (remaining_time.as_millis() % self.time_limit.as_millis()) as u64,
+            )) {
+                if has_event {
+                    if let Ok(current_event) = event::read() {
+                        match current_event {
+                            Event::Key(evt) => return events::Event::Key(evt),
+                            Event::Mouse(evt) => return events::Event::Mouse(evt),
+                            Event::Resize(w, h) => return events::Event::Resize(w, h),
+                        };
+                    }
+                }
+            }
+            elapsed_time = self.instant.elapsed();
+            if self.time_limit <= elapsed_time {
+                break;
+            }
+        }
+        self.instant = std::time::Instant::now();
+        self.frame_count = self.frame_count.wrapping_add(1);
+        events::Event::Frame
     }
 
     /// Check and resize the terminal if needed.

@@ -378,7 +378,7 @@ impl Screen {
     }
 
     /// Draws a rectangle with custom borders of the provided between two sets of coordinates. Check the BorderStyle struct to learn how to use built-in or custom styles
-    /// 
+    ///
     /// usage:
     /// ```
     /// use console_engine::rect_style::BorderStyle;
@@ -397,6 +397,7 @@ impl Screen {
         self.v_line(end_x, start_y, end_y, rect_style.left_right); // right
         self.h_line(end_x, end_y, start_x, rect_style.top_bottom); // bottom
         self.v_line(start_x, end_y, start_y, rect_style.left_right); // top left
+
         // borders
         self.set_pxl(start_x, start_y, rect_style.corner_top_left); // top left corner
         self.set_pxl(end_x, start_y, rect_style.corner_top_right); // top right corner
@@ -441,7 +442,7 @@ impl Screen {
     /// screen.circle(10, 10, 4, pixel::pxl('#'));
     /// ```
     pub fn circle(&mut self, x: i32, y: i32, radius: u32, character: Pixel) {
-        let mut relative_pos_x = 0 as i32;
+        let mut relative_pos_x = 0;
         let mut relative_pos_y = radius as i32;
         let mut distance: i32 = 3 - 2 * radius as i32;
         if radius == 0 {
@@ -479,7 +480,7 @@ impl Screen {
     /// ```
     pub fn fill_circle(&mut self, x: i32, y: i32, radius: u32, character: Pixel) {
         // Taken from wikipedia
-        let mut relative_pos_x = 0 as i32;
+        let mut relative_pos_x = 0;
         let mut relative_pos_y = radius as i32;
         let mut distance: i32 = 3 - 2 * radius as i32;
         if radius == 0 {

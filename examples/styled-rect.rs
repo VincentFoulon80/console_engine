@@ -1,5 +1,5 @@
-use console_engine::screen;
 use console_engine::rect_style::BorderStyle;
+use console_engine::screen;
 
 fn main() {
     let mut scr = screen::Screen::new(9, 10);
