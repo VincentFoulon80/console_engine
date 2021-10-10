@@ -88,6 +88,7 @@ Take a look at the [generated documentation](https://docs.rs/console_engine/).
 See [examples](https://github.com/VincentFoulon80/console_engine/tree/master/examples) :
 - **drag-and-drop** : Move a rectangle with your mouse
 - **emojis** : Display an emoji on the terminal
+- **events** : Example usage of the event polling method.
 - **graph** : Display a graph being generated with some values.
 - **lines** : Draw random lines of random colors on the screen.
 - **lines-fps** : Same example as lines, but with a FPS counter.
