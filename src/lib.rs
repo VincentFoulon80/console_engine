@@ -6,6 +6,8 @@
 
 pub extern crate crossterm;
 
+#[cfg(feature = "compatibility")]
+pub mod compatibility;
 pub mod pixel;
 pub mod rect_style;
 pub mod screen;
