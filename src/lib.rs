@@ -275,6 +275,13 @@ impl ConsoleEngine {
         self.screen.print_screen(x, y, source)
     }
 
+    /// Prints a screen from a compatible Struct
+    /// See [print_screen](#method.print_screen)
+    #[cfg(feature = "compatibility")]
+    pub fn print_with(&mut self, x: i32, y: i32, source: &impl crate::compatibility::AsScreen) {
+        self.screen.print_with(x, y, source)
+    }
+
     /// Prints another screen on specified coordinates, ignoring a specific character while printing
     /// Ignoring a character will behave like transparency
     ///
@@ -282,6 +289,19 @@ impl ConsoleEngine {
     pub fn print_screen_alpha(&mut self, x: i32, y: i32, source: &Screen, alpha_character: char) {
         self.screen
             .print_screen_alpha(x, y, source, alpha_character)
+    }
+
+    /// Prints a screen from a compatible Struct, ignoring a specific character while printing for a transparency effect
+    /// See [print_screen_alpha](#method.print_screen_alpha)
+    #[cfg(feature = "compatibility")]
+    pub fn print_alpha_with(
+        &mut self,
+        x: i32,
+        y: i32,
+        source: &impl crate::compatibility::AsScreen,
+        alpha_character: char,
+    ) {
+        self.screen.print_alpha_with(x, y, source, alpha_character)
     }
 
     /// draws a line of the provided character between two sets of coordinates
