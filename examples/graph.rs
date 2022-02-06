@@ -17,7 +17,7 @@ fn draw_graph(engine: &mut console_engine::ConsoleEngine, values: [u8; MAX_VALUE
     let step = engine.get_width() as f32 / MAX_VALUES as f32;
     let mut last_position = 0;
     // for each values in the dataset
-    #[allow(clippy::clippy::needless_range_loop)]
+    #[allow(clippy::needless_range_loop)]
     for i in 0..MAX_VALUES - 1 {
         let value = values[i];
         // process the position based on the available space in the terminal

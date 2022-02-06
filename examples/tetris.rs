@@ -374,7 +374,7 @@ fn check_and_remove_lines(game_scr: &mut Screen) -> u32 {
 /// Draw the game
 /// Be aware that we drawed the interface (walls, borders, ...) once at the start of the game,
 /// and since they will never change, we don't need to draw them on every frame
-#[allow(clippy::clippy::too_many_arguments)]
+#[allow(clippy::too_many_arguments)]
 fn draw_game(
     engine: &mut ConsoleEngine,
     game_scr: &Screen,
@@ -386,9 +386,9 @@ fn draw_game(
     score: u32,
 ) {
     // print the game screen
-    engine.print_screen(1, 0, &game_scr);
+    engine.print_screen(1, 0, game_scr);
     // print the current piece, coordinates are corrected to match the game_screen and the piece center
-    engine.print_screen_alpha(piece_x, piece_y - 1, &piece.get_scr(&piece_r), '.');
+    engine.print_screen_alpha(piece_x, piece_y - 1, &piece.get_scr(piece_r), '.');
     // print next piece in its frame
     engine.print_screen_alpha(
         game_scr.get_width() as i32 + 4,
