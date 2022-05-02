@@ -125,8 +125,12 @@ impl ConsoleWindow for Form {
         }
         if let Event::Key(KeyEvent { code, modifiers: _ }) = event {
             match code {
-                KeyCode::Enter | KeyCode::Tab => {
+                KeyCode::Enter => {
                     self.index = (self.index + 1).clamp(0, self.fields.len());
+                    self.update_active_field();
+                }
+                KeyCode::Tab => {
+                    self.index = (self.index + 1).clamp(0, self.fields.len() - 1);
                     self.update_active_field();
                 }
                 KeyCode::BackTab => {

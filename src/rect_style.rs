@@ -24,6 +24,18 @@ impl BorderStyle {
         }
     }
 
+    /// Solid (Uses only the block character from ascii)
+    pub fn new_solid() -> Self {
+        Self {
+            corner_top_right: pixel::pxl('█'),
+            corner_top_left: pixel::pxl('█'),
+            corner_bottom_left: pixel::pxl('█'),
+            corner_bottom_right: pixel::pxl('█'),
+            top_bottom: pixel::pxl('█'),
+            left_right: pixel::pxl('█'),
+        }
+    }
+
     /// Light border (uses Box Drawings Light set from unicode)
     pub fn new_light() -> Self {
         Self {
