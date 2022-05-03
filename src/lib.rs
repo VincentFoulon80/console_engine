@@ -15,7 +15,7 @@ mod utils;
 pub mod events;
 
 #[cfg(feature = "form")]
-pub mod form;
+pub mod forms;
 
 pub use crossterm::event::{KeyCode, KeyModifiers, MouseButton};
 pub use crossterm::style::Color;

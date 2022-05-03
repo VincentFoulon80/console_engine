@@ -1,13 +1,10 @@
 use std::cmp::Ordering;
 
-use crossterm::{
-    event::{KeyCode, KeyEvent, KeyModifiers},
-    style::Color,
-};
+use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 
 use crate::{events::Event, screen::Screen};
 
-use super::{ConsoleWindow, ConsoleWindowOutput};
+use super::{ConsoleForm, FormOptions, FormOutput, FormStyle, FormValidationResult};
 
 pub struct TextInput {
     screen: Screen,
@@ -15,25 +12,21 @@ pub struct TextInput {
     active: bool,
     input_buffer: String,
     cursor_pos: usize,
-    col_fg: Color,
-    col_bg: Color,
+    style: FormStyle,
+    options: FormOptions,
 }
 
 impl TextInput {
-    pub fn new(w: u32, col_fg: Color, col_bg: Color) -> Self {
+    pub fn new(w: u32, options: Option<FormOptions>, style: Option<FormStyle>) -> Self {
         Self {
             screen: Screen::new(w, 1),
             dirty: true,
             active: false,
             input_buffer: String::new(),
             cursor_pos: 0,
-            col_fg,
-            col_bg,
+            style: style.unwrap_or_default(),
+            options: options.unwrap_or_default(),
         }
-    }
-
-    pub fn get_input_buffer(&self) -> &String {
-        &self.input_buffer
     }
 
     pub fn set_input_buffer(&mut self, input: &str) {
@@ -113,7 +106,7 @@ impl TextInput {
     }
 }
 
-impl ConsoleWindow for TextInput {
+impl ConsoleForm for TextInput {
     fn get_width(&self) -> u32 {
         self.screen.get_width()
     }
@@ -164,6 +157,10 @@ impl ConsoleWindow for TextInput {
         self.active
     }
 
+    fn get_output(&self) -> FormOutput {
+        FormOutput::String(self.input_buffer.to_string())
+    }
+
     fn draw(&mut self, tick: usize) -> &Screen {
         if self.dirty {
             self.screen.clear();
@@ -175,8 +172,8 @@ impl ConsoleWindow for TextInput {
                 },
                 0,
                 &self.input_buffer,
-                self.col_fg,
-                self.col_bg,
+                self.style.fg,
+                self.style.bg,
             );
             self.dirty = false;
         }
@@ -184,19 +181,42 @@ impl ConsoleWindow for TextInput {
             std::cmp::min(self.cursor_pos as i32, self.screen.get_width() as i32 - 1);
         if self.active && tick % 2 == 0 {
             if let Ok(mut cursor_pxl) = self.screen.get_pxl(current_cursor_pos, 0) {
-                cursor_pxl.bg = self.col_fg;
-                cursor_pxl.fg = self.col_bg;
+                cursor_pxl.bg = self.style.fg;
+                cursor_pxl.fg = self.style.bg;
                 self.screen.set_pxl(current_cursor_pos, 0, cursor_pxl);
             }
         } else if let Ok(mut cursor_pxl) = self.screen.get_pxl(current_cursor_pos, 0) {
-            cursor_pxl.bg = self.col_bg;
-            cursor_pxl.fg = self.col_fg;
+            cursor_pxl.bg = self.style.bg;
+            cursor_pxl.fg = self.style.fg;
             self.screen.set_pxl(current_cursor_pos, 0, cursor_pxl);
         }
         &self.screen
     }
 
-    fn get_output(&self) -> ConsoleWindowOutput {
-        ConsoleWindowOutput::String(self.get_input_buffer().to_string())
+    fn make(w: u32, _h: u32, options: Option<FormOptions>, style: Option<FormStyle>) -> Self
+    where
+        Self: Sized,
+    {
+        Self::new(w, options, style)
+    }
+
+    fn validate(&self, validation_result: &mut FormValidationResult) {
+        self.self_validate(validation_result);
+    }
+
+    fn set_style(&mut self, style: FormStyle) {
+        self.style = style
+    }
+
+    fn get_style(&self) -> &FormStyle {
+        &self.style
+    }
+
+    fn set_options(&mut self, options: FormOptions) {
+        self.options = options
+    }
+
+    fn get_options(&self) -> &FormOptions {
+        &self.options
     }
 }
