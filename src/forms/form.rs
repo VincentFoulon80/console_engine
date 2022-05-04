@@ -14,6 +14,7 @@ pub struct Form {
     index: usize,
     dirty: bool,
     fields: Vec<(String, Box<dyn ConsoleForm>)>,
+    errors: HashMap<String, FormValidationResult>,
 }
 
 impl Form {
@@ -26,6 +27,7 @@ impl Form {
             active: false,
             dirty: true,
             fields: vec![],
+            errors: HashMap::new(),
         }
     }
 
@@ -69,6 +71,15 @@ impl Form {
         None
     }
 
+    pub fn get_error(&self, name: &str) -> Option<&FormValidationResult> {
+        for (field_name, errors) in self.errors.iter() {
+            if name == *field_name {
+                return Some(errors);
+            }
+        }
+        None
+    }
+
     pub fn update_active_field(&mut self) {
         for (id, (_, field)) in self.fields.iter_mut().enumerate() {
             field.set_active(self.active && id == self.index);
@@ -77,6 +88,21 @@ impl Form {
 
     pub fn is_finished(&self) -> bool {
         self.index >= self.fields.len()
+    }
+
+    pub fn is_valid(&mut self) -> bool {
+        self.errors.clear();
+        for (name, field) in self.fields.iter() {
+            let mut field_errors: FormValidationResult = vec![];
+            field.validate(&mut field_errors);
+            if !field_errors.is_empty() {
+                self.errors.insert(String::from(name), field_errors);
+            }
+        }
+        let mut self_errors: FormValidationResult = vec![];
+        self.validate(&mut self_errors);
+
+        self.errors.is_empty() && self_errors.is_empty()
     }
 }
 

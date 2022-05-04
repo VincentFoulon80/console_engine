@@ -1,5 +1,3 @@
-use std::cmp::Ordering;
-
 use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 
 use crate::{events::Event, screen::Screen};
@@ -42,61 +40,25 @@ impl TextInput {
     }
 
     pub fn put_char(&mut self, chr: char) {
-        self.dirty = true;
-        let mut new_buffer = self
-            .input_buffer
-            .chars()
-            .take(self.cursor_pos)
-            .collect::<String>();
+        let mut new_buffer = self.input_buffer[0..self.cursor_pos].to_string();
         new_buffer.push(chr);
-        new_buffer.push_str(
-            &self
-                .input_buffer
-                .chars()
-                .skip(self.cursor_pos)
-                .collect::<String>(),
-        );
+        new_buffer.push_str(&self.input_buffer[self.cursor_pos..]);
         self.input_buffer = new_buffer;
         self.move_cursor(1);
     }
 
     pub fn remove_char(&mut self, amount: i32) {
-        match amount.cmp(&0) {
-            Ordering::Greater => {
-                self.dirty = true;
-                let mut new_buffer = self
-                    .input_buffer
-                    .chars()
-                    .take((self.cursor_pos as i32 - amount) as usize)
-                    .collect::<String>();
-                new_buffer.push_str(
-                    &self
-                        .input_buffer
-                        .chars()
-                        .skip(self.cursor_pos)
-                        .collect::<String>(),
-                );
-                self.input_buffer = new_buffer;
-                self.move_cursor(-amount);
-            }
-            Ordering::Less => {
-                self.dirty = true;
-                let mut new_buffer = self
-                    .input_buffer
-                    .chars()
-                    .take(self.cursor_pos)
-                    .collect::<String>();
-                new_buffer.push_str(
-                    &self
-                        .input_buffer
-                        .chars()
-                        .skip((self.cursor_pos as i32 - amount) as usize)
-                        .collect::<String>(),
-                );
-                self.input_buffer = new_buffer;
-            }
-            Ordering::Equal => {}
+        if amount == 0 {
+            return;
         }
+        self.dirty = true;
+        let off_l = amount.max(0) as usize; // offset to the left from cursor, `positive` or 0
+        let off_r = amount.min(0).abs() as usize; // offset to the right from cursor,  `-negative` or 0
+        let pos_l = self.cursor_pos.saturating_sub(off_l);
+        let pos_r = self.cursor_pos.saturating_add(off_r);
+        self.input_buffer =
+            String::from(&self.input_buffer[0..pos_l]) + &self.input_buffer[pos_r..]; // this skips the cursor +/- offsets
+        self.move_cursor(-amount.max(0));
     }
 
     pub fn move_cursor(&mut self, amount: i32) {

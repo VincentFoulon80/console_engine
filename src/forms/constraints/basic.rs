@@ -1,23 +1,20 @@
-use super::FormOutput;
-pub trait FormConstraint {
-    fn validate(&self, output: &FormOutput) -> bool;
+use crate::forms::FormOutput;
 
-    fn get_message(&self) -> &str;
-}
+use super::FormConstraint;
 
-pub struct NotEmpty {
+pub struct NotBlank {
     message: String,
 }
 
-impl NotEmpty {
-    pub fn new(message: &str) -> Self {
-        NotEmpty {
+impl NotBlank {
+    pub fn new(message: &str) -> Box<Self> {
+        Box::new(NotBlank {
             message: String::from(message),
-        }
+        })
     }
 }
 
-impl FormConstraint for NotEmpty {
+impl FormConstraint for NotBlank {
     fn validate(&self, output: &FormOutput) -> bool {
         match output {
             FormOutput::Nothing => false,
