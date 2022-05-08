@@ -2,8 +2,6 @@ use crate::forms::FormOutput;
 
 use super::FormConstraint;
 
-/// # Not Blank Constraint
-///
 /// Validates that data exists and is not empty
 pub struct NotBlank {
     message: String,

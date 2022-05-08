@@ -1,3 +1,4 @@
+//! Forms within your terminal
 use std::{any::Any, collections::HashMap};
 
 use crate::{events::Event, rect_style::BorderStyle, screen::Screen};
@@ -12,8 +13,6 @@ pub use text::TextInput;
 
 use self::constraints::FormConstraint;
 
-/// # Trait ToAny
-///
 /// Helper trait to allow downcasting FormFields
 pub trait ToAny {
     fn to_any(self) -> Box<dyn Any>;
@@ -24,8 +23,6 @@ impl<T: 'static> ToAny for T {
     }
 }
 
-/// Trait FormField
-///
 /// Necessary functions to build a Form Field
 pub trait FormField: ToAny {
     /// Base function to allow building the Field programmatically (e.g. in Forms)
@@ -86,13 +83,9 @@ pub trait FormField: ToAny {
     }
 }
 
-/// # Form Validation Result
-///
 /// List of error messages encountered when validating a field
 type FormValidationResult = Vec<String>;
 
-/// # Form Output
-///
 /// Type that stores a potential output coming from a Form Field
 #[derive(Debug, Clone)]
 pub enum FormOutput {
@@ -107,8 +100,6 @@ impl Default for FormOutput {
     }
 }
 
-/// # Form Style
-///
 /// Structure that stores style information for Form Fields
 #[derive(Clone, Copy)]
 pub struct FormStyle {
@@ -134,8 +125,6 @@ impl Default for FormStyle {
     }
 }
 
-/// # Form Options
-///
 /// Stores a bunch of options for Form Fields
 #[derive(Default)]
 pub struct FormOptions {

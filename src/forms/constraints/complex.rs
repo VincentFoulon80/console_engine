@@ -2,8 +2,6 @@ use crate::forms::FormOutput;
 
 use super::FormConstraint;
 
-/// # Callback Constraint
-///
 /// Calls a custom function on the FormOutput in order to validate the data
 pub struct Callback {
     callback: &'static dyn Fn(&FormOutput) -> bool,
@@ -29,8 +27,6 @@ impl FormConstraint for Callback {
     }
 }
 
-/// # Characters Callback Constraint
-///
 /// On Strings output, call a custom function for every character in order to validate the data
 /// Recursively parse Compound output
 pub struct CharactersCallback {

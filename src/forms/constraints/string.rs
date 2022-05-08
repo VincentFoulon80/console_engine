@@ -2,8 +2,6 @@ use crate::forms::FormOutput;
 
 use super::FormConstraint;
 
-/// # Alphabetic Constraint
-///
 /// Checks if the input only contains alphabetic characters as returned by [is_alphabetic](https://doc.rust-lang.org/std/primitive.char.html#method.is_alphabetic)
 pub struct Alphabetic {
     message: String,
@@ -31,8 +29,6 @@ impl FormConstraint for Alphabetic {
     }
 }
 
-/// # Alphanumeric Constraint
-///
 /// Checks if the input only contains alphanumeric characters as returned by [is_alphanumeric](https://doc.rust-lang.org/std/primitive.char.html#method.is_alphanumeric)
 pub struct Alphanumeric {
     message: String,

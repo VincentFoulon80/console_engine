@@ -1,3 +1,4 @@
+//! Form Validation Constraints
 mod basic;
 mod complex;
 mod numbers;
@@ -12,6 +13,8 @@ pub use string::Alphabetic;
 pub use string::Alphanumeric;
 
 use super::FormOutput;
+
+/// Trait that define validation constraints
 pub trait FormConstraint {
     fn validate(&self, output: &FormOutput) -> bool;
 

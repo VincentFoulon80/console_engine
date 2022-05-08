@@ -4,7 +4,7 @@ use crate::{events::Event, screen::Screen};
 
 use super::{FormField, FormOptions, FormOutput, FormStyle, FormValidationResult};
 
-/// # TextInput Form Field
+/// Generic text input
 ///
 /// This form field generates a generic text input, that handles keyboard input (moving cursor, backspacing / deleting, home / end)
 /// This field is inactive by default, you need to set it active once created

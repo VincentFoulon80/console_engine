@@ -6,8 +6,6 @@ use crate::{events::Event, forms::ToAny, screen::Screen};
 
 use super::{FormField, FormOptions, FormOutput, FormStyle, FormValidationResult};
 
-/// # Form
-///
 /// Special FormField that manages multiple fields
 pub struct Form {
     screen: Screen,

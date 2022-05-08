@@ -2,8 +2,6 @@ use crate::forms::FormOutput;
 
 use super::FormConstraint;
 
-/// # Integer Constraint
-///
 /// Validates that the input is an integer (positive or negative)
 pub struct Integer {
     message: String,
@@ -38,8 +36,6 @@ impl FormConstraint for Integer {
     }
 }
 
-/// # Number Constraint
-///
 /// Validates that the input is a number, allowing one comma or dot if it's a decimal number
 pub struct Number {
     message: String,
