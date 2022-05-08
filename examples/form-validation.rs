@@ -1,6 +1,6 @@
 use console_engine::{
     events::Event,
-    forms::{constraints, ConsoleForm, Form, FormOptions, FormOutput, FormStyle, TextInput},
+    forms::{constraints, Form, FormField, FormOptions, FormOutput, FormStyle, TextInput},
     rect_style::BorderStyle,
     ConsoleEngine, KeyCode, KeyModifiers,
 };
@@ -19,6 +19,7 @@ fn main() {
     // Create a new Form with two text inputs in it
     let mut form = Form::new(30, 6, theme, None);
 
+    // Build a TextInput field with a NotBlank and Number constraints
     form.build_field::<TextInput>(
         "number",
         Some(FormOptions {
@@ -48,16 +49,18 @@ fn main() {
                 let KeyEvent { code, modifiers } = keyevent;
                 match code {
                     KeyCode::Esc => {
+                        // exit with Escape
                         break;
                     }
                     KeyCode::Char(c) => {
                         if modifiers == KeyModifiers::CONTROL && c == 'c' {
+                            // exit with CTRL+C
                             break;
                         }
                     }
                     _ => {}
                 }
-
+                // Make the form handle the key event
                 form.handle_event(&Event::Key(keyevent))
             }
 
@@ -72,6 +75,7 @@ fn main() {
         if form.is_valid() {
             let mut number = 0;
 
+            // Retrieve the output of the TextInput
             if let FormOutput::String(num) = form.get_result("number").unwrap_or_default() {
                 number = num.parse::<i32>().unwrap_or(0);
             }

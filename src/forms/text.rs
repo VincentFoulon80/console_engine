@@ -2,8 +2,14 @@ use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 
 use crate::{events::Event, screen::Screen};
 
-use super::{ConsoleForm, FormOptions, FormOutput, FormStyle, FormValidationResult};
+use super::{FormField, FormOptions, FormOutput, FormStyle, FormValidationResult};
 
+/// # TextInput Form Field
+///
+/// This form field generates a generic text input, that handles keyboard input (moving cursor, backspacing / deleting, home / end)
+/// This field is inactive by default, you need to set it active once created
+///
+/// see example `form-input` for basic usage
 pub struct TextInput {
     screen: Screen,
     dirty: bool,
@@ -68,7 +74,7 @@ impl TextInput {
     }
 }
 
-impl ConsoleForm for TextInput {
+impl FormField for TextInput {
     fn get_width(&self) -> u32 {
         self.screen.get_width()
     }

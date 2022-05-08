@@ -1,6 +1,6 @@
 use console_engine::{
     events::Event,
-    forms::{ConsoleForm, Form, FormOptions, FormOutput, FormStyle, TextInput},
+    forms::{Form, FormField, FormOptions, FormOutput, FormStyle, TextInput},
     rect_style::BorderStyle,
     ConsoleEngine, KeyCode, KeyModifiers,
 };
@@ -58,16 +58,18 @@ fn main() {
                 let KeyEvent { code, modifiers } = keyevent;
                 match code {
                     KeyCode::Esc => {
+                        // exit with Escape
                         break;
                     }
                     KeyCode::Char(c) => {
                         if modifiers == KeyModifiers::CONTROL && c == 'c' {
+                            // exit with CTRL+C
                             break;
                         }
                     }
                     _ => {}
                 }
-
+                // Make the form handle the key event
                 form.handle_event(&Event::Key(keyevent))
             }
 
@@ -82,6 +84,7 @@ fn main() {
         let mut first_name = String::new();
         let mut last_name = String::new();
 
+        // Get the output of each fields
         if let FormOutput::String(name) = form.get_result("first_name").unwrap_or_default() {
             first_name = name;
         }

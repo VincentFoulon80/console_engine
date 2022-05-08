@@ -4,8 +4,11 @@ use crossterm::event::{KeyCode, KeyEvent};
 
 use crate::{events::Event, forms::ToAny, screen::Screen};
 
-use super::{ConsoleForm, FormOptions, FormOutput, FormStyle, FormValidationResult};
+use super::{FormField, FormOptions, FormOutput, FormStyle, FormValidationResult};
 
+/// # Form
+///
+/// Special FormField that manages multiple fields
 pub struct Form {
     screen: Screen,
     style: FormStyle,
@@ -13,11 +16,12 @@ pub struct Form {
     active: bool,
     index: usize,
     dirty: bool,
-    fields: Vec<(String, Box<dyn ConsoleForm>)>,
+    fields: Vec<(String, Box<dyn FormField>)>,
     errors: HashMap<String, FormValidationResult>,
 }
 
 impl Form {
+    /// Constructs a new Form with the given width, height, style and options
     pub fn new(w: u32, h: u32, style: FormStyle, options: Option<FormOptions>) -> Self {
         Form {
             screen: Screen::new(w, h),
@@ -31,12 +35,17 @@ impl Form {
         }
     }
 
-    pub fn add_field<T: ConsoleForm + 'static>(&mut self, name: &str, mut field: T) {
+    /// Adds the provided FormField into the Form
+    /// The Field will be resized to match the width of the form
+    /// You may want to use [build_field](#methods.build_field) instead since it automatically creates the FormField instance.
+    pub fn add_field<T: FormField + 'static>(&mut self, name: &str, mut field: T) {
         field.resize(self.get_width() - 2, field.get_height());
         self.fields.push((String::from(name), Box::new(field)));
     }
 
-    pub fn build_field<T: ConsoleForm + 'static>(
+    /// Build a field and includes it into the Form
+    /// it's an easier approach into building a Form, see the `form-simple` example to compare it with [add_field](#methods.add_field).
+    pub fn build_field<T: FormField + 'static>(
         &mut self,
         name: &str,
         options: Option<FormOptions>,
@@ -49,9 +58,11 @@ impl Form {
         self.add_field(name, field)
     }
 
+    /// Get a specific field if it exists within the Form
+    /// Note that the field will be removed from the Form
     pub fn get_field<T>(&mut self, name: &str) -> Option<Box<T>>
     where
-        T: ConsoleForm + 'static,
+        T: FormField + 'static,
     {
         for (id, (field_name, _)) in self.fields.iter().enumerate() {
             if name == *field_name {
@@ -62,6 +73,7 @@ impl Form {
         None
     }
 
+    /// Get the output of a specific field if it exists within the Form
     pub fn get_result(&self, name: &str) -> Option<FormOutput> {
         for (field_name, field) in self.fields.iter() {
             if name == *field_name {
@@ -71,6 +83,8 @@ impl Form {
         None
     }
 
+    /// Get the errors generated from a specific field.
+    /// You must run [is_valid](#methods.is_valid) first in order to be able to retrieve the errors
     pub fn get_error(&self, name: &str) -> Option<&FormValidationResult> {
         for (field_name, errors) in self.errors.iter() {
             if name == *field_name {
@@ -80,16 +94,20 @@ impl Form {
         None
     }
 
-    pub fn update_active_field(&mut self) {
+    /// Change focus on the currently active field
+    fn update_active_field(&mut self) {
         for (id, (_, field)) in self.fields.iter_mut().enumerate() {
             field.set_active(self.active && id == self.index);
         }
     }
 
+    /// Checks whenever the user went through the entire form, and confirmed on the last field
     pub fn is_finished(&self) -> bool {
         self.index >= self.fields.len()
     }
 
+    /// Checks if the form is entirely valid. If any field fails its `validate` method, the function returns `false`
+    /// and a list of every reported error is stored in the form, waiting for [get_error](#methods.get_error) to be called
     pub fn is_valid(&mut self) -> bool {
         self.errors.clear();
         for (name, field) in self.fields.iter() {
@@ -106,7 +124,7 @@ impl Form {
     }
 }
 
-impl ConsoleForm for Form {
+impl FormField for Form {
     fn make(w: u32, h: u32, options: Option<FormOptions>, style: Option<FormStyle>) -> Self {
         Self::new(w, h, style.unwrap_or_default(), options)
     }
