@@ -56,7 +56,7 @@ pub trait ConsoleForm: ToAny {
 
 type FormValidationResult = Vec<String>;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum FormOutput {
     Nothing,
     String(String),
