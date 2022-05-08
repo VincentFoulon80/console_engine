@@ -89,6 +89,9 @@ See [examples](https://github.com/VincentFoulon80/console_engine/tree/master/exa
 - **drag-and-drop** : Move a rectangle with your mouse
 - **emojis** : Display an emoji on the terminal
 - **events** : Example usage of the event polling method.
+- **form-input** : Example usage of a `TextInput`
+- **form-simple** : Example creation and usage of a `Form` containing two inputs
+- **form-validation** : Example usage of Form Validation
 - **graph** : Display a graph being generated with some values.
 - **lines** : Draw random lines of random colors on the screen.
 - **lines-fps** : Same example as lines, but with a FPS counter.
