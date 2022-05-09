@@ -1,6 +1,6 @@
 use console_engine::{
     events::Event,
-    forms::{Form, FormField, FormOptions, FormOutput, FormStyle, TextInput},
+    forms::{Form, FormField, FormOptions, FormOutput, FormStyle, Text},
     rect_style::BorderStyle,
     ConsoleEngine, KeyCode, KeyModifiers,
 };
@@ -22,7 +22,7 @@ fn main() {
     // (We don't care about the width of our input, since it'll be resized inside the form)
     form.add_field(
         "first_name",
-        TextInput::new(
+        Text::new(
             0,
             Some(FormOptions {
                 label: Some("First Name"),
@@ -32,7 +32,7 @@ fn main() {
         ),
     );
     // ... or let the form build it for you
-    form.build_field::<TextInput>(
+    form.build_field::<Text>(
         "last_name",
         Some(FormOptions {
             label: Some("Last Name"),

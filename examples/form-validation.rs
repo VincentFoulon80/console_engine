@@ -1,6 +1,6 @@
 use console_engine::{
     events::Event,
-    forms::{constraints, Form, FormField, FormOptions, FormOutput, FormStyle, TextInput},
+    forms::{constraints, Form, FormField, FormOptions, FormOutput, FormStyle, Text},
     rect_style::BorderStyle,
     ConsoleEngine, KeyCode, KeyModifiers,
 };
@@ -20,7 +20,7 @@ fn main() {
     let mut form = Form::new(30, 6, theme, None);
 
     // Build a TextInput field with a NotBlank and Number constraints
-    form.build_field::<TextInput>(
+    form.build_field::<Text>(
         "number",
         Some(FormOptions {
             label: Some("Please input a number"),

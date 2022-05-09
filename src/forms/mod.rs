@@ -9,7 +9,8 @@ mod text;
 
 use crossterm::style::Color;
 pub use form::Form;
-pub use text::TextInput;
+pub use text::HiddenText;
+pub use text::Text;
 
 use self::constraints::FormConstraint;
 

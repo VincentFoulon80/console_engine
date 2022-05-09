@@ -10,7 +10,7 @@ fn main() {
     let mut engine = console_engine::ConsoleEngine::init(20, 3, 10).unwrap();
 
     // Initialize a TextInput, that'll handle an input field into our application
-    let mut f_text = console_engine::forms::TextInput::new(9, None, None);
+    let mut f_text = console_engine::forms::Text::new(9, None, None);
     // This field is inactive by default, you need to set it active once created
     f_text.set_active(true);
 
