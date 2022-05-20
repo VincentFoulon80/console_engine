@@ -52,7 +52,8 @@ impl FormField for Button {
     fn handle_event(&mut self, event: &crate::events::Event) {
         if let Event::Key(KeyEvent { code, modifiers }) = event {
             if *code == KeyCode::Char(' ') && *modifiers == KeyModifiers::NONE {
-                self.clicked = true
+                self.clicked = true;
+                self.dirty = true;
             }
         }
     }
@@ -66,7 +67,7 @@ impl FormField for Button {
     }
 
     fn validate(&self, validation_result: &mut super::FormValidationResult) {
-        todo!()
+        self.self_validate(validation_result);
     }
 
     fn get_output(&self) -> super::FormOutput {
