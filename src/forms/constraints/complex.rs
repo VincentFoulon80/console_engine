@@ -47,8 +47,9 @@ impl FormConstraint for CharactersCallback {
     fn validate(&self, output: &FormOutput) -> bool {
         match output {
             FormOutput::Nothing => true,
+            FormOutput::Boolean(_) => true,
             FormOutput::String(value) => value.chars().all(|x| (self.callback)(x)),
-            FormOutput::Compound(fields) => fields.iter().all(|(_, x)| self.validate(x)),
+            FormOutput::HashMap(fields) => fields.iter().all(|(_, x)| self.validate(x)),
         }
     }
 
@@ -74,7 +75,7 @@ mod test {
 
         let mut hm: HashMap<String, FormOutput> = HashMap::new();
         hm.insert(String::from("1"), FormOutput::Nothing);
-        assert!(!validator.validate(&FormOutput::Compound(hm)));
+        assert!(!validator.validate(&FormOutput::HashMap(hm)));
     }
 
     #[test]
@@ -91,13 +92,13 @@ mod test {
 
         let mut hm: HashMap<String, FormOutput> = HashMap::new();
         hm.insert(String::from("1"), FormOutput::Nothing);
-        assert!(validator.validate(&FormOutput::Compound(hm.clone())));
+        assert!(validator.validate(&FormOutput::HashMap(hm.clone())));
         hm.insert(
             String::from("2"),
             FormOutput::String(String::from("Helloworld")),
         );
-        assert!(validator.validate(&FormOutput::Compound(hm.clone())));
+        assert!(validator.validate(&FormOutput::HashMap(hm.clone())));
         hm.insert(String::from("3"), FormOutput::String(String::from("123")));
-        assert!(!validator.validate(&FormOutput::Compound(hm.clone())));
+        assert!(!validator.validate(&FormOutput::HashMap(hm.clone())));
     }
 }

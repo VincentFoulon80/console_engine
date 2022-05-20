@@ -19,8 +19,9 @@ impl FormConstraint for NotBlank {
     fn validate(&self, output: &FormOutput) -> bool {
         match output {
             FormOutput::Nothing => false,
+            FormOutput::Boolean(_) => true,
             FormOutput::String(value) => !value.is_empty(),
-            FormOutput::Compound(fields) => !fields.is_empty(),
+            FormOutput::HashMap(fields) => !fields.is_empty(),
         }
     }
 
@@ -46,8 +47,8 @@ mod test {
         assert!(validator.validate(&FormOutput::String(String::from("hello, world!"))));
 
         let mut hm: HashMap<String, FormOutput> = HashMap::new();
-        assert!(!validator.validate(&FormOutput::Compound(hm.clone())));
+        assert!(!validator.validate(&FormOutput::HashMap(hm.clone())));
         hm.insert(String::from("1"), FormOutput::Nothing);
-        assert!(validator.validate(&FormOutput::Compound(hm)));
+        assert!(validator.validate(&FormOutput::HashMap(hm)));
     }
 }

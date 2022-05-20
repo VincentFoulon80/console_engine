@@ -3,10 +3,12 @@ use std::{any::Any, collections::HashMap};
 
 use crate::{events::Event, rect_style::BorderStyle, screen::Screen};
 
+mod button;
 pub mod constraints;
 mod form;
 mod text;
 
+pub use button::Button;
 use crossterm::style::Color;
 pub use form::Form;
 pub use text::HiddenText;
@@ -91,8 +93,9 @@ type FormValidationResult = Vec<String>;
 #[derive(Debug, Clone)]
 pub enum FormOutput {
     Nothing,
+    Boolean(bool),
     String(String),
-    Compound(HashMap<String, FormOutput>),
+    HashMap(HashMap<String, FormOutput>),
 }
 
 impl Default for FormOutput {

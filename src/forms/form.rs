@@ -184,7 +184,7 @@ impl FormField for Form {
         for (name, field) in self.fields.iter() {
             output.insert(name.to_string(), field.get_output());
         }
-        FormOutput::Compound(output)
+        FormOutput::HashMap(output)
     }
 
     fn set_style(&mut self, style: FormStyle) {

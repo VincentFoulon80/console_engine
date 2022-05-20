@@ -19,6 +19,7 @@ impl FormConstraint for Integer {
     fn validate(&self, output: &FormOutput) -> bool {
         match output {
             FormOutput::Nothing => true,
+            FormOutput::Boolean(_) => true,
             FormOutput::String(value) => {
                 if let Some(chr) = value.chars().next() {
                     if !chr.is_digit(10) && chr != '-' && chr != '+' {
@@ -27,7 +28,7 @@ impl FormConstraint for Integer {
                 }
                 value.chars().skip(1).all(|x| x.is_digit(10))
             }
-            FormOutput::Compound(fields) => fields.iter().all(|(_, x)| self.validate(x)),
+            FormOutput::HashMap(fields) => fields.iter().all(|(_, x)| self.validate(x)),
         }
     }
 
@@ -53,6 +54,7 @@ impl FormConstraint for Number {
     fn validate(&self, output: &FormOutput) -> bool {
         match output {
             FormOutput::Nothing => true,
+            FormOutput::Boolean(_) => true,
             FormOutput::String(value) => {
                 if let Some(chr) = value.chars().next() {
                     if !chr.is_numeric() && chr != '-' && chr != '+' {
@@ -65,7 +67,7 @@ impl FormConstraint for Number {
                     .all(|x| x.is_numeric() || x == '.' || x == ',')
                     && value.chars().filter(|&x| x == '.' || x == ',').count() <= 1
             }
-            FormOutput::Compound(fields) => fields.iter().all(|(_, x)| self.validate(x)),
+            FormOutput::HashMap(fields) => fields.iter().all(|(_, x)| self.validate(x)),
         }
     }
 
@@ -93,17 +95,17 @@ mod test {
         assert!(!validator.validate(&FormOutput::String(String::from("3.5"))));
 
         let mut hm: HashMap<String, FormOutput> = HashMap::new();
-        assert!(validator.validate(&FormOutput::Compound(hm.clone())));
+        assert!(validator.validate(&FormOutput::HashMap(hm.clone())));
         hm.insert(String::from("1"), FormOutput::Nothing);
-        assert!(validator.validate(&FormOutput::Compound(hm.clone())));
+        assert!(validator.validate(&FormOutput::HashMap(hm.clone())));
         hm.insert(String::from("2"), FormOutput::String(String::from("37")));
-        assert!(validator.validate(&FormOutput::Compound(hm.clone())));
+        assert!(validator.validate(&FormOutput::HashMap(hm.clone())));
         hm.insert(String::from("3"), FormOutput::String(String::from("-35")));
-        assert!(validator.validate(&FormOutput::Compound(hm.clone())));
+        assert!(validator.validate(&FormOutput::HashMap(hm.clone())));
         hm.insert(String::from("4"), FormOutput::String(String::from("3.5")));
-        assert!(!validator.validate(&FormOutput::Compound(hm.clone())));
+        assert!(!validator.validate(&FormOutput::HashMap(hm.clone())));
         hm.insert(String::from("5"), FormOutput::String(String::from("-3.5")));
-        assert!(!validator.validate(&FormOutput::Compound(hm)));
+        assert!(!validator.validate(&FormOutput::HashMap(hm)));
     }
 
     #[test]
@@ -120,16 +122,16 @@ mod test {
         assert!(validator.validate(&FormOutput::String(String::from("-3.5"))));
 
         let mut hm: HashMap<String, FormOutput> = HashMap::new();
-        assert!(validator.validate(&FormOutput::Compound(hm.clone())));
+        assert!(validator.validate(&FormOutput::HashMap(hm.clone())));
         hm.insert(String::from("1"), FormOutput::Nothing);
-        assert!(validator.validate(&FormOutput::Compound(hm.clone())));
+        assert!(validator.validate(&FormOutput::HashMap(hm.clone())));
         hm.insert(String::from("2"), FormOutput::String(String::from("37")));
-        assert!(validator.validate(&FormOutput::Compound(hm.clone())));
+        assert!(validator.validate(&FormOutput::HashMap(hm.clone())));
         hm.insert(String::from("3"), FormOutput::String(String::from("-35")));
-        assert!(validator.validate(&FormOutput::Compound(hm.clone())));
+        assert!(validator.validate(&FormOutput::HashMap(hm.clone())));
         hm.insert(String::from("4"), FormOutput::String(String::from("3.5")));
-        assert!(validator.validate(&FormOutput::Compound(hm.clone())));
+        assert!(validator.validate(&FormOutput::HashMap(hm.clone())));
         hm.insert(String::from("5"), FormOutput::String(String::from("-3.5")));
-        assert!(validator.validate(&FormOutput::Compound(hm)));
+        assert!(validator.validate(&FormOutput::HashMap(hm)));
     }
 }
