@@ -3,12 +3,13 @@ use std::{any::Any, collections::HashMap};
 
 use crate::{events::Event, rect_style::BorderStyle, screen::Screen};
 
-mod button;
+mod choices;
 pub mod constraints;
 mod form;
 mod text;
 
-pub use button::Button;
+pub use choices::Checkbox;
+pub use choices::Radio;
 use crossterm::style::Color;
 pub use form::Form;
 pub use text::HiddenText;
@@ -31,7 +32,7 @@ pub trait FormField: ToAny {
     /// Base function to allow building the Field programmatically (e.g. in Forms)
     ///
     /// This function is separate to `new` to allow Fields to define custom constructors
-    fn make(w: u32, h: u32, options: Option<FormOptions>, style: Option<FormStyle>) -> Self
+    fn make(w: u32, options: FormOptions) -> Self
     where
         Self: Sized;
 
@@ -39,6 +40,9 @@ pub trait FormField: ToAny {
     fn get_width(&self) -> u32;
     /// Get the height of the field
     fn get_height(&self) -> u32;
+    fn get_min_height(&self) -> u32 {
+        1
+    }
     /// Resize (if possible) the field
     fn resize(&mut self, w: u32, h: u32);
 
@@ -49,22 +53,23 @@ pub trait FormField: ToAny {
     fn set_active(&mut self, active: bool);
     /// Checks if the state of a field is active
     fn is_active(&self) -> bool;
+
     /// Allow the field to validate its content by itself.
     ///
     /// Make sure to call [self_validate](#method.self_validate) in it,
     /// so the Validation Constraints provided by FormOptions will be automatically checked against the output of the field
     fn validate(&self, validation_result: &mut FormValidationResult);
     /// Get the output of the field
-    fn get_output(&self) -> FormOutput;
+    fn get_output(&self) -> FormValue;
 
-    /// Sets the style of the Field
-    fn set_style(&mut self, style: FormStyle);
-    /// Gets the style of the Field
-    fn get_style(&self) -> &FormStyle;
     /// Sets the options of the Field
     fn set_options(&mut self, options: FormOptions);
     /// Gets the options of the Field
     fn get_options(&self) -> &FormOptions;
+    /// Tell if we should display the label externally (some fields may want to display it themselves like buttons)
+    fn display_label(&self) -> bool {
+        self.get_options().label.is_some()
+    }
 
     /// This is the other heart of FormFields : it asks the field to build itself as a `Screen`.
     /// It's the function that allow the field to be shown on screen.
@@ -91,14 +96,17 @@ type FormValidationResult = Vec<String>;
 
 /// Type that stores a potential output coming from a Form Field
 #[derive(Debug, Clone)]
-pub enum FormOutput {
+pub enum FormValue {
     Nothing,
     Boolean(bool),
+    Index(usize),
     String(String),
-    HashMap(HashMap<String, FormOutput>),
+    List(Vec<String>),
+    Vec(Vec<FormValue>),
+    Map(HashMap<String, FormValue>),
 }
 
-impl Default for FormOutput {
+impl Default for FormValue {
     fn default() -> Self {
         Self::Nothing
     }
@@ -132,8 +140,11 @@ impl Default for FormStyle {
 /// Stores a bunch of options for Form Fields
 #[derive(Default)]
 pub struct FormOptions {
+    pub style: FormStyle,
     /// Label of the field, if used in forms
     pub label: Option<&'static str>,
     /// List of Validation constraints used for validating the content of a Form Field
     pub constraints: Vec<Box<dyn FormConstraint>>,
+    /// Additional values that Fields may need in order to initialize themselves
+    pub custom: HashMap<String, FormValue>,
 }

@@ -2,7 +2,7 @@ use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 
 use crate::{events::Event, pixel, screen::Screen};
 
-use super::{FormField, FormOptions, FormOutput, FormStyle, FormValidationResult};
+use super::{FormField, FormOptions, FormValidationResult, FormValue};
 
 /// Generic text input
 ///
@@ -16,20 +16,18 @@ pub struct Text {
     active: bool,
     input_buffer: String,
     cursor_pos: usize,
-    style: FormStyle,
     options: FormOptions,
 }
 
 impl Text {
-    pub fn new(w: u32, options: Option<FormOptions>, style: Option<FormStyle>) -> Self {
+    pub fn new(w: u32, options: FormOptions) -> Self {
         Self {
             screen: Screen::new(w, 1),
             dirty: true,
             active: false,
             input_buffer: String::new(),
             cursor_pos: 0,
-            style: style.unwrap_or_default(),
-            options: options.unwrap_or_default(),
+            options,
         }
     }
 
@@ -128,8 +126,8 @@ impl FormField for Text {
         self.active
     }
 
-    fn get_output(&self) -> FormOutput {
-        FormOutput::String(self.input_buffer.to_string())
+    fn get_output(&self) -> FormValue {
+        FormValue::String(self.input_buffer.to_string())
     }
 
     fn draw(&mut self, tick: usize) -> &Screen {
@@ -143,8 +141,8 @@ impl FormField for Text {
                 },
                 0,
                 &self.input_buffer,
-                self.style.fg,
-                self.style.bg,
+                self.options.style.fg,
+                self.options.style.bg,
             );
             self.dirty = false;
         }
@@ -152,35 +150,27 @@ impl FormField for Text {
             std::cmp::min(self.cursor_pos as i32, self.screen.get_width() as i32 - 1);
         if self.active && tick % 2 == 0 {
             if let Ok(mut cursor_pxl) = self.screen.get_pxl(current_cursor_pos, 0) {
-                cursor_pxl.bg = self.style.fg;
-                cursor_pxl.fg = self.style.bg;
+                cursor_pxl.bg = self.options.style.fg;
+                cursor_pxl.fg = self.options.style.bg;
                 self.screen.set_pxl(current_cursor_pos, 0, cursor_pxl);
             }
         } else if let Ok(mut cursor_pxl) = self.screen.get_pxl(current_cursor_pos, 0) {
-            cursor_pxl.bg = self.style.bg;
-            cursor_pxl.fg = self.style.fg;
+            cursor_pxl.bg = self.options.style.bg;
+            cursor_pxl.fg = self.options.style.fg;
             self.screen.set_pxl(current_cursor_pos, 0, cursor_pxl);
         }
         &self.screen
     }
 
-    fn make(w: u32, _h: u32, options: Option<FormOptions>, style: Option<FormStyle>) -> Self
+    fn make(w: u32, options: FormOptions) -> Self
     where
         Self: Sized,
     {
-        Self::new(w, options, style)
+        Self::new(w, options)
     }
 
     fn validate(&self, validation_result: &mut FormValidationResult) {
         self.self_validate(validation_result);
-    }
-
-    fn set_style(&mut self, style: FormStyle) {
-        self.style = style
-    }
-
-    fn get_style(&self) -> &FormStyle {
-        &self.style
     }
 
     fn set_options(&mut self, options: FormOptions) {
@@ -205,17 +195,11 @@ pub struct HiddenText {
     hide_character: char,
     input_buffer: String,
     cursor_pos: usize,
-    style: FormStyle,
     options: FormOptions,
 }
 
 impl HiddenText {
-    pub fn new(
-        w: u32,
-        hide_character: char,
-        options: Option<FormOptions>,
-        style: Option<FormStyle>,
-    ) -> Self {
+    pub fn new(w: u32, hide_character: char, options: FormOptions) -> Self {
         Self {
             screen: Screen::new(w, 1),
             dirty: true,
@@ -223,8 +207,7 @@ impl HiddenText {
             hide_character,
             input_buffer: String::new(),
             cursor_pos: 0,
-            style: style.unwrap_or_default(),
-            options: options.unwrap_or_default(),
+            options,
         }
     }
 
@@ -323,8 +306,8 @@ impl FormField for HiddenText {
         self.active
     }
 
-    fn get_output(&self) -> FormOutput {
-        FormOutput::String(self.input_buffer.to_string())
+    fn get_output(&self) -> FormValue {
+        FormValue::String(self.input_buffer.to_string())
     }
 
     fn draw(&mut self, tick: usize) -> &Screen {
@@ -339,7 +322,11 @@ impl FormField for HiddenText {
                     },
                     0,
                     self.input_buffer.len() as i32 - 1,
-                    pixel::pxl_fbg(self.hide_character, self.style.fg, self.style.bg),
+                    pixel::pxl_fbg(
+                        self.hide_character,
+                        self.options.style.fg,
+                        self.options.style.bg,
+                    ),
                 );
             }
             self.dirty = false;
@@ -348,35 +335,27 @@ impl FormField for HiddenText {
             std::cmp::min(self.cursor_pos as i32, self.screen.get_width() as i32 - 1);
         if self.active && tick % 2 == 0 {
             if let Ok(mut cursor_pxl) = self.screen.get_pxl(current_cursor_pos, 0) {
-                cursor_pxl.bg = self.style.fg;
-                cursor_pxl.fg = self.style.bg;
+                cursor_pxl.bg = self.options.style.fg;
+                cursor_pxl.fg = self.options.style.bg;
                 self.screen.set_pxl(current_cursor_pos, 0, cursor_pxl);
             }
         } else if let Ok(mut cursor_pxl) = self.screen.get_pxl(current_cursor_pos, 0) {
-            cursor_pxl.bg = self.style.bg;
-            cursor_pxl.fg = self.style.fg;
+            cursor_pxl.bg = self.options.style.bg;
+            cursor_pxl.fg = self.options.style.fg;
             self.screen.set_pxl(current_cursor_pos, 0, cursor_pxl);
         }
         &self.screen
     }
 
-    fn make(w: u32, _h: u32, options: Option<FormOptions>, style: Option<FormStyle>) -> Self
+    fn make(w: u32, options: FormOptions) -> Self
     where
         Self: Sized,
     {
-        Self::new(w, '*', options, style)
+        Self::new(w, '*', options)
     }
 
     fn validate(&self, validation_result: &mut FormValidationResult) {
         self.self_validate(validation_result);
-    }
-
-    fn set_style(&mut self, style: FormStyle) {
-        self.style = style
-    }
-
-    fn get_style(&self) -> &FormStyle {
-        &self.style
     }
 
     fn set_options(&mut self, options: FormOptions) {

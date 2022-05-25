@@ -1,4 +1,4 @@
-use crate::forms::FormOutput;
+use crate::forms::FormValue;
 
 use super::FormConstraint;
 
@@ -16,12 +16,17 @@ impl Alphabetic {
 }
 
 impl FormConstraint for Alphabetic {
-    fn validate(&self, output: &FormOutput) -> bool {
+    fn validate(&self, output: &FormValue) -> bool {
         match output {
-            FormOutput::Nothing => true,
-            FormOutput::Boolean(_) => true,
-            FormOutput::String(value) => value.chars().all(|x| x.is_alphabetic()),
-            FormOutput::HashMap(fields) => fields.iter().all(|(_, x)| self.validate(x)),
+            FormValue::Nothing => true,
+            FormValue::Boolean(_) => true,
+            FormValue::Index(_) => true,
+            FormValue::String(value) => value.chars().all(|x| x.is_alphabetic()),
+            FormValue::Map(fields) => fields.iter().all(|(_, x)| self.validate(x)),
+            FormValue::List(entries) => entries
+                .iter()
+                .all(|x| self.validate(&FormValue::String(String::from(x)))),
+            FormValue::Vec(entries) => entries.iter().all(|x| self.validate(x)),
         }
     }
 
@@ -44,12 +49,17 @@ impl Alphanumeric {
 }
 
 impl FormConstraint for Alphanumeric {
-    fn validate(&self, output: &FormOutput) -> bool {
+    fn validate(&self, output: &FormValue) -> bool {
         match output {
-            FormOutput::Nothing => true,
-            FormOutput::Boolean(_) => true,
-            FormOutput::String(value) => value.chars().all(|x| x.is_alphanumeric()),
-            FormOutput::HashMap(fields) => fields.iter().all(|(_, x)| self.validate(x)),
+            FormValue::Nothing => true,
+            FormValue::Boolean(_) => true,
+            FormValue::Index(_) => true,
+            FormValue::String(value) => value.chars().all(|x| x.is_alphanumeric()),
+            FormValue::Map(fields) => fields.iter().all(|(_, x)| self.validate(x)),
+            FormValue::List(entries) => entries
+                .iter()
+                .all(|x| self.validate(&FormValue::String(String::from(x)))),
+            FormValue::Vec(entries) => entries.iter().all(|x| self.validate(x)),
         }
     }
 
@@ -61,7 +71,7 @@ impl FormConstraint for Alphanumeric {
 #[cfg(test)]
 mod test {
     use crate::forms::constraints::FormConstraint;
-    use crate::forms::FormOutput;
+    use crate::forms::FormValue;
     use std::collections::HashMap;
 
     #[test]
@@ -70,22 +80,22 @@ mod test {
 
         let validator = Alphabetic::new("Not alphabetic");
 
-        assert!(validator.validate(&FormOutput::Nothing));
-        assert!(validator.validate(&FormOutput::String(String::from("Helloworld"))));
-        assert!(!validator.validate(&FormOutput::String(String::from("123"))));
-        assert!(!validator.validate(&FormOutput::String(String::from("Hello123"))));
-        assert!(!validator.validate(&FormOutput::String(String::from("hello, world!"))));
+        assert!(validator.validate(&FormValue::Nothing));
+        assert!(validator.validate(&FormValue::String(String::from("Helloworld"))));
+        assert!(!validator.validate(&FormValue::String(String::from("123"))));
+        assert!(!validator.validate(&FormValue::String(String::from("Hello123"))));
+        assert!(!validator.validate(&FormValue::String(String::from("hello, world!"))));
 
-        let mut hm: HashMap<String, FormOutput> = HashMap::new();
-        hm.insert(String::from("1"), FormOutput::Nothing);
-        assert!(validator.validate(&FormOutput::HashMap(hm.clone())));
+        let mut hm: HashMap<String, FormValue> = HashMap::new();
+        hm.insert(String::from("1"), FormValue::Nothing);
+        assert!(validator.validate(&FormValue::Map(hm.clone())));
         hm.insert(
             String::from("2"),
-            FormOutput::String(String::from("Helloworld")),
+            FormValue::String(String::from("Helloworld")),
         );
-        assert!(validator.validate(&FormOutput::HashMap(hm.clone())));
-        hm.insert(String::from("3"), FormOutput::String(String::from("123")));
-        assert!(!validator.validate(&FormOutput::HashMap(hm.clone())));
+        assert!(validator.validate(&FormValue::Map(hm.clone())));
+        hm.insert(String::from("3"), FormValue::String(String::from("123")));
+        assert!(!validator.validate(&FormValue::Map(hm.clone())));
     }
 
     #[test]
@@ -94,26 +104,26 @@ mod test {
 
         let validator = Alphanumeric::new("Not alphanumeric");
 
-        assert!(validator.validate(&FormOutput::Nothing));
-        assert!(validator.validate(&FormOutput::String(String::from("Helloworld"))));
-        assert!(validator.validate(&FormOutput::String(String::from("123"))));
-        assert!(validator.validate(&FormOutput::String(String::from("Hello123"))));
-        assert!(!validator.validate(&FormOutput::String(String::from("hello, world!"))));
+        assert!(validator.validate(&FormValue::Nothing));
+        assert!(validator.validate(&FormValue::String(String::from("Helloworld"))));
+        assert!(validator.validate(&FormValue::String(String::from("123"))));
+        assert!(validator.validate(&FormValue::String(String::from("Hello123"))));
+        assert!(!validator.validate(&FormValue::String(String::from("hello, world!"))));
 
-        let mut hm: HashMap<String, FormOutput> = HashMap::new();
-        hm.insert(String::from("1"), FormOutput::Nothing);
-        assert!(validator.validate(&FormOutput::HashMap(hm.clone())));
+        let mut hm: HashMap<String, FormValue> = HashMap::new();
+        hm.insert(String::from("1"), FormValue::Nothing);
+        assert!(validator.validate(&FormValue::Map(hm.clone())));
         hm.insert(
             String::from("2"),
-            FormOutput::String(String::from("Helloworld")),
+            FormValue::String(String::from("Helloworld")),
         );
-        assert!(validator.validate(&FormOutput::HashMap(hm.clone())));
-        hm.insert(String::from("3"), FormOutput::String(String::from("123")));
-        assert!(validator.validate(&FormOutput::HashMap(hm.clone())));
+        assert!(validator.validate(&FormValue::Map(hm.clone())));
+        hm.insert(String::from("3"), FormValue::String(String::from("123")));
+        assert!(validator.validate(&FormValue::Map(hm.clone())));
         hm.insert(
             String::from("3"),
-            FormOutput::String(String::from("hello, world!")),
+            FormValue::String(String::from("hello, world!")),
         );
-        assert!(!validator.validate(&FormOutput::HashMap(hm.clone())));
+        assert!(!validator.validate(&FormValue::Map(hm.clone())));
     }
 }

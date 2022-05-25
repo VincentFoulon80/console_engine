@@ -1,15 +1,15 @@
-use crate::forms::FormOutput;
+use crate::forms::FormValue;
 
 use super::FormConstraint;
 
 /// Calls a custom function on the FormOutput in order to validate the data
 pub struct Callback {
-    callback: &'static dyn Fn(&FormOutput) -> bool,
+    callback: &'static dyn Fn(&FormValue) -> bool,
     message: String,
 }
 
 impl Callback {
-    pub fn new(message: &str, callback: &'static dyn Fn(&FormOutput) -> bool) -> Box<Self> {
+    pub fn new(message: &str, callback: &'static dyn Fn(&FormValue) -> bool) -> Box<Self> {
         Box::new(Self {
             callback,
             message: String::from(message),
@@ -18,7 +18,7 @@ impl Callback {
 }
 
 impl FormConstraint for Callback {
-    fn validate(&self, output: &FormOutput) -> bool {
+    fn validate(&self, output: &FormValue) -> bool {
         (self.callback)(output)
     }
 
@@ -44,12 +44,17 @@ impl CharactersCallback {
 }
 
 impl FormConstraint for CharactersCallback {
-    fn validate(&self, output: &FormOutput) -> bool {
+    fn validate(&self, output: &FormValue) -> bool {
         match output {
-            FormOutput::Nothing => true,
-            FormOutput::Boolean(_) => true,
-            FormOutput::String(value) => value.chars().all(|x| (self.callback)(x)),
-            FormOutput::HashMap(fields) => fields.iter().all(|(_, x)| self.validate(x)),
+            FormValue::Nothing => true,
+            FormValue::Boolean(_) => true,
+            FormValue::Index(_) => true,
+            FormValue::String(value) => value.chars().all(|x| (self.callback)(x)),
+            FormValue::Map(entries) => entries.iter().all(|(_, x)| self.validate(x)),
+            FormValue::List(entries) => entries
+                .iter()
+                .all(|x| self.validate(&FormValue::String(String::from(x)))),
+            FormValue::Vec(entries) => entries.iter().all(|x| self.validate(x)),
         }
     }
 
@@ -61,21 +66,21 @@ impl FormConstraint for CharactersCallback {
 #[cfg(test)]
 mod test {
     use crate::forms::constraints::FormConstraint;
-    use crate::forms::FormOutput;
+    use crate::forms::FormValue;
     use std::collections::HashMap;
 
     #[test]
     fn callback() {
         use super::Callback;
 
-        let validator = Callback::new("invalid!", &|x| matches!(x, FormOutput::String(_)));
+        let validator = Callback::new("invalid!", &|x| matches!(x, FormValue::String(_)));
 
-        assert!(!validator.validate(&FormOutput::Nothing));
-        assert!(validator.validate(&FormOutput::String(String::from("hello, world!"))));
+        assert!(!validator.validate(&FormValue::Nothing));
+        assert!(validator.validate(&FormValue::String(String::from("hello, world!"))));
 
-        let mut hm: HashMap<String, FormOutput> = HashMap::new();
-        hm.insert(String::from("1"), FormOutput::Nothing);
-        assert!(!validator.validate(&FormOutput::HashMap(hm)));
+        let mut hm: HashMap<String, FormValue> = HashMap::new();
+        hm.insert(String::from("1"), FormValue::Nothing);
+        assert!(!validator.validate(&FormValue::Map(hm)));
     }
 
     #[test]
@@ -84,21 +89,21 @@ mod test {
 
         let validator = CharactersCallback::new("Not alphabetic", &|x| x.is_alphabetic());
 
-        assert!(validator.validate(&FormOutput::Nothing));
-        assert!(validator.validate(&FormOutput::String(String::from("Helloworld"))));
-        assert!(!validator.validate(&FormOutput::String(String::from("123"))));
-        assert!(!validator.validate(&FormOutput::String(String::from("Hello123"))));
-        assert!(!validator.validate(&FormOutput::String(String::from("hello, world!"))));
+        assert!(validator.validate(&FormValue::Nothing));
+        assert!(validator.validate(&FormValue::String(String::from("Helloworld"))));
+        assert!(!validator.validate(&FormValue::String(String::from("123"))));
+        assert!(!validator.validate(&FormValue::String(String::from("Hello123"))));
+        assert!(!validator.validate(&FormValue::String(String::from("hello, world!"))));
 
-        let mut hm: HashMap<String, FormOutput> = HashMap::new();
-        hm.insert(String::from("1"), FormOutput::Nothing);
-        assert!(validator.validate(&FormOutput::HashMap(hm.clone())));
+        let mut hm: HashMap<String, FormValue> = HashMap::new();
+        hm.insert(String::from("1"), FormValue::Nothing);
+        assert!(validator.validate(&FormValue::Map(hm.clone())));
         hm.insert(
             String::from("2"),
-            FormOutput::String(String::from("Helloworld")),
+            FormValue::String(String::from("Helloworld")),
         );
-        assert!(validator.validate(&FormOutput::HashMap(hm.clone())));
-        hm.insert(String::from("3"), FormOutput::String(String::from("123")));
-        assert!(!validator.validate(&FormOutput::HashMap(hm.clone())));
+        assert!(validator.validate(&FormValue::Map(hm.clone())));
+        hm.insert(String::from("3"), FormValue::String(String::from("123")));
+        assert!(!validator.validate(&FormValue::Map(hm.clone())));
     }
 }

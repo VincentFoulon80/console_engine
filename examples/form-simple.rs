@@ -1,6 +1,6 @@
 use console_engine::{
     events::Event,
-    forms::{Form, FormField, FormOptions, FormOutput, FormStyle, Text},
+    forms::{Form, FormField, FormOptions, FormStyle, FormValue, Text},
     rect_style::BorderStyle,
     ConsoleEngine, KeyCode, KeyModifiers,
 };
@@ -17,28 +17,35 @@ fn main() {
     };
 
     // Create a new Form with two text inputs in it
-    let mut form = Form::new(12, 6, theme, None);
+    let mut form = Form::new(
+        12,
+        6,
+        FormOptions {
+            style: theme,
+            ..Default::default()
+        },
+    );
     // you either need to create your form entry directly from add_field ...
     // (We don't care about the width of our input, since it'll be resized inside the form)
     form.add_field(
         "first_name",
         Text::new(
             0,
-            Some(FormOptions {
+            FormOptions {
+                style: theme,
                 label: Some("First Name"),
-                constraints: vec![],
-            }),
-            Some(theme),
+                ..Default::default()
+            },
         ),
     );
     // ... or let the form build it for you
     form.build_field::<Text>(
         "last_name",
-        Some(FormOptions {
+        FormOptions {
+            style: theme,
             label: Some("Last Name"),
-            constraints: vec![],
-        }),
-        Some(theme),
+            ..Default::default()
+        },
     );
 
     form.set_active(true);
@@ -85,10 +92,10 @@ fn main() {
         let mut last_name = String::new();
 
         // Get the output of each fields
-        if let FormOutput::String(name) = form.get_result("first_name").unwrap_or_default() {
+        if let FormValue::String(name) = form.get_result("first_name").unwrap_or_default() {
             first_name = name;
         }
-        if let FormOutput::String(name) = form.get_result("last_name").unwrap_or_default() {
+        if let FormValue::String(name) = form.get_result("last_name").unwrap_or_default() {
             last_name = name;
         }
 

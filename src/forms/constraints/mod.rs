@@ -12,11 +12,11 @@ pub use numbers::Number;
 pub use string::Alphabetic;
 pub use string::Alphanumeric;
 
-use super::FormOutput;
+use super::FormValue;
 
 /// Trait that define validation constraints
 pub trait FormConstraint {
-    fn validate(&self, output: &FormOutput) -> bool;
+    fn validate(&self, output: &FormValue) -> bool;
 
     fn get_message(&self) -> &str;
 }

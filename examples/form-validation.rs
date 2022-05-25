@@ -1,6 +1,6 @@
 use console_engine::{
     events::Event,
-    forms::{constraints, Form, FormField, FormOptions, FormOutput, FormStyle, Text},
+    forms::{constraints, Form, FormField, FormOptions, FormStyle, FormValue, Text},
     rect_style::BorderStyle,
     ConsoleEngine, KeyCode, KeyModifiers,
 };
@@ -17,19 +17,27 @@ fn main() {
     };
 
     // Create a new Form with two text inputs in it
-    let mut form = Form::new(30, 6, theme, None);
+    let mut form = Form::new(
+        30,
+        6,
+        FormOptions {
+            style: theme,
+            ..Default::default()
+        },
+    );
 
     // Build a TextInput field with a NotBlank and Number constraints
     form.build_field::<Text>(
         "number",
-        Some(FormOptions {
+        FormOptions {
+            style: theme,
             label: Some("Please input a number"),
             constraints: vec![
                 constraints::NotBlank::new("There is nothing here!"),
                 constraints::Number::new("This is not a number"),
             ],
-        }),
-        Some(theme),
+            ..Default::default()
+        },
     );
 
     form.set_active(true);
@@ -76,7 +84,7 @@ fn main() {
             let mut number = 0;
 
             // Retrieve the output of the TextInput
-            if let FormOutput::String(num) = form.get_result("number").unwrap_or_default() {
+            if let FormValue::String(num) = form.get_result("number").unwrap_or_default() {
                 number = num.parse::<i32>().unwrap_or(0);
             }
             println!("Double of your number is {}", number * 2);

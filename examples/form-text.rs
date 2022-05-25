@@ -1,6 +1,6 @@
 use console_engine::{
     events::Event,
-    forms::{FormField, FormOutput},
+    forms::{FormField, FormOptions, FormValue},
     rect_style::BorderStyle,
     KeyCode,
 };
@@ -10,7 +10,7 @@ fn main() {
     let mut engine = console_engine::ConsoleEngine::init(20, 3, 10).unwrap();
 
     // Initialize a TextInput, that'll handle an input field into our application
-    let mut f_text = console_engine::forms::Text::new(9, None, None);
+    let mut f_text = console_engine::forms::Text::new(9, FormOptions::default());
     // This field is inactive by default, you need to set it active once created
     f_text.set_active(true);
 
@@ -48,7 +48,7 @@ fn main() {
     drop(engine);
 
     // Print what the user wrote
-    if let FormOutput::String(output) = f_text.get_output() {
+    if let FormValue::String(output) = f_text.get_output() {
         println!("You wrote: {}", output);
     }
 }

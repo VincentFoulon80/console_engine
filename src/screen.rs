@@ -869,8 +869,10 @@ impl Screen {
                 skip_next = false;
                 continue;
             }
-            if unicode_width::UnicodeWidthChar::width(pixel.chr).unwrap() > 1 {
-                skip_next = true;
+            if let Some(char_width) = unicode_width::UnicodeWidthChar::width(pixel.chr) {
+                if char_width > 1 {
+                    skip_next = true;
+                }
             }
             execute!(
                 output,

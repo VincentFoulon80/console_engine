@@ -2,35 +2,65 @@ use std::collections::HashMap;
 
 use crossterm::event::{KeyCode, KeyEvent};
 
-use crate::{events::Event, forms::ToAny, screen::Screen};
+use crate::{events::Event, forms::ToAny, pixel, screen::Screen};
 
-use super::{FormField, FormOptions, FormOutput, FormStyle, FormValidationResult};
+use super::{FormField, FormOptions, FormValidationResult, FormValue};
 
 /// Special FormField that manages multiple fields
+///
+/// Forms hosts a collection of fields and manages them sequencially
+/// This field is inactive by default, you need to set it active once created
+///
+/// If the form can't handle all the fields (e.g. due to limited height),
+/// a scrollbar will be provided to the user (if your form contains a border)
+///
+/// Navigation through forms is automatically handled with the following mapping:
+/// Tab: next field
+/// Shift-Tab: previous field
+/// Enter: next field / validate form
+/// PageUp: scroll up (if available)
+/// PageDown: scroll down (if available)
 pub struct Form {
     screen: Screen,
-    style: FormStyle,
+    height: u32,
     options: FormOptions,
     active: bool,
     index: usize,
     dirty: bool,
     fields: Vec<(String, Box<dyn FormField>)>,
     errors: HashMap<String, FormValidationResult>,
+    scroll_index: usize,
+    viewport: Screen,
 }
 
 impl Form {
     /// Constructs a new Form with the given width, height, style and options
-    pub fn new(w: u32, h: u32, style: FormStyle, options: Option<FormOptions>) -> Self {
+    pub fn new(w: u32, h: u32, options: FormOptions) -> Self {
         Form {
             screen: Screen::new(w, h),
-            style,
-            options: options.unwrap_or_default(),
+            height: h,
+            options,
             index: 0,
             active: false,
             dirty: true,
             fields: vec![],
             errors: HashMap::new(),
+            scroll_index: 0,
+            viewport: Screen::new_empty(w, 1),
         }
+    }
+
+    pub fn scroll(&mut self, amount: i32) {
+        let mut max_scroll = self.screen.get_height() as i64 - self.get_height() as i64;
+        if self.options.style.border.is_some() {
+            max_scroll += 1;
+        }
+        self.scroll_index =
+            (self.scroll_index as i64 + amount as i64).clamp(0, max_scroll.max(0)) as usize;
+    }
+
+    pub fn scroll_to(&mut self, index: usize) {
+        self.scroll(index as i32 - self.scroll_index as i32);
     }
 
     /// Adds the provided FormField into the Form
@@ -43,16 +73,8 @@ impl Form {
 
     /// Build a field and includes it into the Form
     /// it's an easier approach into building a Form, see the `form-simple` example to compare it with [add_field](#methods.add_field).
-    pub fn build_field<T: FormField + 'static>(
-        &mut self,
-        name: &str,
-        options: Option<FormOptions>,
-        style: Option<FormStyle>,
-    ) {
-        let mut field = T::make(self.get_width(), 1, options, style);
-        if style.is_none() {
-            field.set_style(self.style)
-        }
+    pub fn build_field<T: FormField + 'static>(&mut self, name: &str, options: FormOptions) {
+        let field = T::make(self.get_width(), options);
         self.add_field(name, field)
     }
 
@@ -72,7 +94,7 @@ impl Form {
     }
 
     /// Get the output of a specific field if it exists within the Form
-    pub fn get_result(&self, name: &str) -> Option<FormOutput> {
+    pub fn get_result(&self, name: &str) -> Option<FormValue> {
         for (field_name, field) in self.fields.iter() {
             if name == *field_name {
                 return Some(field.get_output());
@@ -94,8 +116,24 @@ impl Form {
 
     /// Change focus on the currently active field
     fn update_active_field(&mut self) {
+        let mut height = 0;
+        let mut active_min_height = 0;
         for (id, (_, field)) in self.fields.iter_mut().enumerate() {
-            field.set_active(self.active && id == self.index);
+            let active = self.active && id == self.index;
+            field.set_active(active);
+            if active {
+                active_min_height = height;
+            }
+            height += field.get_height();
+            if field.display_label() {
+                height += 1;
+            }
+        }
+        // detect when the active field is outside of the scroll
+        if self.scroll_index < active_min_height as usize
+            || self.scroll_index + self.get_height() as usize > active_min_height as usize
+        {
+            self.scroll_to(active_min_height as usize);
         }
     }
 
@@ -123,8 +161,8 @@ impl Form {
 }
 
 impl FormField for Form {
-    fn make(w: u32, h: u32, options: Option<FormOptions>, style: Option<FormStyle>) -> Self {
-        Self::new(w, h, style.unwrap_or_default(), options)
+    fn make(w: u32, options: FormOptions) -> Self {
+        Self::new(w, 3, options)
     }
 
     fn get_width(&self) -> u32 {
@@ -132,11 +170,18 @@ impl FormField for Form {
     }
 
     fn get_height(&self) -> u32 {
-        self.screen.get_height()
+        self.height
+    }
+    fn get_min_height(&self) -> u32 {
+        3
     }
 
     fn resize(&mut self, w: u32, h: u32) {
-        self.screen.resize(w, h);
+        self.height = h;
+        self.screen.resize(w, self.screen.get_height());
+        for (_, field) in self.fields.iter_mut() {
+            field.resize(w, field.get_height());
+        }
     }
 
     fn handle_event(&mut self, event: &Event) {
@@ -157,6 +202,12 @@ impl FormField for Form {
                     self.index =
                         (self.index as i64 - 1).clamp(0, self.fields.len() as i64) as usize;
                     self.update_active_field();
+                }
+                KeyCode::PageDown => {
+                    self.scroll(1);
+                }
+                KeyCode::PageUp => {
+                    self.scroll(-1);
                 }
                 _ => {}
             }
@@ -179,31 +230,12 @@ impl FormField for Form {
         self.self_validate(validation_result);
     }
 
-    fn get_output(&self) -> FormOutput {
-        let mut output: HashMap<String, FormOutput> = HashMap::new();
+    fn get_output(&self) -> FormValue {
+        let mut output: HashMap<String, FormValue> = HashMap::new();
         for (name, field) in self.fields.iter() {
             output.insert(name.to_string(), field.get_output());
         }
-        FormOutput::HashMap(output)
-    }
-
-    fn set_style(&mut self, style: FormStyle) {
-        self.dirty = true;
-        self.style = style;
-        let size = if style.border.is_some() {
-            self.get_width() - 2
-        } else {
-            self.get_width()
-        };
-        for (_, field) in self.fields.iter_mut() {
-            if field.get_width() != size {
-                field.resize(size, field.get_height());
-            }
-        }
-    }
-
-    fn get_style(&self) -> &FormStyle {
-        &self.style
+        FormValue::Map(output)
     }
 
     fn set_options(&mut self, options: FormOptions) {
@@ -216,18 +248,22 @@ impl FormField for Form {
     }
 
     fn draw(&mut self, tick: usize) -> &Screen {
-        if self.dirty {
-            let mut padding = 0;
-            if let Some(border) = self.style.border {
-                self.screen.rect_border(
-                    0,
-                    0,
-                    self.get_width() as i32 - 1,
-                    self.get_height() as i32 - 1,
-                    border,
-                );
-                padding = 1;
+        let mut total_height = 1;
+        for (_, field) in self.fields.iter_mut() {
+            total_height += field.get_height();
+            if field.display_label() {
+                total_height += 1;
             }
+        }
+        if self.screen.get_height() != total_height {
+            self.screen.resize(self.screen.get_width(), total_height);
+        }
+        if self.dirty {
+            let padding = if self.options.style.border.is_some() {
+                1
+            } else {
+                0
+            };
 
             let mut current_pos = padding;
             if let Some(label) = self.options.label {
@@ -235,15 +271,62 @@ impl FormField for Form {
                 current_pos = 1;
             }
             for (_, field) in self.fields.iter_mut() {
-                if let Some(label) = field.get_options().label {
-                    self.screen.print(padding, current_pos, label);
-                    current_pos += 1;
+                if field.display_label() {
+                    if let Some(label) = field.get_options().label {
+                        self.screen.print(padding, current_pos, label);
+                        current_pos += 1;
+                    }
                 }
+
                 self.screen
                     .print_screen(padding, current_pos, field.draw(tick));
                 current_pos += field.get_height() as i32;
             }
         }
-        &self.screen
+        self.viewport = self.screen.extract(
+            0,
+            self.scroll_index as i32,
+            self.get_width() as i32 - 1,
+            self.scroll_index as i32 + self.get_height() as i32 - 1,
+            pixel::pxl(' '),
+        );
+        if let Some(border) = self.options.style.border {
+            self.viewport.rect_border(
+                0,
+                0,
+                self.get_width() as i32 - 1,
+                self.get_height() as i32 - 1,
+                border,
+            );
+            if total_height > self.get_height() - 1 {
+                let mut max_scroll = total_height as i64 - self.get_height() as i64;
+                if self.options.style.border.is_some() {
+                    max_scroll += 1;
+                }
+                self.viewport.v_line(
+                    self.get_width() as i32 - 1,
+                    1,
+                    self.get_height() as i32 - 2,
+                    pixel::pxl_fbg('|', self.options.style.fg, self.options.style.bg),
+                );
+                self.viewport.set_pxl(
+                    self.get_width() as i32 - 1,
+                    1,
+                    pixel::pxl_fbg('↑', self.options.style.fg, self.options.style.bg),
+                );
+                self.viewport.set_pxl(
+                    self.get_width() as i32 - 1,
+                    self.get_height() as i32 - 2,
+                    pixel::pxl_fbg('↓', self.options.style.fg, self.options.style.bg),
+                );
+                self.viewport.set_pxl(
+                    self.get_width() as i32 - 1,
+                    2 + ((self.scroll_index as f32 / max_scroll as f32)
+                        * (self.get_height() as f32 - 5f32)) as i32,
+                    pixel::pxl_fbg('█', self.options.style.fg, self.options.style.bg),
+                );
+            }
+        }
+        &self.viewport
     }
 }
