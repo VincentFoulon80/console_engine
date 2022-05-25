@@ -28,7 +28,8 @@ impl FormConstraint for Callback {
 }
 
 /// On Strings output, call a custom function for every character in order to validate the data
-/// Recursively parse Compound output
+///
+/// Recursively parse outputs
 pub struct CharactersCallback {
     callback: &'static dyn Fn(char) -> bool,
     message: String,

@@ -12,7 +12,9 @@ use super::{FormField, FormOptions, FormValidationResult, FormValue};
 /// This field is inactive by default, you need to set it active once created
 ///
 /// If the form can't handle all the fields (e.g. due to limited height),
-/// a scrollbar will be provided to the user (if your form contains a border)
+/// a scrollbar will be provided to the user (if your form style contains a border)
+///
+/// see example `form-simple` for basic usage
 ///
 /// Navigation through forms is automatically handled with the following mapping:
 /// Tab: next field
@@ -50,6 +52,9 @@ impl Form {
         }
     }
 
+    /// Scrolls the form viewport up (negative) or down (positive)
+    ///
+    /// The viewport is automatically clamped at its boundaries
     pub fn scroll(&mut self, amount: i32) {
         let mut max_scroll = self.screen.get_height() as i64 - self.get_height() as i64;
         if self.options.style.border.is_some() {
@@ -59,12 +64,14 @@ impl Form {
             (self.scroll_index as i64 + amount as i64).clamp(0, max_scroll.max(0)) as usize;
     }
 
+    /// Scroll to a certain position
     pub fn scroll_to(&mut self, index: usize) {
         self.scroll(index as i32 - self.scroll_index as i32);
     }
 
     /// Adds the provided FormField into the Form
-    /// The Field will be resized to match the width of the form
+    ///
+    /// The Field will be resized to match the width of the form  
     /// You may want to use [build_field](#methods.build_field) instead since it automatically creates the FormField instance.
     pub fn add_field<T: FormField + 'static>(&mut self, name: &str, mut field: T) {
         field.resize(self.get_width() - 2, field.get_height());
@@ -72,6 +79,7 @@ impl Form {
     }
 
     /// Build a field and includes it into the Form
+    ///
     /// it's an easier approach into building a Form, see the `form-simple` example to compare it with [add_field](#methods.add_field).
     pub fn build_field<T: FormField + 'static>(&mut self, name: &str, options: FormOptions) {
         let field = T::make(self.get_width(), options);
@@ -79,6 +87,7 @@ impl Form {
     }
 
     /// Get a specific field if it exists within the Form
+    ///
     /// Note that the field will be removed from the Form
     pub fn get_field<T>(&mut self, name: &str) -> Option<Box<T>>
     where
@@ -104,6 +113,7 @@ impl Form {
     }
 
     /// Get the errors generated from a specific field.
+    ///
     /// You must run [is_valid](#methods.is_valid) first in order to be able to retrieve the errors
     pub fn get_error(&self, name: &str) -> Option<&FormValidationResult> {
         for (field_name, errors) in self.errors.iter() {

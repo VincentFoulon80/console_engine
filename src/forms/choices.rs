@@ -8,6 +8,8 @@ use super::{FormField, FormOptions, FormValidationResult, FormValue};
 ///
 /// This form field display a list of elements, in which our user must chose one element
 /// This field is inactive by default, you need to set it active once created
+///
+/// see example `form-choices` for basic usage
 pub struct Radio {
     screen: Screen,
     list: Vec<String>,
@@ -36,21 +38,26 @@ impl Radio {
         }
     }
 
+    /// Moves the cursor up (negative) or down (positive)
+    ///
+    /// The cursor is clamped at its boundaries
     pub fn move_cursor(&mut self, amount: i32) {
         self.dirty = true;
         self.cursor_pos =
             (self.cursor_pos as i64 + amount as i64).clamp(0, self.list.len() as i64 - 1) as usize;
     }
 
+    /// Retrieve the stored list of choices
     pub fn get_list(&self) -> &Vec<String> {
         &self.list
     }
+    /// Sets a list of choices
     pub fn set_list(&mut self, list: Vec<String>) {
         self.list = list;
         self.update_list();
     }
 
-    pub fn update_list(&mut self) {
+    fn update_list(&mut self) {
         self.screen.resize(self.get_width(), self.list.len() as u32)
     }
 }
@@ -147,6 +154,8 @@ impl FormField for Radio {
 ///
 /// This form field display a list of elements, in which our user can chose one or more element
 /// This field is inactive by default, you need to set it active once created
+///
+/// see example `form-choices` for basic usage
 pub struct Checkbox {
     screen: Screen,
     list: Vec<String>,
@@ -175,21 +184,27 @@ impl Checkbox {
         }
     }
 
+    /// Moves the cursor up (negative) or down (positive)
+    ///
+    /// The cursor is clamped at its boundaries
     pub fn move_cursor(&mut self, amount: i32) {
         self.dirty = true;
         self.cursor_pos =
             (self.cursor_pos as i64 + amount as i64).clamp(0, self.list.len() as i64 - 1) as usize;
     }
 
+    /// Retrieve the stored list of choices
     pub fn get_list(&self) -> &Vec<String> {
         &self.list
     }
+
+    /// Sets a list of choices
     pub fn set_list(&mut self, list: Vec<String>) {
         self.list = list;
         self.update_list();
     }
 
-    pub fn update_list(&mut self) {
+    fn update_list(&mut self) {
         self.screen.resize(self.get_width(), self.list.len() as u32)
     }
 }

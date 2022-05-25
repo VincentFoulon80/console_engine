@@ -31,18 +31,21 @@ impl Text {
         }
     }
 
+    /// Sets a specific value inside the field
     pub fn set_input_buffer(&mut self, input: &str) {
         self.dirty = true;
         self.input_buffer = String::from(input);
         self.move_cursor(i32::MAX);
     }
 
+    /// Clear the field
     pub fn clear_input_buffer(&mut self) {
         self.dirty = true;
         self.input_buffer = String::new();
         self.cursor_pos = 0;
     }
 
+    /// Insert a character at the position of the cursor
     pub fn put_char(&mut self, chr: char) {
         let mut new_buffer = self.input_buffer[0..self.cursor_pos].to_string();
         new_buffer.push(chr);
@@ -51,6 +54,7 @@ impl Text {
         self.move_cursor(1);
     }
 
+    /// Removes a certain amount of characters either on the left (positive) or right (negative) side of the cursor
     pub fn remove_char(&mut self, amount: i32) {
         if amount == 0 {
             return;
@@ -68,6 +72,9 @@ impl Text {
         self.move_cursor(-amount.max(0));
     }
 
+    /// Moves the cursor left (negative) or right (positive)
+    ///
+    /// The cursor is clamped at its boundaries
     pub fn move_cursor(&mut self, amount: i32) {
         self.dirty = true;
         self.cursor_pos = (self.cursor_pos as i64 + amount as i64)
