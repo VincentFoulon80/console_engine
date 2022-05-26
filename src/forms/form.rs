@@ -14,14 +14,16 @@ use super::{FormField, FormOptions, FormValidationResult, FormValue};
 /// If the form can't handle all the fields (e.g. due to limited height),
 /// a scrollbar will be provided to the user (if your form style contains a border)
 ///
+/// Outputs `FormValue::Map<field_name, field_output>`
+///
 /// see example `form-simple` for basic usage
 ///
-/// Navigation through forms is automatically handled with the following mapping:
-/// Tab: next field
-/// Shift-Tab: previous field
-/// Enter: next field / validate form
-/// PageUp: scroll up (if available)
-/// PageDown: scroll down (if available)
+/// Navigation through forms is automatically handled with the following mapping:  
+/// Tab: next field  
+/// Shift-Tab: previous field  
+/// Enter: next field / validate form  
+/// PageUp: scroll up (if available)  
+/// PageDown: scroll down (if available)  
 pub struct Form {
     screen: Screen,
     height: u32,

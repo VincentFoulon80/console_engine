@@ -92,7 +92,7 @@ pub trait FormField: ToAny {
 }
 
 /// List of error messages encountered when validating a field
-type FormValidationResult = Vec<String>;
+pub type FormValidationResult = Vec<String>;
 
 /// Type that stores a potential output coming from a Form Field
 #[derive(Debug, Clone)]

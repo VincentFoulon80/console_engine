@@ -9,6 +9,8 @@ use super::{FormField, FormOptions, FormValidationResult, FormValue};
 /// This form field display a list of elements, in which our user must chose one element
 /// This field is inactive by default, you need to set it active once created
 ///
+/// Outputs `FormValue::Index` or `FormValue::Nothing` if the list is empty
+///
 /// see example `form-choices` for basic usage
 pub struct Radio {
     screen: Screen,
@@ -42,9 +44,11 @@ impl Radio {
     ///
     /// The cursor is clamped at its boundaries
     pub fn move_cursor(&mut self, amount: i32) {
-        self.dirty = true;
-        self.cursor_pos =
-            (self.cursor_pos as i64 + amount as i64).clamp(0, self.list.len() as i64 - 1) as usize;
+        if !self.list.is_empty() {
+            self.dirty = true;
+            self.cursor_pos = (self.cursor_pos as i64 + amount as i64)
+                .clamp(0, self.list.len() as i64 - 1) as usize;
+        }
     }
 
     /// Retrieve the stored list of choices
@@ -113,7 +117,11 @@ impl FormField for Radio {
     }
 
     fn get_output(&self) -> FormValue {
-        FormValue::Index(self.selected)
+        if self.list.is_empty() {
+            FormValue::Nothing
+        } else {
+            FormValue::Index(self.selected)
+        }
     }
 
     fn set_options(&mut self, options: FormOptions) {
@@ -155,6 +163,8 @@ impl FormField for Radio {
 /// This form field display a list of elements, in which our user can chose one or more element
 /// This field is inactive by default, you need to set it active once created
 ///
+/// Outputs `FormValue::Vec<FormValue::Index>`
+///
 /// see example `form-choices` for basic usage
 pub struct Checkbox {
     screen: Screen,
@@ -188,9 +198,11 @@ impl Checkbox {
     ///
     /// The cursor is clamped at its boundaries
     pub fn move_cursor(&mut self, amount: i32) {
-        self.dirty = true;
-        self.cursor_pos =
-            (self.cursor_pos as i64 + amount as i64).clamp(0, self.list.len() as i64 - 1) as usize;
+        if !self.list.is_empty() {
+            self.dirty = true;
+            self.cursor_pos = (self.cursor_pos as i64 + amount as i64)
+                .clamp(0, self.list.len() as i64 - 1) as usize;
+        }
     }
 
     /// Retrieve the stored list of choices

@@ -9,6 +9,8 @@ use super::{FormField, FormOptions, FormValidationResult, FormValue};
 /// This form field generates a generic text input, that handles keyboard input (moving cursor, backspacing / deleting, home / end)
 /// This field is inactive by default, you need to set it active once created
 ///
+/// Outputs `FormValue::String`
+///
 /// see example `form-input` for basic usage
 pub struct Text {
     screen: Screen,
@@ -193,6 +195,8 @@ impl FormField for Text {
 ///
 /// This form field generates a generic text input, that'll hide what the user writes in it. (e.g. for passwords)
 /// This field is inactive by default, you need to set it active once created
+///
+/// Outputs `FormValue::String`
 ///
 /// see example `form-input` for basic usage
 pub struct HiddenText {
