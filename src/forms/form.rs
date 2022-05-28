@@ -181,6 +181,11 @@ impl FormField for Form {
         for (_, field) in self.fields.iter_mut() {
             field.reset();
         }
+        self.index = 0;
+        self.scroll_index = 0;
+        self.errors.clear();
+        self.dirty = true;
+        self.update_active_field();
     }
 
     fn get_width(&self) -> u32 {
