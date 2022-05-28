@@ -36,6 +36,9 @@ pub trait FormField: ToAny {
     where
         Self: Sized;
 
+    /// Reset the field
+    fn reset(&mut self);
+
     /// Get the width of the field
     fn get_width(&self) -> u32;
     /// Get the height of the field

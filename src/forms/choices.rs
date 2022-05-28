@@ -74,6 +74,10 @@ impl FormField for Radio {
         Self::new(w, options)
     }
 
+    fn reset(&mut self) {
+        self.selected = 0;
+    }
+
     fn get_width(&self) -> u32 {
         self.screen.get_width()
     }
@@ -227,6 +231,10 @@ impl FormField for Checkbox {
         Self: Sized,
     {
         Self::new(w, options)
+    }
+
+    fn reset(&mut self) {
+        self.selected.clear();
     }
 
     fn get_width(&self) -> u32 {

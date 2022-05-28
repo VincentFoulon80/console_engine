@@ -177,6 +177,12 @@ impl FormField for Form {
         Self::new(w, 3, options)
     }
 
+    fn reset(&mut self) {
+        for (_, field) in self.fields.iter_mut() {
+            field.reset();
+        }
+    }
+
     fn get_width(&self) -> u32 {
         self.screen.get_width()
     }

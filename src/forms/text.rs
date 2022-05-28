@@ -85,6 +85,17 @@ impl Text {
 }
 
 impl FormField for Text {
+    fn make(w: u32, options: FormOptions) -> Self
+    where
+        Self: Sized,
+    {
+        Self::new(w, options)
+    }
+
+    fn reset(&mut self) {
+        self.clear_input_buffer();
+    }
+
     fn get_width(&self) -> u32 {
         self.screen.get_width()
     }
@@ -135,8 +146,20 @@ impl FormField for Text {
         self.active
     }
 
+    fn validate(&self, validation_result: &mut FormValidationResult) {
+        self.self_validate(validation_result);
+    }
+
     fn get_output(&self) -> FormValue {
         FormValue::String(self.input_buffer.to_string())
+    }
+
+    fn set_options(&mut self, options: FormOptions) {
+        self.options = options
+    }
+
+    fn get_options(&self) -> &FormOptions {
+        &self.options
     }
 
     fn draw(&mut self, tick: usize) -> &Screen {
@@ -169,25 +192,6 @@ impl FormField for Text {
             self.screen.set_pxl(current_cursor_pos, 0, cursor_pxl);
         }
         &self.screen
-    }
-
-    fn make(w: u32, options: FormOptions) -> Self
-    where
-        Self: Sized,
-    {
-        Self::new(w, options)
-    }
-
-    fn validate(&self, validation_result: &mut FormValidationResult) {
-        self.self_validate(validation_result);
-    }
-
-    fn set_options(&mut self, options: FormOptions) {
-        self.options = options
-    }
-
-    fn get_options(&self) -> &FormOptions {
-        &self.options
     }
 }
 
@@ -267,6 +271,17 @@ impl HiddenText {
 }
 
 impl FormField for HiddenText {
+    fn make(w: u32, options: FormOptions) -> Self
+    where
+        Self: Sized,
+    {
+        Self::new(w, '*', options)
+    }
+
+    fn reset(&mut self) {
+        self.clear_input_buffer();
+    }
+
     fn get_width(&self) -> u32 {
         self.screen.get_width()
     }
@@ -317,8 +332,20 @@ impl FormField for HiddenText {
         self.active
     }
 
+    fn validate(&self, validation_result: &mut FormValidationResult) {
+        self.self_validate(validation_result);
+    }
+
     fn get_output(&self) -> FormValue {
         FormValue::String(self.input_buffer.to_string())
+    }
+
+    fn set_options(&mut self, options: FormOptions) {
+        self.options = options
+    }
+
+    fn get_options(&self) -> &FormOptions {
+        &self.options
     }
 
     fn draw(&mut self, tick: usize) -> &Screen {
@@ -356,24 +383,5 @@ impl FormField for HiddenText {
             self.screen.set_pxl(current_cursor_pos, 0, cursor_pxl);
         }
         &self.screen
-    }
-
-    fn make(w: u32, options: FormOptions) -> Self
-    where
-        Self: Sized,
-    {
-        Self::new(w, '*', options)
-    }
-
-    fn validate(&self, validation_result: &mut FormValidationResult) {
-        self.self_validate(validation_result);
-    }
-
-    fn set_options(&mut self, options: FormOptions) {
-        self.options = options
-    }
-
-    fn get_options(&self) -> &FormOptions {
-        &self.options
     }
 }
