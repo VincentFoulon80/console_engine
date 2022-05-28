@@ -10,7 +10,7 @@
 
 
 This library provides simple features for handling user's input and display for terminal applications.  
-Besides the user input and display, this library also provides some tools to build standalone "screens" that can be used as simply as printing it.
+Besides the user input and display, this library also provides some tools to build standalone "screens" that can be used just for printing.
 
 It uses [Crossterm](https://crates.io/crates/crossterm) as main tool for handling the screen and inputs. You don't have to worry about initalizing anything because the lib will handle this for you.
 
@@ -22,6 +22,11 @@ It uses [Crossterm](https://crates.io/crates/crossterm) as main tool for handlin
 - Terminal resizing support
 - You are not interested by keyboard/mouse handling, even terminal handling ? You can still build "screens" that will just print its content.
 - Embedding screens to one another
+- with feature `event`:
+  - Manage inputs as they arrive
+- with feature `form`:
+  - Build self-managed forms with a set of inputs (text, checkboxes ...)
+  - Validate each input with a set of validation constraints
 
 ## Platforms
 
@@ -76,6 +81,81 @@ fn main() {
 
     // print the screen to the terminal
     scr.draw();
+}
+```
+
+## Events (with feature `event`)
+
+```rust
+use console_engine::{events::Event, KeyCode};
+
+fn main() {
+    // initializes the engine
+    let mut engine = console_engine::ConsoleEngine::init(60, 3, 3).unwrap();
+    let mut message = String::new();
+
+    loop {
+        // Poll next event
+        match engine.poll() {
+            // A frame has passed
+            Event::Frame => {/* ... */}
+
+            // A Key has been pressed
+            Event::Key(keyevent) => {/* ... */}
+
+            // Mouse has been moved or clicked
+            Event::Mouse(mouseevent) => {/* ... */}
+
+            // Window has been resized
+            Event::Resize(w, h) => {/* ... */}
+        }
+    }
+}
+
+```
+
+## Forms (with feature `form`)
+
+(see examples for complete code source implementation)
+
+```rust
+// Define a theme for the form
+let theme = FormStyle {
+    border: Some(BorderStyle::new_light()),
+    ..Default::default()
+};
+// Create a new Form
+let mut form = Form::new(
+    12,
+    6,
+    FormOptions {
+        style: theme,
+        ..Default::default()
+    },
+);
+form.build_field::<Text>(
+    "username",
+    FormOptions {
+        style: theme,
+        label: Some("Username"),
+        ..Default::default()
+    },
+);
+form.build_field::<HiddenText>(
+    "password",
+    FormOptions {
+        style: theme,
+        label: Some("Password"),
+        ..Default::default()
+    },
+);
+/* ... */
+while !form.is_finished() {
+    let event = engine.poll();
+    form.handle_event(&event);
+    match event {
+        /* ... */
+    }
 }
 ```
 

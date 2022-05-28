@@ -52,7 +52,10 @@ fn main() {
 
     while !form.is_finished() {
         // Poll next event
-        match engine.poll() {
+        let event = engine.poll();
+        // Make the form handle the event
+        form.handle_event(&event);
+        match event {
             // A frame has passed
             Event::Frame => {
                 engine.clear_screen();
@@ -76,8 +79,6 @@ fn main() {
                     }
                     _ => {}
                 }
-                // Make the form handle the key event
-                form.handle_event(&Event::Key(keyevent))
             }
 
             _ => {}

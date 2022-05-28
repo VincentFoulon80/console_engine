@@ -16,7 +16,10 @@ fn main() {
 
     loop {
         // Poll next event
-        match engine.poll() {
+        let event = engine.poll();
+        // Fields needs to handle events by themselves
+        f_text.handle_event(&event);
+        match event {
             // A frame has passed
             Event::Frame => {
                 // Setup screen and border
@@ -36,8 +39,6 @@ fn main() {
                 if keyevent.code == KeyCode::Enter || keyevent.code == KeyCode::Esc {
                     break;
                 }
-                // Fields needs to handle events by themselves
-                f_text.handle_event(&Event::Key(keyevent))
             }
 
             _ => {}
