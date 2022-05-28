@@ -190,3 +190,8 @@ See [examples](https://github.com/VincentFoulon80/console_engine/tree/master/exa
 # Media
 
 ![](https://raw.githubusercontent.com/VincentFoulon80/console_engine/master/docs/examples.gif)
+
+# Trustworthiness
+
+It is recommended to always use [cargo-crev](https://github.com/crev-dev/cargo-crev)
+to verify the trustworthiness of each of your dependencies, including this one.
