@@ -86,29 +86,23 @@ fn main() {
 
 ## Events (with feature `event`)
 
+(see examples for complete code source implementation)
+
 ```rust
-use console_engine::{events::Event, KeyCode};
+loop {
+    // Poll next event
+    match engine.poll() {
+        // A frame has passed
+        Event::Frame => {/* ... */}
 
-fn main() {
-    // initializes the engine
-    let mut engine = console_engine::ConsoleEngine::init(60, 3, 3).unwrap();
-    let mut message = String::new();
+        // A Key has been pressed
+        Event::Key(keyevent) => {/* ... */}
 
-    loop {
-        // Poll next event
-        match engine.poll() {
-            // A frame has passed
-            Event::Frame => {/* ... */}
+        // Mouse has been moved or clicked
+        Event::Mouse(mouseevent) => {/* ... */}
 
-            // A Key has been pressed
-            Event::Key(keyevent) => {/* ... */}
-
-            // Mouse has been moved or clicked
-            Event::Mouse(mouseevent) => {/* ... */}
-
-            // Window has been resized
-            Event::Resize(w, h) => {/* ... */}
-        }
+        // Window has been resized
+        Event::Resize(w, h) => {/* ... */}
     }
 }
 
