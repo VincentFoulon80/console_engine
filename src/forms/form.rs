@@ -277,6 +277,11 @@ impl FormField for Form {
         if self.screen.get_height() != total_height {
             self.screen.resize(self.screen.get_width(), total_height);
         }
+        self.screen.fill(pixel::pxl_fbg(
+            ' ',
+            self.options.style.fg,
+            self.options.style.bg,
+        ));
         let padding = self.options.style.border.is_some() as i32;
 
         let mut current_pos = padding;

@@ -165,7 +165,11 @@ impl FormField for Text {
 
     fn draw(&mut self, tick: usize) -> &Screen {
         if self.dirty {
-            self.screen.clear();
+            self.screen.fill(pixel::pxl_fbg(
+                ' ',
+                self.options.style.fg,
+                self.options.style.bg,
+            ));
             self.screen.print_fbg(
                 if self.cursor_pos >= self.screen.get_width() as usize {
                     -((self.cursor_pos - self.screen.get_width() as usize) as i32) - 1
@@ -351,7 +355,11 @@ impl FormField for HiddenText {
 
     fn draw(&mut self, tick: usize) -> &Screen {
         if self.dirty {
-            self.screen.clear();
+            self.screen.fill(pixel::pxl_fbg(
+                ' ',
+                self.options.style.fg,
+                self.options.style.bg,
+            ));
             if !self.input_buffer.is_empty() {
                 self.screen.h_line(
                     if self.cursor_pos >= self.screen.get_width() as usize {

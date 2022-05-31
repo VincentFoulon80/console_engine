@@ -94,7 +94,7 @@ impl BorderStyle {
     }
 
     /// Changes the border's colors
-    pub fn with_colors(&mut self, fg: Color, bg: Color) {
+    pub fn with_colors(mut self, fg: Color, bg: Color) -> Self {
         self.corner_top_right.fg = fg;
         self.corner_top_right.bg = bg;
         self.corner_top_left.fg = fg;
@@ -107,5 +107,6 @@ impl BorderStyle {
         self.top_bottom.bg = bg;
         self.left_right.fg = fg;
         self.left_right.bg = bg;
+        self
     }
 }

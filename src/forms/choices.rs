@@ -1,6 +1,6 @@
 use crossterm::event::{KeyCode, KeyEvent};
 
-use crate::{events::Event, screen::Screen};
+use crate::{events::Event, pixel, screen::Screen};
 
 use super::{FormField, FormOptions, FormValidationResult, FormValue};
 
@@ -140,6 +140,11 @@ impl FormField for Radio {
     fn draw(&mut self, _tick: usize) -> &Screen {
         if self.dirty {
             self.dirty = false;
+            self.screen.fill(pixel::pxl_fbg(
+                ' ',
+                self.options.style.fg,
+                self.options.style.bg,
+            ));
             for (id, entry) in self.list.iter().enumerate() {
                 let (fg, bg) = if self.active && self.cursor_pos == id {
                     (self.options.style.bg, self.options.style.fg)
@@ -304,6 +309,11 @@ impl FormField for Checkbox {
 
     fn draw(&mut self, _tick: usize) -> &Screen {
         if self.dirty {
+            self.screen.fill(pixel::pxl_fbg(
+                ' ',
+                self.options.style.fg,
+                self.options.style.bg,
+            ));
             self.dirty = false;
             for (id, entry) in self.list.iter().enumerate() {
                 let (fg, bg) = if self.active && self.cursor_pos == id {
