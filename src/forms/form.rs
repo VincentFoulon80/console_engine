@@ -200,6 +200,9 @@ impl FormField for Form {
     }
 
     fn handle_event(&mut self, event: &Event) {
+        if !self.active {
+            return;
+        }
         for (_, field) in self.fields.iter_mut() {
             field.handle_event(event);
         }

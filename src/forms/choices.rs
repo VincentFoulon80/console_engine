@@ -92,17 +92,18 @@ impl FormField for Radio {
     }
 
     fn handle_event(&mut self, event: &Event) {
-        if self.active {
-            if let Event::Key(KeyEvent { code, modifiers: _ }) = event {
-                match code {
-                    KeyCode::Up => self.move_cursor(-1),
-                    KeyCode::Down => self.move_cursor(1),
-                    KeyCode::Char(' ') => {
-                        self.selected = self.cursor_pos;
-                        self.dirty = true
-                    }
-                    _ => {}
+        if !self.active {
+            return;
+        }
+        if let Event::Key(KeyEvent { code, modifiers: _ }) = event {
+            match code {
+                KeyCode::Up => self.move_cursor(-1),
+                KeyCode::Down => self.move_cursor(1),
+                KeyCode::Char(' ') => {
+                    self.selected = self.cursor_pos;
+                    self.dirty = true
                 }
+                _ => {}
             }
         }
     }
@@ -251,21 +252,22 @@ impl FormField for Checkbox {
     }
 
     fn handle_event(&mut self, event: &Event) {
-        if self.active {
-            if let Event::Key(KeyEvent { code, modifiers: _ }) = event {
-                match code {
-                    KeyCode::Up => self.move_cursor(-1),
-                    KeyCode::Down => self.move_cursor(1),
-                    KeyCode::Char(' ') => {
-                        if self.selected.contains(&self.cursor_pos) {
-                            self.selected.retain(|x| *x != self.cursor_pos);
-                        } else {
-                            self.selected.push(self.cursor_pos);
-                        }
-                        self.dirty = true
+        if !self.active {
+            return;
+        }
+        if let Event::Key(KeyEvent { code, modifiers: _ }) = event {
+            match code {
+                KeyCode::Up => self.move_cursor(-1),
+                KeyCode::Down => self.move_cursor(1),
+                KeyCode::Char(' ') => {
+                    if self.selected.contains(&self.cursor_pos) {
+                        self.selected.retain(|x| *x != self.cursor_pos);
+                    } else {
+                        self.selected.push(self.cursor_pos);
                     }
-                    _ => {}
+                    self.dirty = true
                 }
+                _ => {}
             }
         }
     }

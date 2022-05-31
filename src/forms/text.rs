@@ -110,30 +110,31 @@ impl FormField for Text {
     }
 
     fn handle_event(&mut self, event: &Event) {
-        if self.active {
-            if let Event::Key(KeyEvent { code, modifiers }) = event {
-                match code {
-                    KeyCode::Backspace => self.remove_char(1),
-                    KeyCode::Delete => self.remove_char(-1),
-                    KeyCode::Left => self.move_cursor(-1),
-                    KeyCode::Right => self.move_cursor(1),
-                    KeyCode::Home => self.move_cursor(i32::MIN),
-                    KeyCode::End => self.move_cursor(i32::MAX),
-                    KeyCode::Char(c) => {
-                        if modifiers.is_empty() {
-                            self.put_char(*c);
-                        }
-                        if *modifiers == KeyModifiers::SHIFT {
-                            // I don't understand why it works this way but not the other
-                            if c.is_ascii_uppercase() {
-                                self.put_char(c.to_ascii_uppercase());
-                            } else {
-                                self.put_char(c.to_ascii_lowercase());
-                            }
+        if !self.active {
+            return;
+        }
+        if let Event::Key(KeyEvent { code, modifiers }) = event {
+            match code {
+                KeyCode::Backspace => self.remove_char(1),
+                KeyCode::Delete => self.remove_char(-1),
+                KeyCode::Left => self.move_cursor(-1),
+                KeyCode::Right => self.move_cursor(1),
+                KeyCode::Home => self.move_cursor(i32::MIN),
+                KeyCode::End => self.move_cursor(i32::MAX),
+                KeyCode::Char(c) => {
+                    if modifiers.is_empty() {
+                        self.put_char(*c);
+                    }
+                    if *modifiers == KeyModifiers::SHIFT {
+                        // I don't understand why it works this way but not the other
+                        if c.is_ascii_uppercase() {
+                            self.put_char(c.to_ascii_uppercase());
+                        } else {
+                            self.put_char(c.to_ascii_lowercase());
                         }
                     }
-                    _ => {}
                 }
+                _ => {}
             }
         }
     }
@@ -295,30 +296,31 @@ impl FormField for HiddenText {
     }
 
     fn handle_event(&mut self, event: &Event) {
-        if self.active {
-            if let Event::Key(KeyEvent { code, modifiers }) = event {
-                match code {
-                    KeyCode::Backspace => self.remove_char(1),
-                    KeyCode::Delete => self.remove_char(-1),
-                    KeyCode::Left => self.move_cursor(-1),
-                    KeyCode::Right => self.move_cursor(1),
-                    KeyCode::Home => self.move_cursor(i32::MIN),
-                    KeyCode::End => self.move_cursor(i32::MAX),
-                    KeyCode::Char(c) => {
-                        if modifiers.is_empty() {
-                            self.put_char(*c);
-                        }
-                        if *modifiers == KeyModifiers::SHIFT {
-                            // I don't understand why it works this way but not the other
-                            if c.is_ascii_uppercase() {
-                                self.put_char(c.to_ascii_uppercase());
-                            } else {
-                                self.put_char(c.to_ascii_lowercase());
-                            }
+        if !self.active {
+            return;
+        }
+        if let Event::Key(KeyEvent { code, modifiers }) = event {
+            match code {
+                KeyCode::Backspace => self.remove_char(1),
+                KeyCode::Delete => self.remove_char(-1),
+                KeyCode::Left => self.move_cursor(-1),
+                KeyCode::Right => self.move_cursor(1),
+                KeyCode::Home => self.move_cursor(i32::MIN),
+                KeyCode::End => self.move_cursor(i32::MAX),
+                KeyCode::Char(c) => {
+                    if modifiers.is_empty() {
+                        self.put_char(*c);
+                    }
+                    if *modifiers == KeyModifiers::SHIFT {
+                        // I don't understand why it works this way but not the other
+                        if c.is_ascii_uppercase() {
+                            self.put_char(c.to_ascii_uppercase());
+                        } else {
+                            self.put_char(c.to_ascii_lowercase());
                         }
                     }
-                    _ => {}
                 }
+                _ => {}
             }
         }
     }
