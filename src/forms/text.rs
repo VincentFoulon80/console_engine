@@ -132,7 +132,9 @@ impl FormField for Text {
                 KeyCode::Home => self.move_cursor(i32::MIN),
                 KeyCode::End => self.move_cursor(i32::MAX),
                 KeyCode::Char(c) => {
-                    if modifiers.is_empty() {
+                    if modifiers.is_empty()
+                        || *modifiers == KeyModifiers::CONTROL | KeyModifiers::ALT
+                    {
                         self.put_char(*c);
                     }
                     if *modifiers == KeyModifiers::SHIFT {
@@ -334,7 +336,9 @@ impl FormField for HiddenText {
                 KeyCode::Home => self.move_cursor(i32::MIN),
                 KeyCode::End => self.move_cursor(i32::MAX),
                 KeyCode::Char(c) => {
-                    if modifiers.is_empty() {
+                    if modifiers.is_empty()
+                        || *modifiers == KeyModifiers::CONTROL | KeyModifiers::ALT
+                    {
                         self.put_char(*c);
                     }
                     if *modifiers == KeyModifiers::SHIFT {
