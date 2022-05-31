@@ -180,15 +180,14 @@ impl FormField for Text {
         }
         let current_cursor_pos =
             std::cmp::min(self.cursor_pos as i32, self.screen.get_width() as i32 - 1);
-        if self.active && tick % 2 == 0 {
-            if let Ok(mut cursor_pxl) = self.screen.get_pxl(current_cursor_pos, 0) {
+        if let Ok(mut cursor_pxl) = self.screen.get_pxl(current_cursor_pos, 0) {
+            if self.active && tick % 2 == 0 {
                 cursor_pxl.bg = self.options.style.fg;
                 cursor_pxl.fg = self.options.style.bg;
-                self.screen.set_pxl(current_cursor_pos, 0, cursor_pxl);
+            } else {
+                cursor_pxl.bg = self.options.style.bg;
+                cursor_pxl.fg = self.options.style.fg;
             }
-        } else if let Ok(mut cursor_pxl) = self.screen.get_pxl(current_cursor_pos, 0) {
-            cursor_pxl.bg = self.options.style.bg;
-            cursor_pxl.fg = self.options.style.fg;
             self.screen.set_pxl(current_cursor_pos, 0, cursor_pxl);
         }
         &self.screen
@@ -371,15 +370,14 @@ impl FormField for HiddenText {
         }
         let current_cursor_pos =
             std::cmp::min(self.cursor_pos as i32, self.screen.get_width() as i32 - 1);
-        if self.active && tick % 2 == 0 {
-            if let Ok(mut cursor_pxl) = self.screen.get_pxl(current_cursor_pos, 0) {
+        if let Ok(mut cursor_pxl) = self.screen.get_pxl(current_cursor_pos, 0) {
+            if self.active && tick % 2 == 0 {
                 cursor_pxl.bg = self.options.style.fg;
                 cursor_pxl.fg = self.options.style.bg;
-                self.screen.set_pxl(current_cursor_pos, 0, cursor_pxl);
+            } else {
+                cursor_pxl.bg = self.options.style.bg;
+                cursor_pxl.fg = self.options.style.fg;
             }
-        } else if let Ok(mut cursor_pxl) = self.screen.get_pxl(current_cursor_pos, 0) {
-            cursor_pxl.bg = self.options.style.bg;
-            cursor_pxl.fg = self.options.style.fg;
             self.screen.set_pxl(current_cursor_pos, 0, cursor_pxl);
         }
         &self.screen

@@ -1,3 +1,5 @@
+use crossterm::style::Color;
+
 use crate::pixel::{self, Pixel};
 
 /// Borders for styled-border rectangle
@@ -89,5 +91,21 @@ impl BorderStyle {
             top_bottom,
             left_right,
         }
+    }
+
+    /// Changes the border's colors
+    pub fn with_colors(&mut self, fg: Color, bg: Color) {
+        self.corner_top_right.fg = fg;
+        self.corner_top_right.bg = bg;
+        self.corner_top_left.fg = fg;
+        self.corner_top_left.bg = bg;
+        self.corner_bottom_left.fg = fg;
+        self.corner_bottom_left.bg = bg;
+        self.corner_bottom_right.fg = fg;
+        self.corner_bottom_right.bg = bg;
+        self.top_bottom.fg = fg;
+        self.top_bottom.bg = bg;
+        self.left_right.fg = fg;
+        self.left_right.bg = bg;
     }
 }

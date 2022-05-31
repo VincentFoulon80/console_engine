@@ -30,9 +30,7 @@ pub struct Form {
     options: FormOptions,
     active: bool,
     index: usize,
-    dirty: bool,
     fields: Vec<(String, Box<dyn FormField>)>,
-    errors: HashMap<String, FormValidationResult>,
     scroll_index: usize,
     viewport: Screen,
 }
@@ -46,9 +44,7 @@ impl Form {
             options,
             index: 0,
             active: false,
-            dirty: true,
             fields: vec![],
-            errors: HashMap::new(),
             scroll_index: 0,
             viewport: Screen::new_empty(w, 1),
         }
@@ -114,12 +110,12 @@ impl Form {
         None
     }
 
-    /// Get the errors generated from a specific field.
-    ///
-    /// You must run [is_valid](#methods.is_valid) first in order to be able to retrieve the errors
-    pub fn get_error(&self, name: &str) -> Option<&FormValidationResult> {
-        for (field_name, errors) in self.errors.iter() {
+    /// Validate a specific field.
+    pub fn validate_field(&self, name: &str) -> Option<FormValidationResult> {
+        for (field_name, field) in self.fields.iter() {
             if name == *field_name {
+                let mut errors = FormValidationResult::new();
+                field.validate(&mut errors);
                 return Some(errors);
             }
         }
@@ -137,7 +133,7 @@ impl Form {
                 active_min_height = height;
             }
             height += field.get_height();
-            if field.display_label() {
+            if field.should_display_label() {
                 height += 1;
             }
         }
@@ -155,20 +151,14 @@ impl Form {
     }
 
     /// Checks if the form is entirely valid. If any field fails its `validate` method, the function returns `false`
-    /// and a list of every reported error is stored in the form, waiting for [get_error](#methods.get_error) to be called
+    ///
+    /// To retrieve errors from a specific field, use [validate_field](#methods.validate_field)  
+    /// To retrieve all errors regardless of the field, use [validate](#methods.validate)
     pub fn is_valid(&mut self) -> bool {
-        self.errors.clear();
-        for (name, field) in self.fields.iter() {
-            let mut field_errors: FormValidationResult = vec![];
-            field.validate(&mut field_errors);
-            if !field_errors.is_empty() {
-                self.errors.insert(String::from(name), field_errors);
-            }
-        }
-        let mut self_errors: FormValidationResult = vec![];
-        self.validate(&mut self_errors);
+        let mut errors = FormValidationResult::new();
+        self.validate(&mut errors);
 
-        self.errors.is_empty() && self_errors.is_empty()
+        errors.is_empty()
     }
 }
 
@@ -183,9 +173,11 @@ impl FormField for Form {
         }
         self.index = 0;
         self.scroll_index = 0;
-        self.errors.clear();
-        self.dirty = true;
         self.update_active_field();
+    }
+
+    fn should_display_label(&self) -> bool {
+        false
     }
 
     fn get_width(&self) -> u32 {
@@ -262,7 +254,6 @@ impl FormField for Form {
     }
 
     fn set_options(&mut self, options: FormOptions) {
-        self.dirty = true;
         self.options = options;
     }
 
@@ -271,41 +262,49 @@ impl FormField for Form {
     }
 
     fn draw(&mut self, tick: usize) -> &Screen {
+        // calculate total height of the form
         let mut total_height = 1;
         for (_, field) in self.fields.iter_mut() {
             total_height += field.get_height();
-            if field.display_label() {
+            if field.should_display_label() {
                 total_height += 1;
             }
         }
+        // resize the form screen if if doesn't fit anymore
         if self.screen.get_height() != total_height {
             self.screen.resize(self.screen.get_width(), total_height);
         }
-        if self.dirty {
-            let padding = if self.options.style.border.is_some() {
-                1
-            } else {
-                0
-            };
+        let padding = self.options.style.border.is_some() as i32;
 
-            let mut current_pos = padding;
+        let mut current_pos = padding;
+        // display form label inside the form if there is no border
+        if self.options.style.border.is_none() {
             if let Some(label) = self.options.label {
-                self.screen.print(1, 0, label);
+                self.screen
+                    .print_fbg(1, 0, label, self.options.style.fg, self.options.style.bg);
                 current_pos = 1;
             }
-            for (_, field) in self.fields.iter_mut() {
-                if field.display_label() {
-                    if let Some(label) = field.get_options().label {
-                        self.screen.print(padding, current_pos, label);
-                        current_pos += 1;
-                    }
-                }
-
-                self.screen
-                    .print_screen(padding, current_pos, field.draw(tick));
-                current_pos += field.get_height() as i32;
-            }
         }
+        // display fields
+        for (_, field) in self.fields.iter_mut() {
+            if field.should_display_label() {
+                if let Some(label) = field.get_options().label {
+                    self.screen.print_fbg(
+                        padding,
+                        current_pos,
+                        label,
+                        self.options.style.fg,
+                        self.options.style.bg,
+                    );
+                    current_pos += 1;
+                }
+            }
+
+            self.screen
+                .print_screen(padding, current_pos, field.draw(tick));
+            current_pos += field.get_height() as i32;
+        }
+        // Extract the form into a viewport of the real size of the form
         self.viewport = self.screen.extract(
             0,
             self.scroll_index as i32,
@@ -314,6 +313,7 @@ impl FormField for Form {
             pixel::pxl(' '),
         );
         if let Some(border) = self.options.style.border {
+            // Display the border
             self.viewport.rect_border(
                 0,
                 0,
@@ -321,6 +321,12 @@ impl FormField for Form {
                 self.get_height() as i32 - 1,
                 border,
             );
+            // Display the form label on the border
+            if let Some(label) = self.options.label {
+                self.viewport
+                    .print_fbg(1, 0, label, self.options.style.fg, self.options.style.bg);
+            }
+            // Display a scrollbar if the form can't fit inside the viewport
             if total_height > self.get_height() - 1 {
                 let mut max_scroll = total_height as i64 - self.get_height() as i64;
                 if self.options.style.border.is_some() {

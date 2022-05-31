@@ -82,15 +82,15 @@ fn main() {
 
     if form.is_finished() {
         if form.is_valid() {
-            let mut number = 0;
+            let mut number = 0f32;
 
             // Retrieve the output of the TextInput
             if let FormValue::String(num) = form.get_result("number").unwrap_or_default() {
-                number = num.parse::<i32>().unwrap_or(0);
+                number = num.parse::<f32>().unwrap_or(0f32);
             }
-            println!("Double of your number is {}", number * 2);
+            println!("Double of your number is {}", number * 2f32);
         } else {
-            println!("{:?}", form.get_error("number").unwrap())
+            println!("{:?}", form.validate_field("number").unwrap())
         }
     } else {
         println!("Form cancelled");

@@ -70,7 +70,7 @@ pub trait FormField: ToAny {
     /// Gets the options of the Field
     fn get_options(&self) -> &FormOptions;
     /// Tell if we should display the label externally (some fields may want to display it themselves like buttons)
-    fn display_label(&self) -> bool {
+    fn should_display_label(&self) -> bool {
         self.get_options().label.is_some()
     }
 
