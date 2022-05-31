@@ -49,9 +49,19 @@ impl Text {
 
     /// Insert a character at the position of the cursor
     pub fn put_char(&mut self, chr: char) {
-        let mut new_buffer = self.input_buffer[0..self.cursor_pos].to_string();
+        let mut new_buffer = self
+            .input_buffer
+            .chars()
+            .take(self.cursor_pos)
+            .collect::<String>();
         new_buffer.push(chr);
-        new_buffer.push_str(&self.input_buffer[self.cursor_pos..]);
+        new_buffer.push_str(
+            &self
+                .input_buffer
+                .chars()
+                .skip(self.cursor_pos)
+                .collect::<String>(),
+        );
         self.input_buffer = new_buffer;
         self.move_cursor(1);
     }
@@ -69,8 +79,8 @@ impl Text {
             .cursor_pos
             .saturating_add(off_r)
             .min(self.input_buffer.len());
-        self.input_buffer =
-            String::from(&self.input_buffer[0..pos_l]) + &self.input_buffer[pos_r..]; // this skips the cursor +/- offsets
+        self.input_buffer = self.input_buffer.chars().take(pos_l).collect::<String>()
+            + &self.input_buffer.chars().skip(pos_r).collect::<String>(); // this skips the cursor +/- offsets
         self.move_cursor(-amount.max(0));
     }
 
@@ -242,14 +252,26 @@ impl HiddenText {
         self.cursor_pos = 0;
     }
 
+    /// Insert a character at the position of the cursor
     pub fn put_char(&mut self, chr: char) {
-        let mut new_buffer = self.input_buffer[0..self.cursor_pos].to_string();
+        let mut new_buffer = self
+            .input_buffer
+            .chars()
+            .take(self.cursor_pos)
+            .collect::<String>();
         new_buffer.push(chr);
-        new_buffer.push_str(&self.input_buffer[self.cursor_pos..]);
+        new_buffer.push_str(
+            &self
+                .input_buffer
+                .chars()
+                .skip(self.cursor_pos)
+                .collect::<String>(),
+        );
         self.input_buffer = new_buffer;
         self.move_cursor(1);
     }
 
+    /// Removes a certain amount of characters either on the left (positive) or right (negative) side of the cursor
     pub fn remove_char(&mut self, amount: i32) {
         if amount == 0 {
             return;
@@ -262,8 +284,8 @@ impl HiddenText {
             .cursor_pos
             .saturating_add(off_r)
             .min(self.input_buffer.len());
-        self.input_buffer =
-            String::from(&self.input_buffer[0..pos_l]) + &self.input_buffer[pos_r..]; // this skips the cursor +/- offsets
+        self.input_buffer = self.input_buffer.chars().take(pos_l).collect::<String>()
+            + &self.input_buffer.chars().skip(pos_r).collect::<String>(); // this skips the cursor +/- offsets
         self.move_cursor(-amount.max(0));
     }
 
