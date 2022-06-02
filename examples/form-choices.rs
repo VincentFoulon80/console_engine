@@ -71,23 +71,19 @@ fn main() {
                 engine.draw();
             }
 
-            // A Key has been pressed
+            // exit with Escape
             Event::Key(KeyEvent {
                 code: KeyCode::Esc,
                 modifiers: _,
             }) => {
-                // exit with Escape
                 break;
             }
-
+            // exit with CTRL+C
             Event::Key(KeyEvent {
-                code: KeyCode::Char(c),
-                modifiers,
+                code: KeyCode::Char('c'),
+                modifiers: KeyModifiers::CONTROL,
             }) => {
-                if modifiers == KeyModifiers::CONTROL && c == 'c' {
-                    // exit with CTRL+C
-                    break;
-                }
+                break;
             }
             // Let the form handle the unhandled events
             event => form.handle_event(event),

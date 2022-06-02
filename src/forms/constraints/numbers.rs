@@ -22,6 +22,9 @@ impl FormConstraint for Integer {
             FormValue::Boolean(_) => true,
             FormValue::Index(_) => true,
             FormValue::String(value) => {
+                if value.is_empty() {
+                    return false;
+                }
                 if let Some(chr) = value.chars().next() {
                     if !chr.is_digit(10) && chr != '-' && chr != '+' {
                         return false;

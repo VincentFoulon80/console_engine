@@ -70,12 +70,10 @@ fn main() {
 
             // exit with CTRL+C
             Event::Key(KeyEvent {
-                code: KeyCode::Char(c),
-                modifiers,
+                code: KeyCode::Char('c'),
+                modifiers: KeyModifiers::CONTROL,
             }) => {
-                if modifiers == KeyModifiers::CONTROL && c == 'c' {
-                    break;
-                }
+                break;
             }
             // Let the form handle the unhandled events
             event => form.handle_event(event),

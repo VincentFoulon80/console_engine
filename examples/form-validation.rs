@@ -62,12 +62,10 @@ fn main() -> Result<(), Box<dyn Error>> {
             }
             // exit with CTRL+C
             Event::Key(KeyEvent {
-                code: KeyCode::Char(c),
-                modifiers,
+                code: KeyCode::Char('c'),
+                modifiers: KeyModifiers::CONTROL,
             }) => {
-                if modifiers == KeyModifiers::CONTROL && c == 'c' {
-                    break;
-                }
+                break;
             }
             // Let the form handle the unhandled events
             event => form.handle_event(event),
@@ -94,7 +92,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         if form.is_valid() {
             // Retrieve the output of the Text field
             // note that get_result_unvalidated just outputs an Option and does not validate (obviously) the field
-            // Here it's safe to parse the value since we're in the form.is_valid block,
+            // Here it's safe to parse the value since we're in the form.is_valid() block,
             // but be careful when using this function
             let number = if let FormValue::String(num) =
                 form.get_result_unvalidated("number").unwrap_or_default()
