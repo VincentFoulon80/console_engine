@@ -1,14 +1,16 @@
+use std::error::Error;
+
 use console_engine::{
     events::Event,
-    forms::{constraints, Form, FormField, FormOptions, FormStyle, FormValue, Text},
+    forms::{constraints, Form, FormError, FormField, FormOptions, FormStyle, FormValue, Text},
     rect_style::BorderStyle,
     ConsoleEngine, KeyCode, KeyModifiers,
 };
 use crossterm::event::KeyEvent;
 
-fn main() {
+fn main() -> Result<(), Box<dyn Error>> {
     // Initialize the engine
-    let mut engine = ConsoleEngine::init(40, 8, 10).unwrap();
+    let mut engine = ConsoleEngine::init(40, 8, 10)?;
 
     // Define a theme for the form
     let theme = FormStyle {
@@ -43,11 +45,7 @@ fn main() {
     form.set_active(true);
 
     while !form.is_finished() {
-        // Poll next event
-        let event = engine.poll();
-        // Make the form handle the event
-        form.handle_event(&event);
-        match event {
+        match engine.poll() {
             // A frame has passed
             Event::Frame => {
                 engine.clear_screen();
@@ -55,25 +53,24 @@ fn main() {
                 engine.draw();
             }
 
-            // A Key has been pressed
-            Event::Key(keyevent) => {
-                let KeyEvent { code, modifiers } = keyevent;
-                match code {
-                    KeyCode::Esc => {
-                        // exit with Escape
-                        break;
-                    }
-                    KeyCode::Char(c) => {
-                        if modifiers == KeyModifiers::CONTROL && c == 'c' {
-                            // exit with CTRL+C
-                            break;
-                        }
-                    }
-                    _ => {}
+            // exit with Escape
+            Event::Key(KeyEvent {
+                code: KeyCode::Esc,
+                modifiers: _,
+            }) => {
+                break;
+            }
+            // exit with CTRL+C
+            Event::Key(KeyEvent {
+                code: KeyCode::Char(c),
+                modifiers,
+            }) => {
+                if modifiers == KeyModifiers::CONTROL && c == 'c' {
+                    break;
                 }
             }
-
-            _ => {}
+            // Let the form handle the unhandled events
+            event => form.handle_event(event),
         }
     }
 
@@ -81,18 +78,35 @@ fn main() {
     drop(engine);
 
     if form.is_finished() {
-        if form.is_valid() {
-            let mut number = 0f32;
-
-            // Retrieve the output of the TextInput
-            if let FormValue::String(num) = form.get_result("number").unwrap_or_default() {
-                number = num.parse::<f32>().unwrap_or(0f32);
+        // Retrieve the output of the Text field
+        match form.get_result("number") {
+            Ok(FormValue::String(num)) => {
+                // num.parse::<f32>() is garanteed to be valid since the field has a Number constraint
+                // and at this point the validator has checked the value
+                println!("Double of your number is {}", num.parse::<f32>()? * 2f32)
             }
-            println!("Double of your number is {}", number * 2f32);
-        } else {
-            println!("{:?}", form.validate_field("number").unwrap())
+            Ok(_) => unreachable!(), // we know that Text fields always output a String
+            Err(FormError::FieldNotFound) => unreachable!(), // we know that "number" exists
+            Err(FormError::ValidationFailed(errors)) => println!("{:?}", errors),
+        }
+        // Alternative version
+        // globally check if your form is valid
+        if form.is_valid() {
+            // Retrieve the output of the Text field
+            // note that get_result_unvalidated just outputs an Option and does not validate (obviously) the field
+            // Here it's safe to parse the value since we're in the form.is_valid block,
+            // but be careful when using this function
+            let number = if let FormValue::String(num) =
+                form.get_result_unvalidated("number").unwrap_or_default()
+            {
+                num.parse::<f32>().unwrap_or(0f32)
+            } else {
+                0f32
+            };
+            println!("Triple of your number is {}", number * 3f32);
         }
     } else {
         println!("Form cancelled");
     }
+    Ok(())
 }

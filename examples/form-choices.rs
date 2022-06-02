@@ -63,10 +63,7 @@ fn main() {
 
     while !form.is_finished() {
         // Poll next event
-        let event = engine.poll();
-        // Make the form handle the event
-        form.handle_event(&event);
-        match event {
+        match engine.poll() {
             // A frame has passed
             Event::Frame => {
                 engine.clear_screen();
@@ -75,24 +72,25 @@ fn main() {
             }
 
             // A Key has been pressed
-            Event::Key(keyevent) => {
-                let KeyEvent { code, modifiers } = keyevent;
-                match code {
-                    KeyCode::Esc => {
-                        // exit with Escape
-                        break;
-                    }
-                    KeyCode::Char(c) => {
-                        if modifiers == KeyModifiers::CONTROL && c == 'c' {
-                            // exit with CTRL+C
-                            break;
-                        }
-                    }
-                    _ => {}
-                }
+            Event::Key(KeyEvent {
+                code: KeyCode::Esc,
+                modifiers: _,
+            }) => {
+                // exit with Escape
+                break;
             }
 
-            _ => {}
+            Event::Key(KeyEvent {
+                code: KeyCode::Char(c),
+                modifiers,
+            }) => {
+                if modifiers == KeyModifiers::CONTROL && c == 'c' {
+                    // exit with CTRL+C
+                    break;
+                }
+            }
+            // Let the form handle the unhandled events
+            event => form.handle_event(event),
         }
     }
 

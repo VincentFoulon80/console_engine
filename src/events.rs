@@ -7,6 +7,7 @@ use crossterm::event::{KeyEvent, MouseEvent};
 /// You may want to match the event to act according to which one has been returned
 ///
 /// See example `events`
+#[derive(Debug, Clone, Copy)]
 pub enum Event {
     /// A frame has passed. You can either call `engine.draw()` or do nothing.
     Frame,

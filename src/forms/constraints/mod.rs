@@ -1,12 +1,16 @@
 //! Form Validation Constraints
 mod basic;
 mod complex;
+mod logic;
 mod numbers;
 mod string;
 
 pub use basic::NotBlank;
 pub use complex::Callback;
 pub use complex::CharactersCallback;
+pub use logic::AllOf;
+pub use logic::AnyOf;
+pub use logic::Not;
 pub use numbers::Integer;
 pub use numbers::Number;
 pub use string::Alphabetic;

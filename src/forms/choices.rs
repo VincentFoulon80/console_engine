@@ -91,7 +91,7 @@ impl FormField for Radio {
         self.dirty = true;
     }
 
-    fn handle_event(&mut self, event: &Event) {
+    fn handle_event(&mut self, event: Event) {
         if !self.active {
             return;
         }
@@ -256,7 +256,7 @@ impl FormField for Checkbox {
         self.dirty = true;
     }
 
-    fn handle_event(&mut self, event: &Event) {
+    fn handle_event(&mut self, event: Event) {
         if !self.active {
             return;
         }

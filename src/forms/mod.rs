@@ -50,7 +50,7 @@ pub trait FormField: ToAny {
     fn resize(&mut self, w: u32, h: u32);
 
     /// This function is the heart of FormFields : it allows the form to handle itself by passing a ConsoleEngine Event to it.
-    fn handle_event(&mut self, event: &Event);
+    fn handle_event(&mut self, event: Event);
 
     /// Set the active state of a field (if applicable)
     fn set_active(&mut self, active: bool);
@@ -113,6 +113,12 @@ impl Default for FormValue {
     fn default() -> Self {
         Self::Nothing
     }
+}
+
+#[derive(Debug, Clone)]
+pub enum FormError {
+    FieldNotFound,
+    ValidationFailed(FormValidationResult),
 }
 
 /// Structure that stores style information for Form Fields

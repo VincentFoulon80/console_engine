@@ -4,6 +4,7 @@ use console_engine::{
     rect_style::BorderStyle,
     KeyCode,
 };
+use crossterm::event::KeyEvent;
 
 fn main() {
     // initializes the engine
@@ -17,8 +18,6 @@ fn main() {
     loop {
         // Poll next event
         let event = engine.poll();
-        // Fields needs to handle events by themselves
-        f_text.handle_event(&event);
         match event {
             // A frame has passed
             Event::Frame => {
@@ -33,15 +32,16 @@ fn main() {
                 engine.draw();
             }
 
-            // A Key has been pressed
-            Event::Key(keyevent) => {
-                // Manually break when the user press enter or escape
-                if keyevent.code == KeyCode::Enter || keyevent.code == KeyCode::Esc {
-                    break;
-                }
+            // Manually break when the user press enter or escape
+            Event::Key(KeyEvent {
+                code: KeyCode::Enter | KeyCode::Esc,
+                modifiers: _,
+            }) => {
+                break;
             }
 
-            _ => {}
+            // Fields needs to handle events by themselves, so we pass our unhandled case to it
+            event => f_text.handle_event(event),
         }
     }
 

@@ -4,7 +4,7 @@ use crossterm::event::{KeyCode, KeyEvent};
 
 use crate::{events::Event, forms::ToAny, pixel, screen::Screen};
 
-use super::{FormField, FormOptions, FormValidationResult, FormValue};
+use super::{FormError, FormField, FormOptions, FormValidationResult, FormValue};
 
 /// Special FormField that manages multiple fields
 ///
@@ -100,8 +100,28 @@ impl Form {
         None
     }
 
-    /// Get the output of a specific field if it exists within the Form
-    pub fn get_result(&self, name: &str) -> Option<FormValue> {
+    /// Get the output of a specific field if it exists and valid within the Form
+    ///
+    /// in case of validation failing, Err value will bear the validation messages directly
+    ///
+    /// See example `form-validation`
+    pub fn get_result(&self, name: &str) -> Result<FormValue, FormError> {
+        for (field_name, field) in self.fields.iter() {
+            if name == *field_name {
+                let mut errors = FormValidationResult::new();
+                field.validate(&mut errors);
+                if errors.is_empty() {
+                    return Ok(field.get_output());
+                } else {
+                    return Err(FormError::ValidationFailed(errors));
+                }
+            }
+        }
+        Err(FormError::FieldNotFound)
+    }
+
+    /// Get the (unvalidated) output of a specific field if it exists within the Form
+    pub fn get_result_unvalidated(&self, name: &str) -> Option<FormValue> {
         for (field_name, field) in self.fields.iter() {
             if name == *field_name {
                 return Some(field.get_output());
@@ -199,12 +219,9 @@ impl FormField for Form {
         }
     }
 
-    fn handle_event(&mut self, event: &Event) {
+    fn handle_event(&mut self, event: Event) {
         if !self.active {
             return;
-        }
-        for (_, field) in self.fields.iter_mut() {
-            field.handle_event(event);
         }
         if let Event::Key(KeyEvent { code, modifiers: _ }) = event {
             match code {
@@ -227,7 +244,14 @@ impl FormField for Form {
                 KeyCode::PageUp => {
                     self.scroll(-1);
                 }
-                _ => {}
+                _ => {
+                    for (_, field) in self.fields.iter_mut() {
+                        if field.is_active() {
+                            field.handle_event(event);
+                            break;
+                        }
+                    }
+                }
             }
         }
     }

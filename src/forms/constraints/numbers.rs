@@ -61,18 +61,7 @@ impl FormConstraint for Number {
             FormValue::Nothing => true,
             FormValue::Boolean(_) => true,
             FormValue::Index(_) => true,
-            FormValue::String(value) => {
-                if let Some(chr) = value.chars().next() {
-                    if !chr.is_numeric() && chr != '-' && chr != '+' {
-                        return false;
-                    }
-                }
-                value
-                    .chars()
-                    .skip(1)
-                    .all(|x| x.is_numeric() || x == '.' || x == ',')
-                    && value.chars().filter(|&x| x == '.' || x == ',').count() <= 1
-            }
+            FormValue::String(value) => value.parse::<f32>().is_ok(),
             FormValue::Map(fields) => fields.iter().all(|(_, x)| self.validate(x)),
             FormValue::List(entries) => entries
                 .iter()
@@ -103,6 +92,10 @@ mod test {
         assert!(validator.validate(&FormValue::String(String::from("37"))));
         assert!(validator.validate(&FormValue::String(String::from("-35"))));
         assert!(!validator.validate(&FormValue::String(String::from("3.5"))));
+        assert!(validator.validate(&FormValue::String(String::from(
+            "9999999999999999999999999999999999999999999999999"
+        ))));
+        assert!(!validator.validate(&FormValue::String(String::from("3e-5"))));
 
         let mut hm: HashMap<String, FormValue> = HashMap::new();
         assert!(validator.validate(&FormValue::Map(hm.clone())));
@@ -130,6 +123,10 @@ mod test {
         assert!(validator.validate(&FormValue::String(String::from("-35"))));
         assert!(validator.validate(&FormValue::String(String::from("3.5"))));
         assert!(validator.validate(&FormValue::String(String::from("-3.5"))));
+        assert!(validator.validate(&FormValue::String(String::from(
+            "9999999999999999999999999999999999999999999999999"
+        ))));
+        assert!(validator.validate(&FormValue::String(String::from("3e-5"))));
 
         let mut hm: HashMap<String, FormValue> = HashMap::new();
         assert!(validator.validate(&FormValue::Map(hm.clone())));

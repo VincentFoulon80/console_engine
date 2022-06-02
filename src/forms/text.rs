@@ -119,7 +119,7 @@ impl FormField for Text {
         self.screen.resize(w, 1);
     }
 
-    fn handle_event(&mut self, event: &Event) {
+    fn handle_event(&mut self, event: Event) {
         if !self.active {
             return;
         }
@@ -133,11 +133,11 @@ impl FormField for Text {
                 KeyCode::End => self.move_cursor(i32::MAX),
                 KeyCode::Char(c) => {
                     if modifiers.is_empty()
-                        || *modifiers == KeyModifiers::CONTROL | KeyModifiers::ALT
+                        || modifiers == KeyModifiers::CONTROL | KeyModifiers::ALT
                     {
-                        self.put_char(*c);
+                        self.put_char(c);
                     }
-                    if *modifiers == KeyModifiers::SHIFT {
+                    if modifiers == KeyModifiers::SHIFT {
                         // I don't understand why it works this way but not the other
                         if c.is_ascii_uppercase() {
                             self.put_char(c.to_ascii_uppercase());
@@ -323,7 +323,7 @@ impl FormField for HiddenText {
         self.screen.resize(w, 1);
     }
 
-    fn handle_event(&mut self, event: &Event) {
+    fn handle_event(&mut self, event: Event) {
         if !self.active {
             return;
         }
@@ -337,11 +337,11 @@ impl FormField for HiddenText {
                 KeyCode::End => self.move_cursor(i32::MAX),
                 KeyCode::Char(c) => {
                     if modifiers.is_empty()
-                        || *modifiers == KeyModifiers::CONTROL | KeyModifiers::ALT
+                        || modifiers == KeyModifiers::CONTROL | KeyModifiers::ALT
                     {
-                        self.put_char(*c);
+                        self.put_char(c);
                     }
-                    if *modifiers == KeyModifiers::SHIFT {
+                    if modifiers == KeyModifiers::SHIFT {
                         // I don't understand why it works this way but not the other
                         if c.is_ascii_uppercase() {
                             self.put_char(c.to_ascii_uppercase());
