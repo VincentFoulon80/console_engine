@@ -43,12 +43,9 @@ impl AnyOf {
 
 impl FormConstraint for AnyOf {
     fn validate(&self, output: &FormValue) -> bool {
-        for constraint in self.constraints.iter() {
-            if constraint.validate(output) {
-                return true;
-            }
-        }
-        false
+        self.constraints
+            .iter()
+            .any(|constraint| constraint.validate(output))
     }
 
     fn get_message(&self) -> &str {
@@ -73,12 +70,10 @@ impl AllOf {
 
 impl FormConstraint for AllOf {
     fn validate(&self, output: &FormValue) -> bool {
-        for constraint in self.constraints.iter() {
-            if !constraint.validate(output) {
-                return false;
-            }
-        }
-        true
+        self.constraints.iter().all(|constraint| {
+            println!("{:?}", constraint.validate(output));
+            constraint.validate(output)
+        })
     }
 
     fn get_message(&self) -> &str {
@@ -116,7 +111,7 @@ mod test {
 
         // the outputs needs to be either blank, or an integer
         let validator = AnyOf::new(
-            "not blank or integer",
+            "should be blank or a valid integer",
             vec![
                 Not::new("Not blank", NotBlank::new("blank")),
                 Integer::new("not integer"),
@@ -141,7 +136,7 @@ mod test {
 
         // the outputs needs to be an alphanumeric string that correspond to an integer
         let validator = AllOf::new(
-            "not alphanumeric and number",
+            "should be alphanumeric and a valid integer",
             vec![
                 Alphanumeric::new("not alphanumeric"),
                 Integer::new("not integer"),
@@ -149,7 +144,7 @@ mod test {
         );
 
         assert!(validator.validate(&FormValue::Nothing));
-        assert!(validator.validate(&FormValue::String(String::from(""))));
+        assert!(!validator.validate(&FormValue::String(String::from(""))));
         assert!(!validator.validate(&FormValue::String(String::from("hello, world!"))));
         assert!(validator.validate(&FormValue::String(String::from("734"))));
         assert!(!validator.validate(&FormValue::String(String::from("!734"))));

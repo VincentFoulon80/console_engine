@@ -95,7 +95,7 @@ fn main() {
 
     if form.is_finished() {
         // Get the output of each fields
-        if let FormValue::Vec(selection_list) = form.get_result("checkbox").unwrap_or_default() {
+        if let Ok(FormValue::Vec(selection_list)) = form.get_result("checkbox") {
             if selection_list.is_empty() {
                 println!("You selected nothing!");
             } else {
@@ -114,7 +114,7 @@ fn main() {
                 );
             }
         }
-        if let FormValue::Index(selection) = form.get_result("radio").unwrap_or_default() {
+        if let Ok(FormValue::Index(selection)) = form.get_result("radio") {
             if selection == 0 {
                 println!("Glad you enjoyed this demo!");
             } else {

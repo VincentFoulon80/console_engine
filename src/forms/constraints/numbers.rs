@@ -91,6 +91,7 @@ mod test {
         let validator = Integer::new("not integer");
 
         assert!(validator.validate(&FormValue::Nothing));
+        assert!(!validator.validate(&FormValue::String(String::from(""))));
         assert!(!validator.validate(&FormValue::String(String::from("hello, world!"))));
         assert!(validator.validate(&FormValue::String(String::from("37"))));
         assert!(validator.validate(&FormValue::String(String::from("-35"))));
@@ -121,6 +122,7 @@ mod test {
         let validator = Number::new("not number");
 
         assert!(validator.validate(&FormValue::Nothing));
+        assert!(!validator.validate(&FormValue::String(String::from(""))));
         assert!(!validator.validate(&FormValue::String(String::from("hello, world!"))));
         assert!(validator.validate(&FormValue::String(String::from("37"))));
         assert!(validator.validate(&FormValue::String(String::from("-35"))));

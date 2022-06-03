@@ -49,18 +49,13 @@ impl Text {
 
     /// Insert a character at the position of the cursor
     pub fn put_char(&mut self, chr: char) {
-        let mut new_buffer = self
-            .input_buffer
-            .chars()
-            .take(self.cursor_pos)
-            .collect::<String>();
-        new_buffer.push(chr);
-        new_buffer.push_str(
-            &self
-                .input_buffer
+        let mut new_buffer = String::with_capacity(self.input_buffer.capacity() + 1);
+        new_buffer.extend(
+            self.input_buffer
                 .chars()
-                .skip(self.cursor_pos)
-                .collect::<String>(),
+                .take(self.cursor_pos)
+                .chain(std::iter::once(chr))
+                .chain(self.input_buffer.chars().skip(self.cursor_pos)),
         );
         self.input_buffer = new_buffer;
         self.move_cursor(1);
@@ -256,18 +251,13 @@ impl HiddenText {
 
     /// Insert a character at the position of the cursor
     pub fn put_char(&mut self, chr: char) {
-        let mut new_buffer = self
-            .input_buffer
-            .chars()
-            .take(self.cursor_pos)
-            .collect::<String>();
-        new_buffer.push(chr);
-        new_buffer.push_str(
-            &self
-                .input_buffer
+        let mut new_buffer = String::with_capacity(self.input_buffer.capacity() + 1);
+        new_buffer.extend(
+            self.input_buffer
                 .chars()
-                .skip(self.cursor_pos)
-                .collect::<String>(),
+                .take(self.cursor_pos)
+                .chain(std::iter::once(chr))
+                .chain(self.input_buffer.chars().skip(self.cursor_pos)),
         );
         self.input_buffer = new_buffer;
         self.move_cursor(1);

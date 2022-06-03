@@ -88,10 +88,10 @@ fn main() {
         let mut last_name = String::new();
 
         // Get the output of each fields
-        if let FormValue::String(name) = form.get_result("first_name").unwrap_or_default() {
+        if let Ok(FormValue::String(name)) = form.get_result("first_name") {
             first_name = name;
         }
-        if let FormValue::String(name) = form.get_result("last_name").unwrap_or_default() {
+        if let Ok(FormValue::String(name)) = form.get_result("last_name") {
             last_name = name;
         }
 
