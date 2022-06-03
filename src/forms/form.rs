@@ -86,12 +86,10 @@ impl Form {
 
     /// Get a specific field if it exists within the Form
     pub fn get_field(&self, name: &str) -> Option<&dyn FormField> {
-        for (field_name, field) in self.fields.iter() {
-            if name == *field_name {
-                return Some(field.borrow());
-            }
-        }
-        None
+        self.fields
+            .iter()
+            .find(|(field_name, _)| field_name == name)
+            .map(|(_, field)| field.borrow())
     }
 
     /// Get the output of a specific field if it exists and valid within the Form
