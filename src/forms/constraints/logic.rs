@@ -70,10 +70,9 @@ impl AllOf {
 
 impl FormConstraint for AllOf {
     fn validate(&self, output: &FormValue) -> bool {
-        self.constraints.iter().all(|constraint| {
-            println!("{:?}", constraint.validate(output));
-            constraint.validate(output)
-        })
+        self.constraints
+            .iter()
+            .all(|constraint| constraint.validate(output))
     }
 
     fn get_message(&self) -> &str {
