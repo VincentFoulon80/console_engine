@@ -1,5 +1,5 @@
 //! Forms within your terminal
-use std::{any::Any, collections::HashMap};
+use std::collections::HashMap;
 
 use crate::{events::Event, rect_style::BorderStyle, screen::Screen};
 
@@ -17,18 +17,8 @@ pub use text::Text;
 
 use self::constraints::FormConstraint;
 
-/// Helper trait to allow downcasting FormFields
-pub trait ToAny {
-    fn to_any(self) -> Box<dyn Any>;
-}
-impl<T: 'static> ToAny for T {
-    fn to_any(self) -> Box<dyn Any> {
-        Box::new(self)
-    }
-}
-
 /// Necessary functions to build a Form Field
-pub trait FormField: ToAny {
+pub trait FormField {
     /// Base function to allow building the Field programmatically (e.g. in Forms)
     ///
     /// This function is separate to `new` to allow Fields to define custom constructors

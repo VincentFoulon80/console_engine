@@ -1,8 +1,8 @@
-use std::collections::HashMap;
+use std::{borrow::Borrow, collections::HashMap};
 
 use crossterm::event::{KeyCode, KeyEvent};
 
-use crate::{events::Event, forms::ToAny, pixel, screen::Screen};
+use crate::{events::Event, pixel, screen::Screen};
 
 use super::{FormError, FormField, FormOptions, FormValidationResult, FormValue};
 
@@ -85,16 +85,10 @@ impl Form {
     }
 
     /// Get a specific field if it exists within the Form
-    ///
-    /// Note that the field will be removed from the Form
-    pub fn get_field<T>(&mut self, name: &str) -> Option<Box<T>>
-    where
-        T: FormField + 'static,
-    {
-        for (id, (field_name, _)) in self.fields.iter().enumerate() {
+    pub fn get_field(&self, name: &str) -> Option<&dyn FormField> {
+        for (field_name, field) in self.fields.iter() {
             if name == *field_name {
-                let (_, field) = self.fields.remove(id);
-                return field.to_any().downcast::<T>().ok();
+                return Some(field.borrow());
             }
         }
         None
@@ -106,40 +100,31 @@ impl Form {
     ///
     /// See example `form-validation`
     pub fn get_result(&self, name: &str) -> Result<FormValue, FormError> {
-        for (field_name, field) in self.fields.iter() {
-            if name == *field_name {
-                let mut errors = FormValidationResult::new();
-                field.validate(&mut errors);
-                if errors.is_empty() {
-                    return Ok(field.get_output());
-                } else {
-                    return Err(FormError::ValidationFailed(errors));
-                }
+        if let Some(field) = self.get_field(name) {
+            let mut errors = FormValidationResult::new();
+            field.validate(&mut errors);
+            if errors.is_empty() {
+                Ok(field.get_output())
+            } else {
+                Err(FormError::ValidationFailed(errors))
             }
+        } else {
+            Err(FormError::FieldNotFound)
         }
-        Err(FormError::FieldNotFound)
     }
 
     /// Get the (unvalidated) output of a specific field if it exists within the Form
     pub fn get_result_unvalidated(&self, name: &str) -> Option<FormValue> {
-        for (field_name, field) in self.fields.iter() {
-            if name == *field_name {
-                return Some(field.get_output());
-            }
-        }
-        None
+        self.get_field(name).map(|field| field.get_output())
     }
 
     /// Validate a specific field.
     pub fn validate_field(&self, name: &str) -> Option<FormValidationResult> {
-        for (field_name, field) in self.fields.iter() {
-            if name == *field_name {
-                let mut errors = FormValidationResult::new();
-                field.validate(&mut errors);
-                return Some(errors);
-            }
-        }
-        None
+        self.get_field(name).map(|field| {
+            let mut errors = FormValidationResult::new();
+            field.validate(&mut errors);
+            errors
+        })
     }
 
     /// Change focus on the currently active field
