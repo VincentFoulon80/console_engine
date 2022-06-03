@@ -97,7 +97,7 @@ impl Form {
     /// in case of validation failing, Err value will bear the validation messages directly
     ///
     /// See example `form-validation`
-    pub fn get_result(&self, name: &str) -> Result<FormValue, FormError> {
+    pub fn get_validated_field_output(&self, name: &str) -> Result<FormValue, FormError> {
         if let Some(field) = self.get_field(name) {
             let mut errors = FormValidationResult::new();
             field.validate(&mut errors);
@@ -112,7 +112,7 @@ impl Form {
     }
 
     /// Get the (unvalidated) output of a specific field if it exists within the Form
-    pub fn get_result_unvalidated(&self, name: &str) -> Option<FormValue> {
+    pub fn get_field_output(&self, name: &str) -> Option<FormValue> {
         self.get_field(name).map(|field| field.get_output())
     }
 

@@ -77,7 +77,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     if form.is_finished() {
         // Retrieve the output of the Text field
-        match form.get_result("number") {
+        match form.get_validated_field_output("number") {
             Ok(FormValue::String(num)) => {
                 // num.parse::<f32>() is garanteed to be valid since the field has a Number constraint
                 // and at this point the validator has checked the value
@@ -95,7 +95,7 @@ fn main() -> Result<(), Box<dyn Error>> {
             // Here it's safe to parse the value since we're in the form.is_valid() block,
             // but be careful when using this function
             let number = if let FormValue::String(num) =
-                form.get_result_unvalidated("number").unwrap_or_default()
+                form.get_field_output("number").unwrap_or_default()
             {
                 num.parse::<f32>().unwrap_or(0f32)
             } else {
