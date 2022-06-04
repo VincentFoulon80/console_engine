@@ -146,7 +146,7 @@ form.build_field::<HiddenText>(
 /* ... */
 while !form.is_finished() {
     let event = engine.poll();
-    form.handle_event(&event);
+    form.handle_event(event);
     match event {
         /* ... */
     }
