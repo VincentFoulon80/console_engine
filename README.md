@@ -86,7 +86,7 @@ fn main() {
 
 ## Events (with feature `event`)
 
-(see examples for complete code source implementation)
+(see examples for complete source code implementation)
 
 ```rust
 loop {
@@ -110,7 +110,7 @@ loop {
 
 ## Forms (with feature `form`)
 
-(see examples for complete code source implementation)
+(see examples for complete source code implementation)
 
 ```rust
 // Define a theme for the form
@@ -145,10 +145,9 @@ form.build_field::<HiddenText>(
 );
 /* ... */
 while !form.is_finished() {
-    let event = engine.poll();
-    form.handle_event(event);
-    match event {
+    match engine.poll() {
         /* ... */
+        event => form.handle_event(event)
     }
 }
 ```
