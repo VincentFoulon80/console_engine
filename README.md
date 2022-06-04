@@ -10,7 +10,7 @@
 
 
 This library provides simple features for handling user's input and display for terminal applications.  
-Besides the user input and display, this library also provides some tools to build standalone "screens" that can be used as simply as printing it.
+Besides the user input and display, this library also provides some tools to build standalone "screens" that can be used just for printing.
 
 It uses [Crossterm](https://crates.io/crates/crossterm) as main tool for handling the screen and inputs. You don't have to worry about initalizing anything because the lib will handle this for you.
 
@@ -22,6 +22,11 @@ It uses [Crossterm](https://crates.io/crates/crossterm) as main tool for handlin
 - Terminal resizing support
 - You are not interested by keyboard/mouse handling, even terminal handling ? You can still build "screens" that will just print its content.
 - Embedding screens to one another
+- with feature `event`:
+  - Manage inputs as they arrive
+- with feature `form`:
+  - Build self-managed forms with a set of inputs (text, checkboxes ...)
+  - Validate each input with a set of validation constraints
 
 ## Platforms
 
@@ -79,6 +84,75 @@ fn main() {
 }
 ```
 
+## Events (with feature `event`)
+
+(see examples for complete code source implementation)
+
+```rust
+loop {
+    // Poll next event
+    match engine.poll() {
+        // A frame has passed
+        Event::Frame => {/* ... */}
+
+        // A Key has been pressed
+        Event::Key(keyevent) => {/* ... */}
+
+        // Mouse has been moved or clicked
+        Event::Mouse(mouseevent) => {/* ... */}
+
+        // Window has been resized
+        Event::Resize(w, h) => {/* ... */}
+    }
+}
+
+```
+
+## Forms (with feature `form`)
+
+(see examples for complete code source implementation)
+
+```rust
+// Define a theme for the form
+let theme = FormStyle {
+    border: Some(BorderStyle::new_light()),
+    ..Default::default()
+};
+// Create a new Form
+let mut form = Form::new(
+    12,
+    6,
+    FormOptions {
+        style: theme,
+        ..Default::default()
+    },
+);
+form.build_field::<Text>(
+    "username",
+    FormOptions {
+        style: theme,
+        label: Some("Username"),
+        ..Default::default()
+    },
+);
+form.build_field::<HiddenText>(
+    "password",
+    FormOptions {
+        style: theme,
+        label: Some("Password"),
+        ..Default::default()
+    },
+);
+/* ... */
+while !form.is_finished() {
+    let event = engine.poll();
+    form.handle_event(&event);
+    match event {
+        /* ... */
+    }
+}
+```
+
 # Documentation
 
 Take a look at the [generated documentation](https://docs.rs/console_engine/).
@@ -89,6 +163,10 @@ See [examples](https://github.com/VincentFoulon80/console_engine/tree/master/exa
 - **drag-and-drop** : Move a rectangle with your mouse
 - **emojis** : Display an emoji on the terminal
 - **events** : Example usage of the event polling method.
+- **form-choices** : Example usage of a `Checkbox` and `Radio` FormFields
+- **form-simple** : Example creation and usage of a `Form` containing two inputs
+- **form-text** : Example usage of a `Text` FormField
+- **form-validation** : Example usage of Form Validation
 - **graph** : Display a graph being generated with some values.
 - **lines** : Draw random lines of random colors on the screen.
 - **lines-fps** : Same example as lines, but with a FPS counter.
@@ -106,3 +184,8 @@ See [examples](https://github.com/VincentFoulon80/console_engine/tree/master/exa
 # Media
 
 ![](https://raw.githubusercontent.com/VincentFoulon80/console_engine/master/docs/examples.gif)
+
+# Trustworthiness
+
+It is recommended to always use [cargo-crev](https://github.com/crev-dev/cargo-crev)
+to verify the trustworthiness of each of your dependencies, including this one.

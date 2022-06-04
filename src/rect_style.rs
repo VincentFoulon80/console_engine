@@ -1,3 +1,5 @@
+use crossterm::style::Color;
+
 use crate::pixel::{self, Pixel};
 
 /// Borders for styled-border rectangle
@@ -21,6 +23,18 @@ impl BorderStyle {
             corner_bottom_right: pixel::pxl('+'),
             top_bottom: pixel::pxl('-'),
             left_right: pixel::pxl('|'),
+        }
+    }
+
+    /// Solid (Uses only the block character from ascii)
+    pub fn new_solid() -> Self {
+        Self {
+            corner_top_right: pixel::pxl('█'),
+            corner_top_left: pixel::pxl('█'),
+            corner_bottom_left: pixel::pxl('█'),
+            corner_bottom_right: pixel::pxl('█'),
+            top_bottom: pixel::pxl('█'),
+            left_right: pixel::pxl('█'),
         }
     }
 
@@ -77,5 +91,22 @@ impl BorderStyle {
             top_bottom,
             left_right,
         }
+    }
+
+    /// Changes the border's colors
+    pub fn with_colors(mut self, fg: Color, bg: Color) -> Self {
+        self.corner_top_right.fg = fg;
+        self.corner_top_right.bg = bg;
+        self.corner_top_left.fg = fg;
+        self.corner_top_left.bg = bg;
+        self.corner_bottom_left.fg = fg;
+        self.corner_bottom_left.bg = bg;
+        self.corner_bottom_right.fg = fg;
+        self.corner_bottom_right.bg = bg;
+        self.top_bottom.fg = fg;
+        self.top_bottom.bg = bg;
+        self.left_right.fg = fg;
+        self.left_right.bg = bg;
+        self
     }
 }
