@@ -91,7 +91,7 @@ mod test {
         use super::super::NotBlank;
         use super::Not;
 
-        let validator = Not::new("Not blank", NotBlank::new("blank"));
+        let validator = Not::new("should be blank", NotBlank::new(""));
 
         assert!(validator.validate(&FormValue::Nothing));
         assert!(validator.validate(&FormValue::String(String::from(""))));
@@ -112,7 +112,7 @@ mod test {
         let validator = AnyOf::new(
             "should be blank or a valid integer",
             vec![
-                Not::new("Not blank", NotBlank::new("blank")),
+                Not::new("Not blank", NotBlank::new("")),
                 Integer::new("not integer"),
             ],
         );
@@ -125,7 +125,7 @@ mod test {
         let mut hm: HashMap<String, FormValue> = HashMap::new();
         assert!(validator.validate(&FormValue::Map(hm.clone())));
         hm.insert(String::from("1"), FormValue::Nothing);
-        assert!(validator.validate(&FormValue::Map(hm.clone())));
+        assert!(!validator.validate(&FormValue::Map(hm.clone())));
     }
 
     #[test]
@@ -136,13 +136,10 @@ mod test {
         // the outputs needs to be an alphanumeric string that correspond to an integer
         let validator = AllOf::new(
             "should be alphanumeric and a valid integer",
-            vec![
-                Alphanumeric::new("not alphanumeric"),
-                Integer::new("not integer"),
-            ],
+            vec![Alphanumeric::new(""), Integer::new("")],
         );
 
-        assert!(validator.validate(&FormValue::Nothing));
+        assert!(!validator.validate(&FormValue::Nothing));
         assert!(!validator.validate(&FormValue::String(String::from(""))));
         assert!(!validator.validate(&FormValue::String(String::from("hello, world!"))));
         assert!(validator.validate(&FormValue::String(String::from("734"))));

@@ -5,6 +5,7 @@ mod logic;
 mod numbers;
 mod string;
 
+pub use basic::IsTrue;
 pub use basic::NotBlank;
 pub use complex::Callback;
 pub use complex::CharactersCallback;

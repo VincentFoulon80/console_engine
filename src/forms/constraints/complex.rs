@@ -47,15 +47,14 @@ impl CharactersCallback {
 impl FormConstraint for CharactersCallback {
     fn validate(&self, output: &FormValue) -> bool {
         match output {
-            FormValue::Nothing => true,
-            FormValue::Boolean(_) => true,
-            FormValue::Index(_) => true,
             FormValue::String(value) => value.chars().all(|x| (self.callback)(x)),
             FormValue::Map(entries) => entries.iter().all(|(_, x)| self.validate(x)),
             FormValue::List(entries) => entries
                 .iter()
                 .all(|x| self.validate(&FormValue::String(String::from(x)))),
             FormValue::Vec(entries) => entries.iter().all(|x| self.validate(x)),
+            // we don't support all FormValues
+            _ => false,
         }
     }
 
@@ -74,7 +73,7 @@ mod test {
     fn callback() {
         use super::Callback;
 
-        let validator = Callback::new("invalid!", &|x| matches!(x, FormValue::String(_)));
+        let validator = Callback::new("should be String", &|x| matches!(x, FormValue::String(_)));
 
         assert!(!validator.validate(&FormValue::Nothing));
         assert!(validator.validate(&FormValue::String(String::from("hello, world!"))));
@@ -88,9 +87,9 @@ mod test {
     fn characters_callback() {
         use super::CharactersCallback;
 
-        let validator = CharactersCallback::new("Not alphabetic", &|x| x.is_alphabetic());
+        let validator = CharactersCallback::new("should be alphabetic", &|x| x.is_alphabetic());
 
-        assert!(validator.validate(&FormValue::Nothing));
+        assert!(!validator.validate(&FormValue::Nothing));
         assert!(validator.validate(&FormValue::String(String::from("Helloworld"))));
         assert!(!validator.validate(&FormValue::String(String::from("123"))));
         assert!(!validator.validate(&FormValue::String(String::from("Hello123"))));
@@ -98,13 +97,15 @@ mod test {
 
         let mut hm: HashMap<String, FormValue> = HashMap::new();
         hm.insert(String::from("1"), FormValue::Nothing);
-        assert!(validator.validate(&FormValue::Map(hm.clone())));
+        assert!(!validator.validate(&FormValue::Map(hm)));
+        let mut hm: HashMap<String, FormValue> = HashMap::new();
         hm.insert(
             String::from("2"),
             FormValue::String(String::from("Helloworld")),
         );
-        assert!(validator.validate(&FormValue::Map(hm.clone())));
+        assert!(validator.validate(&FormValue::Map(hm)));
+        let mut hm: HashMap<String, FormValue> = HashMap::new();
         hm.insert(String::from("3"), FormValue::String(String::from("123")));
-        assert!(!validator.validate(&FormValue::Map(hm.clone())));
+        assert!(!validator.validate(&FormValue::Map(hm)));
     }
 }

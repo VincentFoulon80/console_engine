@@ -18,15 +18,14 @@ impl Alphabetic {
 impl FormConstraint for Alphabetic {
     fn validate(&self, output: &FormValue) -> bool {
         match output {
-            FormValue::Nothing => true,
-            FormValue::Boolean(_) => true,
-            FormValue::Index(_) => true,
             FormValue::String(value) => value.chars().all(|x| x.is_alphabetic()),
             FormValue::Map(fields) => fields.iter().all(|(_, x)| self.validate(x)),
             FormValue::List(entries) => entries
                 .iter()
                 .all(|x| self.validate(&FormValue::String(String::from(x)))),
             FormValue::Vec(entries) => entries.iter().all(|x| self.validate(x)),
+            // we don't support all FormValues
+            _ => false,
         }
     }
 
@@ -51,15 +50,14 @@ impl Alphanumeric {
 impl FormConstraint for Alphanumeric {
     fn validate(&self, output: &FormValue) -> bool {
         match output {
-            FormValue::Nothing => true,
-            FormValue::Boolean(_) => true,
-            FormValue::Index(_) => true,
             FormValue::String(value) => value.chars().all(|x| x.is_alphanumeric()),
             FormValue::Map(fields) => fields.iter().all(|(_, x)| self.validate(x)),
             FormValue::List(entries) => entries
                 .iter()
                 .all(|x| self.validate(&FormValue::String(String::from(x)))),
             FormValue::Vec(entries) => entries.iter().all(|x| self.validate(x)),
+            // we don't support all FormValues
+            _ => false,
         }
     }
 
@@ -78,9 +76,9 @@ mod test {
     fn alphabetic() {
         use super::Alphabetic;
 
-        let validator = Alphabetic::new("Not alphabetic");
+        let validator = Alphabetic::new("should be alphabetic");
 
-        assert!(validator.validate(&FormValue::Nothing));
+        assert!(!validator.validate(&FormValue::Nothing));
         assert!(validator.validate(&FormValue::String(String::from("Helloworld"))));
         assert!(!validator.validate(&FormValue::String(String::from("123"))));
         assert!(!validator.validate(&FormValue::String(String::from("Hello123"))));
@@ -88,7 +86,9 @@ mod test {
 
         let mut hm: HashMap<String, FormValue> = HashMap::new();
         hm.insert(String::from("1"), FormValue::Nothing);
-        assert!(validator.validate(&FormValue::Map(hm.clone())));
+        assert!(!validator.validate(&FormValue::Map(hm)));
+
+        let mut hm: HashMap<String, FormValue> = HashMap::new();
         hm.insert(
             String::from("2"),
             FormValue::String(String::from("Helloworld")),
@@ -102,9 +102,9 @@ mod test {
     fn alphanumeric() {
         use super::Alphanumeric;
 
-        let validator = Alphanumeric::new("Not alphanumeric");
+        let validator = Alphanumeric::new("should be alphanumeric");
 
-        assert!(validator.validate(&FormValue::Nothing));
+        assert!(!validator.validate(&FormValue::Nothing));
         assert!(validator.validate(&FormValue::String(String::from("Helloworld"))));
         assert!(validator.validate(&FormValue::String(String::from("123"))));
         assert!(validator.validate(&FormValue::String(String::from("Hello123"))));
@@ -112,7 +112,9 @@ mod test {
 
         let mut hm: HashMap<String, FormValue> = HashMap::new();
         hm.insert(String::from("1"), FormValue::Nothing);
-        assert!(validator.validate(&FormValue::Map(hm.clone())));
+        assert!(!validator.validate(&FormValue::Map(hm)));
+
+        let mut hm: HashMap<String, FormValue> = HashMap::new();
         hm.insert(
             String::from("2"),
             FormValue::String(String::from("Helloworld")),
