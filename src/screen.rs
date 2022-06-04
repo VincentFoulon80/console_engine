@@ -238,6 +238,15 @@ impl Screen {
         }
     }
 
+    /// Prints a screen from a compatible Struct
+    /// See [print_screen](#method.print_screen)
+    #[cfg(feature = "compatibility")]
+    pub fn print_with(&mut self, x: i32, y: i32, source: &impl crate::compatibility::AsScreen) {
+        if let Some(screen) = source.as_screen() {
+            self.print_screen(x, y, &screen)
+        }
+    }
+
     /// Prints another screen on specified coordinates, ignoring a specific character while printing
     /// Ignoring a character will behave like transparency
     ///
@@ -251,6 +260,21 @@ impl Screen {
                     self.set_pxl(x + i, y + j, pxl);
                 }
             }
+        }
+    }
+
+    /// Prints a screen from a compatible Struct, ignoring a specific character while printing for a transparency effect
+    /// See [print_screen_alpha](#method.print_screen_alpha)
+    #[cfg(feature = "compatibility")]
+    pub fn print_alpha_with(
+        &mut self,
+        x: i32,
+        y: i32,
+        source: &impl crate::compatibility::AsScreen,
+        alpha_character: char,
+    ) {
+        if let Some(screen) = source.as_screen() {
+            self.print_screen_alpha(x, y, &screen, alpha_character)
         }
     }
 

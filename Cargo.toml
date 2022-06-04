@@ -16,13 +16,19 @@ doctest = false
 
 [dependencies]
 crossterm = "0.23"
+drawille = {version = "0.3", optional = true}
 unicode-width = "0.1.8"
 
 [dev-dependencies]
 console_engine = {path = ".", features = ["event", "form"]}
 rand = "0.8"
 
+[package.metadata.docs.rs]
+all-features = true
+
 [features]
+compatibility = []
+compatibility-drawille = ["compatibility", "drawille"]
 default = []
 event = []
 form = ["event"]
