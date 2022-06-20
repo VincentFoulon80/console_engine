@@ -9,6 +9,9 @@ use super::{FormField, FormOptions, FormValidationResult, FormValue};
 /// This form field generates a generic text input, that handles keyboard input (moving cursor, backspacing / deleting, home / end)
 /// This field is inactive by default, you need to set it active once created
 ///
+/// Custom options:
+/// - `default`: prefilled value, even on reset
+///
 /// Outputs `FormValue::String`
 ///
 /// see example `form-input` for basic usage
@@ -17,20 +20,29 @@ pub struct Text {
     dirty: bool,
     active: bool,
     input_buffer: String,
+    default_input: Option<String>,
     cursor_pos: usize,
     options: FormOptions,
 }
 
 impl Text {
     pub fn new(w: u32, options: FormOptions) -> Self {
-        Self {
+        let default = if let Some(FormValue::String(value)) = options.custom.get("default") {
+            Some(value.clone())
+        } else {
+            None
+        };
+        let mut text = Self {
             screen: Screen::new(w, 1),
             dirty: true,
             active: false,
-            input_buffer: String::new(),
+            input_buffer: default.clone().unwrap_or_default(),
+            default_input: default,
             cursor_pos: 0,
             options,
-        }
+        };
+        text.move_cursor(i32::MAX);
+        text
     }
 
     /// Sets a specific value inside the field
@@ -99,6 +111,9 @@ impl FormField for Text {
 
     fn reset(&mut self) {
         self.clear_input_buffer();
+        if let Some(default_input) = self.default_input.clone() {
+            self.set_input_buffer(&default_input);
+        }
     }
 
     fn get_width(&self) -> u32 {
@@ -163,7 +178,13 @@ impl FormField for Text {
     }
 
     fn set_options(&mut self, options: FormOptions) {
-        self.options = options
+        self.options = options;
+        self.default_input =
+            if let Some(FormValue::String(value)) = self.options.custom.get("default") {
+                Some(value.clone())
+            } else {
+                None
+            };
     }
 
     fn get_options(&self) -> &FormOptions {
@@ -211,6 +232,9 @@ impl FormField for Text {
 /// This form field generates a generic text input, that'll hide what the user writes in it. (e.g. for passwords)
 /// This field is inactive by default, you need to set it active once created
 ///
+/// Custom options:
+/// - `default`: prefilled value, even on reset
+///
 /// Outputs `FormValue::String`
 ///
 /// see example `form-input` for basic usage
@@ -220,21 +244,30 @@ pub struct HiddenText {
     active: bool,
     hide_character: char,
     input_buffer: String,
+    default_input: Option<String>,
     cursor_pos: usize,
     options: FormOptions,
 }
 
 impl HiddenText {
     pub fn new(w: u32, hide_character: char, options: FormOptions) -> Self {
-        Self {
+        let default = if let Some(FormValue::String(value)) = options.custom.get("default") {
+            Some(value.clone())
+        } else {
+            None
+        };
+        let mut text = Self {
             screen: Screen::new(w, 1),
             dirty: true,
             active: false,
             hide_character,
-            input_buffer: String::new(),
+            input_buffer: default.clone().unwrap_or_default(),
+            default_input: default,
             cursor_pos: 0,
             options,
-        }
+        };
+        text.move_cursor(i32::MAX);
+        text
     }
 
     pub fn set_input_buffer(&mut self, input: &str) {
@@ -298,6 +331,9 @@ impl FormField for HiddenText {
 
     fn reset(&mut self) {
         self.clear_input_buffer();
+        if let Some(default_input) = self.default_input.clone() {
+            self.set_input_buffer(&default_input);
+        }
     }
 
     fn get_width(&self) -> u32 {
@@ -362,7 +398,13 @@ impl FormField for HiddenText {
     }
 
     fn set_options(&mut self, options: FormOptions) {
-        self.options = options
+        self.options = options;
+        self.default_input =
+            if let Some(FormValue::String(value)) = self.options.custom.get("default") {
+                Some(value.clone())
+            } else {
+                None
+            };
     }
 
     fn get_options(&self) -> &FormOptions {

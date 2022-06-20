@@ -9,6 +9,10 @@ use super::{FormField, FormOptions, FormValidationResult, FormValue};
 /// This form field display a list of elements, in which our user must chose one element
 /// This field is inactive by default, you need to set it active once created
 ///
+/// Custom options:
+/// - `choices`: list of entries to display to the user
+/// - `default`: index of the selected entry
+///
 /// Outputs `FormValue::Index` or `FormValue::Nothing` if the list is empty
 ///
 /// see example `form-choices` for basic usage
@@ -29,12 +33,17 @@ impl Radio {
         } else {
             vec![]
         };
+        let default = if let Some(FormValue::Index(select)) = options.custom.get("default") {
+            *select.min(&list.len())
+        } else {
+            0
+        };
         Radio {
             screen: Screen::new(w, list.len() as u32),
             list,
             dirty: true,
             active: false,
-            selected: 0,
+            selected: default,
             cursor_pos: 0,
             options,
         }
@@ -75,7 +84,11 @@ impl FormField for Radio {
     }
 
     fn reset(&mut self) {
-        self.selected = 0;
+        self.selected = if let Some(FormValue::Index(select)) = self.options.custom.get("default") {
+            *select.min(&self.list.len())
+        } else {
+            0
+        };
     }
 
     fn get_width(&self) -> u32 {
@@ -131,6 +144,17 @@ impl FormField for Radio {
 
     fn set_options(&mut self, options: FormOptions) {
         self.options = options;
+        self.list = if let Some(FormValue::List(list)) = self.options.custom.get("choices").cloned()
+        {
+            list
+        } else {
+            vec![]
+        };
+        self.selected = if let Some(FormValue::Index(select)) = self.options.custom.get("default") {
+            *select.min(&self.list.len())
+        } else {
+            0
+        };
     }
 
     fn get_options(&self) -> &FormOptions {
@@ -172,6 +196,9 @@ impl FormField for Radio {
 ///
 /// This form field display a list of elements, in which our user can chose one or more element
 /// This field is inactive by default, you need to set it active once created
+///
+/// Custom options:
+/// - `choices`: list of entries to display to the user
 ///
 /// Outputs `FormValue::Vec<FormValue::Index>`
 ///
@@ -301,6 +328,12 @@ impl FormField for Checkbox {
 
     fn set_options(&mut self, options: FormOptions) {
         self.options = options;
+        self.list = if let Some(FormValue::List(list)) = self.options.custom.get("choices").cloned()
+        {
+            list
+        } else {
+            vec![]
+        };
     }
 
     fn get_options(&self) -> &FormOptions {
