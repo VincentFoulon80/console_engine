@@ -14,6 +14,22 @@ Besides the user input and display, this library also provides some tools to bui
 
 It uses [Crossterm](https://crates.io/crates/crossterm) as main tool for handling the screen and inputs. You don't have to worry about initalizing anything because the lib will handle this for you.
 
+## Summary
+
+- [Console Engine](#console-engine)
+    - [Summary](#summary)
+    - [Features](#features)
+    - [Platforms](#platforms)
+- [Example usage](#example-usage)
+    - [ConsoleEngine (managing input & output)](#consoleengine-managing-input--output)
+    - [Screens (generating output)](#screens-generating-output)
+    - [Events (with feature `event`)](#events-with-feature-event)
+    - [Forms (with feature `form`)](#forms-with-feature-form)
+- [Documentation](#documentation)
+- [Examples](#examples)
+- [Media](#media)
+- [Trustworthiness](#trustworthiness)
+
 ## Features
 
 - Build custom terminal display using shapes or text
@@ -30,9 +46,9 @@ It uses [Crossterm](https://crates.io/crates/crossterm) as main tool for handlin
 
 ## Platforms
 
-Since it uses `crossterm`, it should work on Windows, Linux and possibly Mac (see [Tested Terminals on Crossterm's page](https://crates.io/crates/crossterm#tested-terminals)).
+Since it uses `crossterm`, it should work on Windows, Linux and Mac (see [Tested Terminals on Crossterm's page](https://crates.io/crates/crossterm#tested-terminals)).
 
-# example usage 
+# Example usage 
 
 ## ConsoleEngine (managing input & output)
 ```rust
