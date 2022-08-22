@@ -24,11 +24,11 @@ impl FormConstraint for Integer {
                     return false;
                 }
                 if let Some(chr) = value.chars().next() {
-                    if !chr.is_digit(10) && chr != '-' && chr != '+' {
+                    if !chr.is_ascii_digit() && chr != '-' && chr != '+' {
                         return false;
                     }
                 }
-                value.chars().skip(1).all(|x| x.is_digit(10))
+                value.chars().skip(1).all(|x| x.is_ascii_digit())
             }
             FormValue::Map(entries) => entries.iter().all(|(_, x)| self.validate(x)),
             FormValue::List(entries) => entries

@@ -68,7 +68,7 @@ impl Text {
         }
         self.dirty = true;
         let off_l = amount.max(0) as usize; // offset to the left from cursor, `positive` or 0
-        let off_r = amount.min(0).abs() as usize; // offset to the right from cursor,  `-negative` or 0
+        let off_r = amount.min(0).unsigned_abs() as usize; // offset to the right from cursor,  `-negative` or 0
         let pos_l = self.cursor_pos.saturating_sub(off_l);
         let pos_r = self
             .cursor_pos
@@ -270,7 +270,7 @@ impl HiddenText {
         }
         self.dirty = true;
         let off_l = amount.max(0) as usize; // offset to the left from cursor, `positive` or 0
-        let off_r = amount.min(0).abs() as usize; // offset to the right from cursor,  `-negative` or 0
+        let off_r = amount.min(0).unsigned_abs() as usize; // offset to the right from cursor,  `-negative` or 0
         let pos_l = self.cursor_pos.saturating_sub(off_l);
         let pos_r = self
             .cursor_pos
