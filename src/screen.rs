@@ -679,7 +679,7 @@ impl Screen {
                     }
                 }
             } else {
-                let step = h_scroll.abs() as usize;
+                let step = h_scroll.unsigned_abs() as usize;
                 // scroll to the right
                 for j in 0..height {
                     // move the pixels
@@ -813,8 +813,8 @@ impl Screen {
         end_y: i32,
         default: Pixel,
     ) -> Screen {
-        let target_width = (end_x - start_x).abs() as u32 + 1;
-        let target_height = (end_y - start_y).abs() as u32 + 1;
+        let target_width = (end_x - start_x).unsigned_abs() + 1;
+        let target_height = (end_y - start_y).unsigned_abs() + 1;
         let mut extracted_screen = vec![default; (target_width * target_height) as usize];
         let x_reversed = start_x > end_x;
         let y_reversed = start_y > end_y;

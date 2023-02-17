@@ -152,6 +152,13 @@ impl ConsoleEngine {
                 crossterm::terminal::SetSize(width as u16, height as u16)
             )?;
             self.resize(width, height);
+            // flush events
+            #[cfg(feature = "event")]
+            use std::time::Duration;
+            #[cfg(feature = "event")]
+            while let Ok(true) = event::poll(Duration::from_micros(100)) {
+                event::read().ok();
+            }
         }
         if crossterm::terminal::size()? < (width as u16, height as u16) {
             Err(ErrorKind::new(std::io::ErrorKind::Other, format!("Your terminal must have at least a width and height of {}x{} characters. Currently has {}x{}", width, height, size.0, size.1)))
