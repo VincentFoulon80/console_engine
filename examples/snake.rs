@@ -106,6 +106,8 @@ impl Snake {
                 // Initialize game values to a starting state
                 self.playing = true;
                 self.direction = Direction::East;
+                self.old_dx = 1;
+                self.old_dy = 0;
                 self.pos_x = 4;
                 self.pos_y = 4;
                 self.body = vec![(3, 4), (2, 4)];
