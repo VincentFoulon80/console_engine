@@ -459,10 +459,10 @@ impl Screen {
             self.set_pxl(x - relative_pos_y, y - relative_pos_x, character);
             self.set_pxl(x - relative_pos_x, y - relative_pos_y, character);
             if distance < 0 {
-                distance += 4 * relative_pos_x as i32 + 6;
+                distance += 4 * relative_pos_x + 6;
                 relative_pos_x += 1;
             } else {
-                distance += 4 * (relative_pos_x as i32 - relative_pos_y as i32) + 10;
+                distance += 4 * (relative_pos_x - relative_pos_y) + 10;
                 relative_pos_x += 1;
                 relative_pos_y -= 1;
             }
@@ -555,13 +555,11 @@ impl Screen {
         y3: i32,
         character: Pixel,
     ) {
-        self.triangle(
-            x1 as i32, y1 as i32, x2 as i32, y2 as i32, x3 as i32, y3 as i32, character,
-        );
+        self.triangle(x1, y1, x2, y2, x3, y3, character);
         // we use tuples for this for now
-        let v0 = (x1 as i32, y1 as i32);
-        let mut v1 = (x2 as i32, y2 as i32);
-        let mut v2 = (x3 as i32, y3 as i32);
+        let v0 = (x1, y1);
+        let mut v1 = (x2, y2);
+        let mut v2 = (x3, y3);
 
         // algorithm only fills counter clockwise triangles, so swap as needed
         // For a triangle A B C, you can find the winding by computing the cross product (B - A) x (C - A). For 2d tri's, with z=0, it will only have a z component.
@@ -783,7 +781,7 @@ impl Screen {
         // transfer old screens into new screens
         for j in 0..std::cmp::min(self.height, new_height) {
             for i in 0..std::cmp::min(self.width, new_width) {
-                if (i as u32) < self.width && (j as u32) < self.height {
+                if i < self.width && j < self.height {
                     new_screen[((j * new_width) + i) as usize] =
                         self.screen[((j * self.width) + i) as usize];
                 }
