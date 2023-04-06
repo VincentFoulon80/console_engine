@@ -5,6 +5,7 @@
 [![dependency status](https://deps.rs/repo/github/vincentfoulon80/console_engine/status.svg)](https://deps.rs/repo/github/vincentfoulon80/console_engine)
 [![Crates.io](https://img.shields.io/crates/l/console_engine)](https://github.com/VincentFoulon80/console_engine/blob/master/LICENSE)
 [![Discussions](https://img.shields.io/badge/discuss-on%20github-success)](https://github.com/VincentFoulon80/console_engine/discussions)
+[![Rust](https://github.com/VincentFoulon80/console_engine/actions/workflows/rust.yml/badge.svg)](https://github.com/VincentFoulon80/console_engine/actions/workflows/rust.yml)
 
 [![Changelog](https://img.shields.io/badge/-changelog-informational)](https://github.com/VincentFoulon80/console_engine/releases)
 
