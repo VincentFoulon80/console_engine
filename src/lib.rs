@@ -17,8 +17,7 @@ pub mod events;
 #[cfg(feature = "form")]
 pub mod forms;
 
-use crossterm::event::KeyEventKind;
-pub use crossterm::event::{KeyCode, KeyModifiers, MouseButton};
+pub use crossterm::event::{KeyCode, KeyEventKind, KeyModifiers, MouseButton};
 pub use crossterm::style::Color;
 use crossterm::terminal::{self, ClearType};
 use crossterm::{
@@ -687,9 +686,9 @@ impl ConsoleEngine {
                             Event::Resize(w, h) => {
                                 captured_resize.push((w, h));
                             }
-                            Event::FocusGained => todo!(),
-                            Event::FocusLost => todo!(),
-                            Event::Paste(_) => todo!(),
+                            Event::FocusGained => (),
+                            Event::FocusLost => (),
+                            Event::Paste(_) => (),
                         };
                     }
                 }
