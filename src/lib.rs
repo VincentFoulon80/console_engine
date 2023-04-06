@@ -752,9 +752,9 @@ impl ConsoleEngine {
                             Event::Key(evt) => return events::Event::Key(evt),
                             Event::Mouse(evt) => return events::Event::Mouse(evt),
                             Event::Resize(w, h) => return events::Event::Resize(w, h),
-                            Event::FocusGained => todo!(),
-                            Event::FocusLost => todo!(),
-                            Event::Paste(_) => todo!(),
+                            Event::FocusGained => (),
+                            Event::FocusLost => (),
+                            Event::Paste(_) => (),
                         };
                     }
                 }
