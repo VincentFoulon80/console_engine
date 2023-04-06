@@ -4,7 +4,7 @@ use console_engine::{
     rect_style::BorderStyle,
     KeyCode,
 };
-use crossterm::event::KeyEvent;
+use crossterm::event::{KeyEvent, KeyEventKind};
 
 fn main() {
     // initializes the engine
@@ -36,6 +36,8 @@ fn main() {
             Event::Key(KeyEvent {
                 code: KeyCode::Enter | KeyCode::Esc,
                 modifiers: _,
+                kind: KeyEventKind::Press,
+                state: _,
             }) => {
                 break;
             }

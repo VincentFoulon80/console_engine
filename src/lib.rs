@@ -17,6 +17,7 @@ pub mod events;
 #[cfg(feature = "form")]
 pub mod forms;
 
+use crossterm::event::KeyEventKind;
 pub use crossterm::event::{KeyCode, KeyModifiers, MouseButton};
 pub use crossterm::style::Color;
 use crossterm::terminal::{self, ClearType};
@@ -686,6 +687,9 @@ impl ConsoleEngine {
                             Event::Resize(w, h) => {
                                 captured_resize.push((w, h));
                             }
+                            Event::FocusGained => todo!(),
+                            Event::FocusLost => todo!(),
+                            Event::Paste(_) => todo!(),
                         };
                     }
                 }
@@ -749,6 +753,9 @@ impl ConsoleEngine {
                             Event::Key(evt) => return events::Event::Key(evt),
                             Event::Mouse(evt) => return events::Event::Mouse(evt),
                             Event::Resize(w, h) => return events::Event::Resize(w, h),
+                            Event::FocusGained => todo!(),
+                            Event::FocusLost => todo!(),
+                            Event::Paste(_) => todo!(),
                         };
                     }
                 }
@@ -803,7 +810,7 @@ impl ConsoleEngine {
     /// }
     /// ```
     pub fn is_key_pressed(&self, key: KeyCode) -> bool {
-        self.is_key_pressed_with_modifier(key, KeyModifiers::NONE)
+        self.is_key_pressed_with_modifier(key, KeyModifiers::NONE, KeyEventKind::Press)
     }
 
     /// checks whenever a key + a modifier (ctrl, shift...) is pressed (first frame held only)
@@ -820,8 +827,14 @@ impl ConsoleEngine {
     ///     }
     /// }
     /// ```
-    pub fn is_key_pressed_with_modifier(&self, key: KeyCode, modifier: KeyModifiers) -> bool {
-        self.keys_pressed.contains(&KeyEvent::new(key, modifier))
+    pub fn is_key_pressed_with_modifier(
+        &self,
+        key: KeyCode,
+        modifier: KeyModifiers,
+        kind: KeyEventKind,
+    ) -> bool {
+        self.keys_pressed
+            .contains(&KeyEvent::new_with_kind(key, modifier, kind))
     }
 
     /// checks whenever a key is held down
@@ -839,12 +852,18 @@ impl ConsoleEngine {
     /// }
     /// ```
     pub fn is_key_held(&self, key: KeyCode) -> bool {
-        self.is_key_held_with_modifier(key, KeyModifiers::NONE)
+        self.is_key_held_with_modifier(key, KeyModifiers::NONE, KeyEventKind::Press)
     }
 
     /// checks whenever a key + a modifier (ctrl, shift...) is held down
-    pub fn is_key_held_with_modifier(&self, key: KeyCode, modifier: KeyModifiers) -> bool {
-        self.keys_held.contains(&KeyEvent::new(key, modifier))
+    pub fn is_key_held_with_modifier(
+        &self,
+        key: KeyCode,
+        modifier: KeyModifiers,
+        kind: KeyEventKind,
+    ) -> bool {
+        self.keys_held
+            .contains(&KeyEvent::new_with_kind(key, modifier, kind))
     }
 
     /// checks whenever a key has been released (first frame released)
@@ -863,12 +882,18 @@ impl ConsoleEngine {
     /// }
     /// ```
     pub fn is_key_released(&self, key: KeyCode) -> bool {
-        self.is_key_released_with_modifier(key, KeyModifiers::NONE)
+        self.is_key_released_with_modifier(key, KeyModifiers::NONE, KeyEventKind::Release)
     }
 
     /// checks whenever a key + a modifier (ctrl, shift...) has been released (first frame released)
-    pub fn is_key_released_with_modifier(&self, key: KeyCode, modifier: KeyModifiers) -> bool {
-        self.keys_released.contains(&KeyEvent::new(key, modifier))
+    pub fn is_key_released_with_modifier(
+        &self,
+        key: KeyCode,
+        modifier: KeyModifiers,
+        kind: KeyEventKind,
+    ) -> bool {
+        self.keys_released
+            .contains(&KeyEvent::new_with_kind(key, modifier, kind))
     }
 
     /// Give the mouse's terminal coordinates if the provided button has been pressed

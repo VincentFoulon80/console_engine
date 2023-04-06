@@ -1,4 +1,4 @@
-use crossterm::event::{KeyCode, KeyEvent};
+use crossterm::event::{KeyCode, KeyEvent, KeyEventKind};
 
 use crate::{events::Event, pixel, screen::Screen};
 
@@ -95,7 +95,13 @@ impl FormField for Radio {
         if !self.active {
             return;
         }
-        if let Event::Key(KeyEvent { code, modifiers: _ }) = event {
+        if let Event::Key(KeyEvent {
+            code,
+            modifiers: _,
+            kind: KeyEventKind::Press,
+            state: _,
+        }) = event
+        {
             match code {
                 KeyCode::Up => self.move_cursor(-1),
                 KeyCode::Down => self.move_cursor(1),
@@ -260,7 +266,13 @@ impl FormField for Checkbox {
         if !self.active {
             return;
         }
-        if let Event::Key(KeyEvent { code, modifiers: _ }) = event {
+        if let Event::Key(KeyEvent {
+            code,
+            modifiers: _,
+            kind: KeyEventKind::Press,
+            state: _,
+        }) = event
+        {
             match code {
                 KeyCode::Up => self.move_cursor(-1),
                 KeyCode::Down => self.move_cursor(1),

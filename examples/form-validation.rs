@@ -57,6 +57,8 @@ fn main() -> Result<(), Box<dyn Error>> {
             Event::Key(KeyEvent {
                 code: KeyCode::Esc,
                 modifiers: _,
+                kind: _,
+                state: _,
             }) => {
                 break;
             }
@@ -64,6 +66,8 @@ fn main() -> Result<(), Box<dyn Error>> {
             Event::Key(KeyEvent {
                 code: KeyCode::Char('c'),
                 modifiers: KeyModifiers::CONTROL,
+                kind: _,
+                state: _,
             }) => {
                 break;
             }

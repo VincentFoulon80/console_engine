@@ -1,4 +1,4 @@
-use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
+use crossterm::event::{KeyCode, KeyEvent, KeyEventKind, KeyModifiers};
 
 use crate::{events::Event, pixel, screen::Screen};
 
@@ -118,7 +118,13 @@ impl FormField for Text {
         if !self.active {
             return;
         }
-        if let Event::Key(KeyEvent { code, modifiers }) = event {
+        if let Event::Key(KeyEvent {
+            code,
+            modifiers,
+            kind: KeyEventKind::Press,
+            state: _,
+        }) = event
+        {
             match code {
                 KeyCode::Backspace => self.remove_char(1),
                 KeyCode::Delete => self.remove_char(-1),
@@ -317,7 +323,13 @@ impl FormField for HiddenText {
         if !self.active {
             return;
         }
-        if let Event::Key(KeyEvent { code, modifiers }) = event {
+        if let Event::Key(KeyEvent {
+            code,
+            modifiers,
+            kind: KeyEventKind::Press,
+            state: _,
+        }) = event
+        {
             match code {
                 KeyCode::Backspace => self.remove_char(1),
                 KeyCode::Delete => self.remove_char(-1),
