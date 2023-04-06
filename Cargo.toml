@@ -16,7 +16,7 @@ version = "2.5.1"
 doctest = false
 
 [dependencies]
-crossterm = "0.24"
+crossterm = "0.26.1"
 unicode-width = "0.1.8"
 
 [dev-dependencies]

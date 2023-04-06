@@ -191,6 +191,7 @@ See [examples](https://github.com/VincentFoulon80/console_engine/tree/master/exa
 - **screen-simple** : Example usage of Screen struct instead of ConsoleEngine
 - **screen-swap** : Swap between several Screen structures
 - **scroll** : Example for the `scroll` function
+- **scroll-smooth** : Example for smooth scrolling (windows only as of crossterm 0.26.1)
 - **shapes** : Shape's functions testing tool
 - **snake** : A simple game of snake.
 - **styled-rect** : Example of the `rect_border` function
