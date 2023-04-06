@@ -56,6 +56,7 @@ fn main() {
             y = 0;
         }
 
+        // is_key_released is windows only as of crossterm 0.26.1
         // sometimes going the opposite direction will incorrectly trigger this code
         if engine.is_key_released(KeyCode::Up) && y == -1
             || engine.is_key_released(KeyCode::Down) && y == 1
