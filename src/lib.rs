@@ -126,7 +126,7 @@ impl ConsoleEngine {
 
     /// Initialize a screen filling the entire terminal with the target FPS
     pub fn init_fill(target_fps: u32) -> Result<ConsoleEngine, ErrorKind> {
-        let size = crossterm::terminal::size().unwrap();
+        let size = crossterm::terminal::size()?;
         ConsoleEngine::init(size.0 as u32, size.1 as u32, target_fps)
     }
 
